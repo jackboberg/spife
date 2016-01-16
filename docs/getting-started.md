@@ -1,4 +1,4 @@
-# Getting Started with Knork :fork_and_knife:
+# :fork_and_knife: Getting Started with Knork
 
 Knork is, first and foremost, a glue package — it curates several
 smaller packages and re-exports them as a whole in order to make
@@ -16,7 +16,17 @@ the following functionality:
 It ties all of this together with a promise-based [request-response
 cycle][request-lifecycle].
 
-## Your First Knork :knife_fork_plate:
+This document will guide you through putting together a simple Knork
+service.
+
+* Your First Knork
+  * [Models](#models)
+  * [Routes](#routes)
+  * [Views](#views)
+    * [Paginated Views](#paginated-views)
+    * [User Input](#user-input)
+
+## :beginner: Your First Knork
 
 Let's build a simple knork service for sending and receiving physical
 :packages:. We should be able to:
@@ -51,7 +61,7 @@ of your new directory.
         └── index.js
 ```
 
-### Models
+### :floppy_disk: Models
 
 Models let us represent rows of a given SQL table as instances of a class, and
 operate on tables using a "Data Access Object", or "DAO" for short.
@@ -154,7 +164,7 @@ Package.objects = orm(Package, {
 Easy as that — we have a `Package` with a foreign key to `Destination`.
 We can totally build an API around this!
 
-### Routes
+### :busstop: Routes
 
 Knork divides functionality between **views**, **routes**, and **models**.
 **Models** handle the state of the service, **views** receive requests from
@@ -203,7 +213,7 @@ attached to the parameter. If all of these steps pass for all parameters AND
 the request method matches, the route is matched. Knork will take that match
 and call the associated view.
 
-### Views
+### :mount_fuji: Views
 
 A Knork **view** is simply a function that takes a [Knork Request
 object][ref-knork-request] and a Map of context values as parameters, and
@@ -345,7 +355,7 @@ need to return a non-2XX or non-3XX response, it's best to throw these objects.
 Finally, we create an empty response using `http.empty()`, give it a status
 code, and return it as our ultimate response.
 
-### Paginated Views
+#### :orange_book: Paginated Views
 
 Invariably, in every web service there are common views on data, and it's handy
 to be consistent in how those common views respond to user requests. For
@@ -392,7 +402,7 @@ To control the JSON output by a `Package`, we have multiple options:
 If you wish to control overall output of all instances of `Package`, the first
 option is the way to go. Otherwise, you can use the `serialize` option.
 
-### User Input
+#### :skull: User Input
 
 
 
