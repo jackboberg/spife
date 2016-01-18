@@ -27,14 +27,16 @@ the section.
 > a header pulled to the side. It might look like this:
 >
 > > :information_source: **Some implementation information...**
->
+> OR:
 > > :warning: **Be aware of the following...**
->
+> OR:
 > > :rotating_light: **Danger! Danger! This is full of Danger!**
 >
 > Let's try it now:
 
-> *information_source: **For folks who prefer to dive in...**
+-----------------
+
+> :information_source: **For folks who prefer to dive in...**
 > 
 > If you're confident you can figure it out, and would like to hop right in,
 > please check out the [reference documentation][reference-docs], which will link
