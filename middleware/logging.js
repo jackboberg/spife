@@ -13,8 +13,23 @@ function createLoggingMiddleware (logger, patchObject) {
     install (knork) {
       this.name = knork.name
     },
-    onRequest (req) {
-      DOMAIN_TO_LOGGER.set(req, bole(`${this.name}:${req.id}`))
+    processRequest (req) {
+      if (process.domain) {
+        DOMAIN_TO_LOGGER.set(process.domain, bole(`${this.name}:${req.id}`))
+      }
+    },
+    processView (req, match, context) {
+      // XXX(chrisdickinson): This is a bit of a hack, since the
+      // TransactionMiddleware may have swapped domains on us. What
+      // we'd really want here is to use AsyncWrap, but I'm not quite
+      // ready to lean heavily on that, yet.
+      const oldRunFunction = match.execute
+      match.execute = () => {
+        if (process.domain) {
+          DOMAIN_TO_LOGGER.set(process.domain, bole(`${this.name}:${req.id}`))
+        }
+        return oldRunFunction()
+      }
     }
   }
 }
@@ -42,6 +57,6 @@ function createPatched (originalMethod, targetMethod) {
       return originalMethod.apply(this, arguments)
     }
     const targetLogger = DOMAIN_TO_LOGGER.get(process.domain)
-    return targetMethod.apply(targetLogger, arguments)
+    return targetLogger[targetMethod].apply(targetLogger, arguments)
   }
 }

@@ -99,7 +99,6 @@ class Server {
       res.writeHead(response.statusCode || 200, response.headers || {})
       return new Promise((resolve, reject) => {
         ms.pipe(response.stream, res, err => {
-          console.log('um', err)
           err ? reject(err) : resolve()
         })
       })
