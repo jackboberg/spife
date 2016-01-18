@@ -1,13 +1,13 @@
 # :fork_and_knife: Getting Started with Knork
 
-Knork is, first and foremost, a glue package — it curates several
-smaller packages and re-exports them as a whole in order to make
-it easier to build small, HATEOAS-y, RESTful APIs. It provides
-the following functionality:
+Knork is, first and foremost, a glue package — it curates several smaller
+packages and re-exports them as a whole in order to make it easier to build
+small, HATEOAS-y, RESTful APIs. It provides the following functionality:
 
 1. **Routing**, courtesy of [`reverse`][routing-reverse],
 2. **Database access**, courtesy of [`pg`][pg]
-3. **Per-request concurrency and transactions**, courtesy of [`pg-db-session`][pg-db-session],
+3. **Per-request concurrency and transactions**, courtesy of
+   [`pg-db-session`][pg-db-session],
 4. An **ORM**, courtesy of [`ormnomnom`][ormnomnom],
 5. **Metrics gathering**, courtesy of [`numbat-emitter`][numbat-emitter],
 6. **Monitoring**, a la [`restify-monitor`][restify-monitor],
@@ -16,8 +16,10 @@ the following functionality:
 It ties all of this together with a promise-based [request-response
 cycle][request-lifecycle].
 
-This document will guide you through putting together a simple Knork
-service.
+This document will demonstrate all of the functionality of Knork while walking
+through the assembly of a simple Knork service.
+
+<a id="table-of-contents"></a>
 
 * Your First Knork
   * [Models](#models)
@@ -26,7 +28,7 @@ service.
     * [Paginated Views](#paginated-views)
     * [User Input](#user-input)
 
-## :beginner: Your First Knork <a id="models"></a>
+## :beginner: Your First Knork
 
 Let's build a simple knork service for sending and receiving physical
 :packages:. We should be able to:
@@ -60,6 +62,10 @@ of your new directory.
     └── views
         └── index.js
 ```
+
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="models"></a>
 
 ### :floppy_disk: Models
 
@@ -164,6 +170,10 @@ Package.objects = orm(Package, {
 Easy as that — we have a `Package` with a foreign key to `Destination`.
 We can totally build an API around this!
 
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="routes"></a>
+
 ### :busstop: Routes
 
 Knork divides functionality between **views**, **routes**, and **models**.
@@ -212,6 +222,10 @@ passes those parameters through a querystring parser — to turn, for example,
 attached to the parameter. If all of these steps pass for all parameters AND
 the request method matches, the route is matched. Knork will take that match
 and call the associated view.
+
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="views"></a>
 
 ### :mount_fuji: Views
 
@@ -355,6 +369,10 @@ need to return a non-2XX or non-3XX response, it's best to throw these objects.
 Finally, we create an empty response using `http.empty()`, give it a status
 code, and return it as our ultimate response.
 
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="paginated-views"></a>
+
 #### :orange_book: Paginated Views
 
 Invariably, in every web service there are common views on data, and it's handy
@@ -401,6 +419,10 @@ To control the JSON output by a `Package`, we have multiple options:
 
 If you wish to control overall output of all instances of `Package`, the first
 option is the way to go. Otherwise, you can use the `serialize` option.
+
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="user-input"></a>
 
 #### :skull: User Input
 
