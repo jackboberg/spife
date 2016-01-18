@@ -26,7 +26,7 @@ service.
     * [Paginated Views](#paginated-views)
     * [User Input](#user-input)
 
-## :beginner: Your First Knork
+## :beginner: Your First Knork <a id="models"></a>
 
 Let's build a simple knork service for sending and receiving physical
 :packages:. We should be able to:
