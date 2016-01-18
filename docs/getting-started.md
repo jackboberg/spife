@@ -27,9 +27,13 @@ the section.
 > a header pulled to the side. It might look like this:
 >
 > > :information_source: **Some implementation information...**
+>
 > OR:
+>
 > > :warning: **Be aware of the following...**
+>
 > OR:
+>
 > > :rotating_light: **Danger! Danger! This is full of Danger!**
 >
 > Let's try it now:
