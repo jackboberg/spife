@@ -17,9 +17,33 @@ It ties all of this together with a promise-based [request-response
 cycle][request-lifecycle].
 
 This document will demonstrate all of the functionality of Knork while walking
-through the assembly of a simple Knork service.
+through the assembly of a simple Knork service. Each section will include links
+to other useful documents, and will collect other relevant links at the end of
+the section.
+
+> :warning: **A side note on side notes:**
+>
+> Supplemental information will appear in block quotes such as this one, with
+> a header pulled to the side. It might look like this:
+>
+> > :information_source: **Some implementation information...**
+>
+> > :warning: **Be aware of the following...**
+>
+> > :rotating_light: **Danger! Danger! This is full of Danger!**
+>
+> Let's try it now:
+
+> *information_source: **For folks who prefer to dive in...**
+> 
+> If you're confident you can figure it out, and would like to hop right in,
+> please check out the [reference documentation][reference-docs], which will link
+> to [topical documentation][topic-docs] where appropriate. If that all looks
+> like :spaghetti:, though, remember this doc is here for you! :revolving_hearts:
 
 <a id="table-of-contents"></a>
+
+## :books: Table of Contents
 
 * Your First Knork
   * [Models](#models)
@@ -425,6 +449,7 @@ option is the way to go. Otherwise, you can use the `serialize` option.
 <a id="user-input"></a>
 
 #### :skull: User Input
+
 
 
 
