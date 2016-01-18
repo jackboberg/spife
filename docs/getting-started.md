@@ -51,16 +51,17 @@ the section.
 
 ## :books: Table of Contents
 
-* Your First Knork
+* [:beginner: Your First Knork](#setup)
   * [:floppy_disk: Models](#models)
   * [:busstop: Routes](#routes)
   * [:mount_fuji: Views](#views)
     * [:orange_book: Paginated Views](#paginated-views)
     * [:skull: User Input](#user-input)
-    * [:triangular_ruler: Metrics](#metrics)
-    * [:evergreen_tree: Logging](#logging)
+    * [:triangular_ruler: :evergreen_tree: Metrics and Logging](#metrics-and-logging)
   * [:clapper: Server](#server)
     * [:art: Middleware](#middleware)
+
+<a id="setup">
 
 ## :beginner: Your First Knork
 
@@ -78,7 +79,7 @@ To start, run the following commands in a new directory:
 # inside of your new directory
 $ npm i --save @npm/knork
 $ mkdir -p lib/{models,urls,views}
-$ touch lib/{models/{destination,package},urls/index,views/index}.js
+$ touch lib/{server,models/{destination,package},urls/index,views/index}.js
 ```
 
 Your directory should have the following structure. If you have the `tree`
@@ -88,6 +89,7 @@ of your new directory.
 ```
 .
 └── lib
+    ├── server.js
     ├── models
     │   ├── destination.js
     │   └── package.js
@@ -96,6 +98,31 @@ of your new directory.
     └── views
         └── index.js
 ```
+
+Make sure you have Postgres installed — follow [the steps
+here][ormnomnom-install-postgres] to make sure you have it available. Once you
+have it, run `createdb knork_example`, and then run the following inside of
+`psql knork_example`:
+
+```sql
+> CREATE TABLE "destinations" (
+  id serial,
+  name text not null,
+  slug text unique not null,
+  address text not null,
+  created date
+);
+> CREATE TABLE "packages" (
+  id serial,
+  public_id varchar(36) unique not null,
+  destination_id integer not null references destinations(id),
+  contents text not null,
+  status text,
+  received date
+);
+```
+
+Type `\q` and hit enter to exit the shell.
 
 [Table of Contents ⏎](#table-of-contents)
 
@@ -489,7 +516,7 @@ destination with us before, we'd like them to be able to give us a `slug`
 instead of the full data. [Joi][] can help us out with that. Let's create
 a schema at the top of `lib/views/index.js`:
 
-```
+```javascript
 'use strict'
 
 const joi = require('knork/joi')
@@ -508,11 +535,19 @@ const createPackageSchema = joi.object().keys({
   ])
 })
 
+module.exports = {
+  viewPackage,
+  createPackage,
+  updatePackage,
+  deletePackage,
+  listPackages
+}
+
 // ... snip snip ...
 ```
 
 Knork makes it easy to attach Joi schemas to individual views. To do so, we
-make use of the [`knork/decorators/validate`][validate-body] module;
+make use of the [`knork/decorators/validate`][ref-knork-validate] module;
 specifically the `body` method:
 
 ```javascript
@@ -537,7 +572,7 @@ const createPackageSchema = joi.object().keys({
 
 module.exports = {
   viewPackage,
-  createPackage: validate.body(createPackageSchema, createBody),
+  createPackage: validate.body(createPackageSchema, createPackage),
   updatePackage,
   deletePackage,
   listPackages
@@ -580,7 +615,7 @@ function createPackage (req, context) {
     return (
       typeof data === 'string'
       ? Destination.objects.get({slug: data})
-      : Destination.objects.getOrCreate({ // 1️⃣
+      : Destination.objects.getOrCreate({ // Note 1
           slug: data.name
             .toLowerCase()
             .replace(/[^\w-]/g, '-')
@@ -593,14 +628,14 @@ function createPackage (req, context) {
 
   const createPackage = Package.objects.create({
     contents: req.validatedBody.get('contents'),
-    destination: getDestination // note 0️⃣
+    destination: getDestination // Note 0
   })
 
   // return a 201 created with a location header that
   // points to the newly created package url. 
   const sendCreatedResponse = createPackage.then(pkg => {
-    return http.response(http.empty(), 201, { // 2️⃣
-      location: urls().reverse('viewPackage', { // 3️⃣
+    return http.response(http.empty(), 201, { // Note 2
+      location: urls().reverse('viewPackage', { // Note 3
         package: pkg.public_id
       })
     })
@@ -608,7 +643,7 @@ function createPackage (req, context) {
 
   // if the destination was provided as a string but cannot 
   // be found, rethrow that error as a 424 "failed dependency"
-  return sendCreatedResponse.catch( // 4️⃣
+  return sendCreatedResponse.catch( // Note 4
     Destination.objects.NotFound,
     rethrow(404)
   )
@@ -617,13 +652,13 @@ function createPackage (req, context) {
 // ... snip snip ...
 ```
 
-This is a pretty meaty view! Some highlights:
+This is a pretty meaty view! Some highlights, corresponding to the notes above:
 
 * :zero: We are passing a **promise for a destination** to `Package.objects.create`,
   [without waiting for the destination to resolve][ormnomnom-resolution];
 * :one: That destination promise uses [`getOrCreate`][ormnomnom-getorcreate] to
   obtain the destination row;
-* :two: We create [an empty response with a location header][ref-http];
+* :two: We create [an empty response with a location header][ref-knork-http];
 * :three: The location header uses the routes we defined in `lib/urls/index.js`
   [to create a full URL][reverse-reverse];
 * :four: We catch potential database-level errors and explicitly cast them
@@ -647,15 +682,28 @@ This is a pretty meaty view! Some highlights:
 
 [Table of Contents ⏎](#table-of-contents)
 
-<a id="metrics"></a>
+<a id="metrics-and-logging"></a>
 
-#### :triangular_ruler: Metrics
+#### :triangular_ruler: :evergreen_tree: Metrics and Logging
 
-[Table of Contents ⏎](#table-of-contents)
+We may wish to *measure* some aspect of the object creation. Luckily, as
+long as `req` is present, metrics are just a stone's throw away:
 
-<a id="logging"></a>
+```
+// ... snip snip ...
 
-#### :evergreen_tree: Logging
+function createPackage (req, context) {
+  const getDestination = req.validatedBody.get('destination').then(data => {
+    if (typeof data === 'string') {
+      req.metric({
+        name: 'createpackage.used_string'
+      })
+    }
+// ... snip snip ...
+```
+
+This data will be handed to [a `numbat-emitter` instance][numbat-emitter]
+specifically configured for your Knork server — easy as that!
 
 [Table of Contents ⏎](#table-of-contents)
 
@@ -667,6 +715,29 @@ This is a pretty meaty view! Some highlights:
 
 <a id="middleware"></a>
 
-### :art: Middleware
+#### :art: Middleware
 
-[HATEOAS]: https://en.wikipedia.org/wiki/HATEOAS
+[hateoas]: https://en.wikipedia.org/wiki/HATEOAS
+[rest]: https://en.wikipedia.org/wiki/Representational_state_transfer
+[routing-reverse]: https://github.com/chrisdickinson/reverse
+[pg]: https://github.com/brianc/node-postgres
+[pg-db-session]: https://github.com/npm/pg-db-session
+[ormnomnom]: https://github.com/chrisdickinson/ormnomnom
+[numbat-emitter]: https://github.com/ceejbot/numbat-emitter
+[restify-monitor]: https://github.com/npm/restify-monitor
+[bole]: http://github.com/rvagg/bole
+[request-lifecycle]: ./topics/lifecycle.md
+[topic-docs]: ./topics
+[reference-docs]: ./ref
+[ormnomnom-install-postgres]: https://github.com/chrisdickinson/ormnomnom/blob/1de3c2fc89136745436e0cc38ed6bc919e699bbc/docs/getting-started.md#getting-postgres
+[babel]: https://babeljs.io/
+[ref-knork-request]: ./ref/request.md
+[ref-knork-http]: ./ref/http.md
+[model]: #models
+[joi]: https://github.com/hapijs/joi
+[ref-knork-validate]: ./ref/decorators.md#validate
+[def-decorator]: https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841#.dnzdeh2v6
+[ormnomnom-resolution]: https://github.com/chrisdickinson/ormnomnom/blob/master/docs/making-queries.md#basic-querying
+[ormnomnom-getorcreate]: https://github.com/chrisdickinson/ormnomnom/blob/master/docs/ref/dao.md#daomodelgetorcreateobject--promiseboolean-model
+[reverse-reverse]: https://github.com/chrisdickinson/reverse#routerreversenamestring-argsobject--string--null
+[bluebird-catch-clause]: http://bluebirdjs.com/docs/api/catch.html
