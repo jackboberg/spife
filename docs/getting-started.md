@@ -2,7 +2,7 @@
 
 Knork is, first and foremost, a glue package — it curates several smaller
 packages and re-exports them as a whole in order to make it easier to build
-small, HATEOAS-y, RESTful APIs. It provides the following functionality:
+small, [HATEOAS][hateoas]-y, [REST][rest]ful APIs. It provides the following functionality:
 
 1. **Routing**, courtesy of [`reverse`][routing-reverse],
 2. **Database access**, courtesy of [`pg`][pg]
@@ -52,16 +52,20 @@ the section.
 ## :books: Table of Contents
 
 * Your First Knork
-  * [Models](#models)
-  * [Routes](#routes)
-  * [Views](#views)
-    * [Paginated Views](#paginated-views)
-    * [User Input](#user-input)
+  * [:floppy_disk: Models](#models)
+  * [:busstop: Routes](#routes)
+  * [:mount_fuji: Views](#views)
+    * [:orange_book: Paginated Views](#paginated-views)
+    * [:skull: User Input](#user-input)
+    * [:triangular_ruler: Metrics](#metrics)
+    * [:evergreen_tree: Logging](#logging)
+  * [:clapper: Server](#server)
+    * [:art: Middleware](#middleware)
 
 ## :beginner: Your First Knork
 
 Let's build a simple knork service for sending and receiving physical
-:packages:. We should be able to:
+:package:'s. We should be able to:
 
 1. List packages in-flight,
 2. Create new packages,
@@ -140,10 +144,25 @@ Destination.objects = orm(Destination, {
 })
 ```
 
+> :information_source: **Why not `class`?**
+>
+> In the model example above, you may have noticed that we're using
+> the old-style "function declaration" method of defining a class. ES2015
+> introduces a `class` keyword which makes defining a class a bit more
+> straightforward, especially when it comes to inheritence. However, function
+> declarations have one important property that `class`'s do not: they are
+> *hoisted* to the beginning of the scope in which they are defined.
+>
+> This behavior helps us avoid circular dependency problems in Node. Until
+> Node gains first-class support for ES2015 module syntax, if we wish to
+> avoid circular dependencies without a [compilation step][babel], we have
+> to use function declarations.
+
 Now that we have a `Destination`, let's create a model for `Package`s. We'll
 want to represent what `Destination` it's shipping to, a public identifier for
-it, when we received it, and whether it's in transit, delivered, or lost. We'll
-add the following to `lib/models/package.js`:
+it, when we received it, and whether it's in transit, delivered, or lost. Oh —
+and the contents of the thing we're shipping. We'll add the following to
+`lib/models/package.js`:
 
 ```javascript
 'use strict'
@@ -163,6 +182,7 @@ function Package (opts) {
     public_id: opts.public_id,
     _destination: opts.destination, // store "destination" as "_destination"
     destination_id: opts.destination_id,
+    contents: opts.contents,
     status: opts.status,
     received: opts.received
   })
@@ -188,6 +208,7 @@ Package.objects = orm(Package, {
   id: joi.number().integer().greater(0).required(),
   public_id: joi.string().guid().default(uuid.v4, 'uuid v4').required(),
   destination: orm.fk(Destination),
+  contents: joi.string(),
   status: joi.any().only([
     'in-transit',
     'delivered',
@@ -456,7 +477,196 @@ option is the way to go. Otherwise, you can use the `serialize` option.
 
 #### :skull: User Input
 
+We're well on our way to a functioning "package management" API, but we're
+missing one *important* detail: a way to register new packages! In order to add
+a package to our system, our [model][model] requires that clients provide us
+with the contents of the package and the package's destination.
 
+However, clients are wiley folk — we don't want to accept just *any* package
+contents. We only want to ship to valid destinations, and we only want to ship
+packages smaller than a certain size. If the user has already registered a
+destination with us before, we'd like them to be able to give us a `slug`
+instead of the full data. [Joi][] can help us out with that. Let's create
+a schema at the top of `lib/views/index.js`:
 
+```
+'use strict'
 
+const joi = require('knork/joi')
 
+const Destination = require('../models/destination')
+const Package = require('../models/package')
+
+const createPackageSchema = joi.object().keys({
+  contents: joi.string().max(200).required(),
+  destination: joi.any().valid([
+    joi.object({
+      name: joi.string().max(200).required(),
+      address: joi.string().max(200).required()
+    }),
+    joi.string().min(1)
+  ])
+})
+
+// ... snip snip ...
+```
+
+Knork makes it easy to attach Joi schemas to individual views. To do so, we
+make use of the [`knork/decorators/validate`][validate-body] module;
+specifically the `body` method:
+
+```javascript
+'use strict'
+
+const validate = require('knork/decorators/validate')
+const joi = require('knork/joi')
+
+const Destination = require('../models/destination')
+const Package = require('../models/package')
+
+const createPackageSchema = joi.object().keys({
+  contents: joi.string().max(200).required(),
+  destination: joi.any().valid([
+    joi.object({
+      name: joi.string().max(200).required(),
+      address: joi.string().max(200).required()
+    }),
+    joi.string().min(1)
+  ])
+})
+
+module.exports = {
+  viewPackage,
+  createPackage: validate.body(createPackageSchema, createBody),
+  updatePackage,
+  deletePackage,
+  listPackages
+}
+
+// ... snip snip ...
+
+function createPackage (req, context) {
+  return 'hello world'
+}
+```
+
+`validate.body` is a [decorator][def-decorator]; a *decorator* is a function
+that takes another function as input and returns a new function that may call
+the original function when executed. In this case, `validate.body` will call
+the original `createPackage` view if and only if the body of the incoming
+request is valid according to the Joi schema we've provided. If the request
+is:
+
+* too large, then we'll return a 413 error; or
+* invalid json, then we'll return a 400 error; or
+* doesn't validate, then we'll return a 400 error about what went wrong.
+
+If the request validates, the original view will be called with the request
+and context, and the request will have a `validatedBody` attribute containing
+a promise for the validated data.
+
+From this, we can finish our Package creation API:
+
+```javascript
+// ... snip snip ...
+
+const rethrow = require('knork/utils/rethrow')
+const http = require('knork/http')
+
+const urls = require('../urls')
+
+function createPackage (req, context) {
+  const getDestination = req.validatedBody.get('destination').then(data => {
+    return (
+      typeof data === 'string'
+      ? Destination.objects.get({slug: data})
+      : Destination.objects.getOrCreate({ // 1️⃣
+          slug: data.name
+            .toLowerCase()
+            .replace(/[^\w-]/g, '-')
+            .replace(/-+/g, '-'),
+          name: data.name,
+          address: data.address
+        }).get(1)
+    )
+  })
+
+  const createPackage = Package.objects.create({
+    contents: req.validatedBody.get('contents'),
+    destination: getDestination // note 0️⃣
+  })
+
+  // return a 201 created with a location header that
+  // points to the newly created package url. 
+  const sendCreatedResponse = createPackage.then(pkg => {
+    return http.response(http.empty(), 201, { // 2️⃣
+      location: urls().reverse('viewPackage', { // 3️⃣
+        package: pkg.public_id
+      })
+    })
+  })
+
+  // if the destination was provided as a string but cannot 
+  // be found, rethrow that error as a 424 "failed dependency"
+  return sendCreatedResponse.catch( // 4️⃣
+    Destination.objects.NotFound,
+    rethrow(404)
+  )
+}
+
+// ... snip snip ...
+```
+
+This is a pretty meaty view! Some highlights:
+
+* :zero: We are passing a **promise for a destination** to `Package.objects.create`,
+  [without waiting for the destination to resolve][ormnomnom-resolution];
+* :one: That destination promise uses [`getOrCreate`][ormnomnom-getorcreate] to
+  obtain the destination row;
+* :two: We create [an empty response with a location header][ref-http];
+* :three: The location header uses the routes we defined in `lib/urls/index.js`
+  [to create a full URL][reverse-reverse];
+* :four: We catch potential database-level errors and explicitly cast them
+  [to HTTP errors][bluebird-catch-clause].
+
+> :warning: **What if `Package` creation fails?**
+>
+> Astute readers might have noticed a flaw in our view: what if `Package`
+> creation fails? In that case it would seem that `Destination`'s could be
+> created without an associated `Package` — a minor leak, but a blemish
+> nonetheless.
+>
+> Luckily, Knork runs all views wrapped inside of transactions by default. If
+> the promise returned by a view is *rejected*, the entire transaction will be
+> rolled back.
+>
+> Authors are encouraged to always throw errors in exceptional cases. Errors
+> without associated status codes will be treated as 500 errors — if a more
+> specific code is desired, authors should catch and rethrow them as in the
+> above example.
+
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="metrics"></a>
+
+#### :triangular_ruler: Metrics
+
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="logging"></a>
+
+#### :evergreen_tree: Logging
+
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="server"></a>
+
+### :clapper: Server
+
+[Table of Contents ⏎](#table-of-contents)
+
+<a id="middleware"></a>
+
+### :art: Middleware
+
+[HATEOAS]: https://en.wikipedia.org/wiki/HATEOAS
