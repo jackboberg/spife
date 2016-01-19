@@ -43,7 +43,7 @@ request.
 
 ### Methods
 
-#### \`request.accept → Accept'
+#### `request.accept → Accept`
 
 Get an accept object for the request, per the [accepts package][pkg-accepts].
 
@@ -63,7 +63,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### \`request.body → Promise<JSON>'
+#### `request.body → Promise<JSON>`
 
 Attempt to fetch the body as JSON. Fails if the body has been disabled (by
 acccessing `.raw` or `.pipe`), if the request is too large, or if the body does
@@ -89,19 +89,19 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### \`request.getRanges(size) → Ranges'
+#### `request.getRanges(size) → Ranges`
 
 Parse the "Range" header into a [series of ranges][pkg-range-parser].
 
-#### \`request.headers → Object&lt;String → String>'
+#### `request.headers → Object&lt;String → String>`
 
 Get [the `IncomingMessage` headers][def-http-headers].
 
-#### \`request.httpVersion → String'
+#### `request.httpVersion → String`
 
 Get [the HTTP Version, per `IncomingMessage`][def-http-version].
 
-#### \`request.id → String'
+#### `request.id → String`
 
 A per-request base64'd uuid. If the knork server [is marked as
 internal][ref-knork-options-internal], then the request ID will be populated by
@@ -111,7 +111,7 @@ incoming headers will be hashed and a unique ID will be appended.
 The [logging middleware][ref-middleware-logging] will automatically included
 the request ID in all log output.
 
-#### \`request.method → String'
+#### `request.method → String`
 
 Get the [original request method, per `IncomingMessage`][def-http-method].
 
@@ -137,7 +137,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### \`request.query → Object&lt;String : String>'
+#### `request.query → Object&lt;String : String>`
 
 Get the query portion of the URL, [as returned by
 `querystring.parse`][def-querystring-parse].
@@ -152,19 +152,19 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### \`request.raw → http.IncomingMessage'
+#### `request.raw → http.IncomingMessage`
 
 Get the original request. Disables automatic body parsing support.
 
-#### \`request.rawHeaders → Array&lt;Array&lt;String, String>>'
+#### `request.rawHeaders → Array&lt;Array&lt;String, String>>`
 
 Get the [raw headers, per `IncomingMessage`][def-http-raw-headers].
 
-#### \`request.url → String'
+#### `request.url → String`
 
 Get the string representing the full URL.
 
-#### \`request.urlObject → URL'
+#### `request.urlObject → URL`
 
 Get the fully parsed request url, [as returned by `url.parse(req,
 true)`][def-url-parse].
