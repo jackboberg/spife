@@ -731,7 +731,7 @@ specifically configured for your Knork server — easy as that!
 
 [topic-docs]: ./topics
 
-[reference-docs]: ./ref
+[reference-docs]: ./reference
 
 [ormnomnom-install-postgres]: https://github.com/chrisdickinson/ormnomnom/blob/1de3c2fc89136745436e0cc38ed6bc919e699bbc/docs/getting-started.md#getting-postgres
 
