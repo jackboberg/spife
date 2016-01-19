@@ -21,25 +21,6 @@ through the assembly of a simple Knork service. Each section will include links
 to other useful documents, and will collect other relevant links at the end of
 the section.
 
-> :warning: **A side note on side notes:**
->
-> Supplemental information will appear in block quotes such as this one, with
-> a header pulled to the side. It might look like this:
->
-> > :information\_source: **Some implementation information...**
->
-> OR:
->
-> > :warning: **Be aware of the following...**
->
-> OR:
->
-> > :rotating\_light: **Danger! Danger! This is full of Danger!**
->
-> Let's try it now:
-
-* * *
-
 > :information\_source: **For folks who prefer to dive in...**
 >
 > If you're confident you can figure it out, and would like to hop right in,

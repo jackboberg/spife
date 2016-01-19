@@ -31,9 +31,9 @@ request.
   * [Methods](#methods)
 
     * [request.accept → Accept](#requestaccept--accept)
-    * [request.body → Promise&lt;JSON>](#requestbody--promisejson)
+    * [request.body → Promise&lt;Object>](#requestbody--promiseobject)
     * [request.getRanges(size) → Ranges](#requestgetrangessize--ranges)
-    * [request.headers → Object&lt;String → String>](#requestheaders--objectstring--string)
+    * [request.headers → Object&lt;String : String>](#requestheaders--objectstring--string)
     * [request.httpVersion → String](#requesthttpversion--string)
     * [request.id → String](#requestid--string)
     * [request.method → String](#requestmethod--string)
@@ -68,7 +68,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### `request.body → Promise<JSON>`
+#### `request.body → Promise<Object>`
 
 Attempt to fetch the body as JSON. Fails if the body has been disabled (by
 acccessing `.raw` or `.pipe`), if the request is too large, or if the body does
@@ -98,7 +98,7 @@ module.exports = function myView (req, context) {
 
 Parse the "Range" header into a [series of ranges][pkg-range-parser].
 
-#### `request.headers → Object<String → String>`
+#### `request.headers → Object<String : String>`
 
 Get [the `IncomingMessage` headers][def-http-headers].
 
