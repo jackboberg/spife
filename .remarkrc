@@ -1,0 +1,15 @@
+{
+  "output": true,
+  "plugins": {
+    "toc": {
+      "tight": true
+    },
+    "lint": {
+      "no-html": false
+    }
+  },
+  "settings": {
+    "listItemIndent": "1",
+    "bullet": "*"
+  }
+}
