@@ -270,9 +270,9 @@ module.exports = function myView (req, context) {
 
 ### `reply.raw(resp) → Response<resp>`
 
-A shorthand for [`response(resp)`][shorthand-response]. Often used with strings
-or other primitive data, when associating headers or status information with
-such a response is desired. Returns a [`stream.Readable`][stream-readable] for
+A shorthand for [`reply(resp)`][shorthand-reply]. Often used with strings or
+other primitive data, when associating headers or status information with such
+a response is desired. Returns a [`stream.Readable`][stream-readable] for
 [primitive values][def-primitive].
 
 ```javascript
@@ -336,7 +336,11 @@ reply.status(resp, 204)              // === resp, w/ 204 status
 reply.status('', 204)                // === stream.Readable w/ 204 status
 ```
 
+[shorthand-raw]: #replyrawresp--responseresp
+[shorthand-reply]: #replyresp-code-headers--responseresp
+[shorthand-header]: #replyheaderresp-header-string--responseresp
 [reverse-reverse]: https://github.com/chrisdickinson/reverse#routerreversenamestring-argsobject--string--null
+[stream-readable]: https://nodejs.org/api/stream.html#stream_class_stream_readable
 [def-latin-1]: https://en.wikipedia.org/wiki/ISO/IEC_8859-1
 [def-ascii]: https://en.wikipedia.org/wiki/ASCII
 [def-location]: https://en.wikipedia.org/wiki/HTTP_location
