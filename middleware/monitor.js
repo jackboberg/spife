@@ -24,7 +24,7 @@ function makeMonitorMiddleware () {
 }
 
 function pingResponse () {
-  return publicHTTP.rawResponse('pong')
+  return publicHTTP.raw('pong')
 }
 
 function statusResponse (name) {
