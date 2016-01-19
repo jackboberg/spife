@@ -161,7 +161,7 @@ module.exports = function myView (req, context) {
   return reply(
     'dogs are just small bears',
     203,
-    {'content-type': text/plain+lies'}
+    {'content-type': 'text/plain+lies'}
   )
 }
 ```
