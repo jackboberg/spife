@@ -1,4 +1,4 @@
-# :fork_and_knife: Getting Started with Knork
+# :fork\_and\_knife: Getting Started with Knork
 
 Knork is, first and foremost, a glue package — it curates several smaller
 packages and re-exports them as a whole in order to make it easier to build
@@ -26,7 +26,7 @@ the section.
 > Supplemental information will appear in block quotes such as this one, with
 > a header pulled to the side. It might look like this:
 >
-> > :information_source: **Some implementation information...**
+> > :information\_source: **Some implementation information...**
 >
 > OR:
 >
@@ -34,30 +34,30 @@ the section.
 >
 > OR:
 >
-> > :rotating_light: **Danger! Danger! This is full of Danger!**
+> > :rotating\_light: **Danger! Danger! This is full of Danger!**
 >
 > Let's try it now:
 
------------------
+* * *
 
-> :information_source: **For folks who prefer to dive in...**
-> 
+> :information\_source: **For folks who prefer to dive in...**
+>
 > If you're confident you can figure it out, and would like to hop right in,
 > please check out the [reference documentation][reference-docs], which will link
 > to [topical documentation][topic-docs] where appropriate. If that all looks
-> like :spaghetti:, though, remember this doc is here for you! :revolving_hearts:
+> like :spaghetti:, though, remember this doc is here for you! :revolving\_hearts:
 
 <a id="table-of-contents"></a>
 
 ## :books: Table of Contents
 
 * [:beginner: Your First Knork](#setup)
-  * [:floppy_disk: Models](#models)
+  * [:floppy\_disk: Models](#models)
   * [:busstop: Routes](#routes)
-  * [:mount_fuji: Views](#views)
-    * [:orange_book: Paginated Views](#paginated-views)
+  * [:mount\_fuji: Views](#views)
+    * [:orange\_book: Paginated Views](#paginated-views)
     * [:skull: User Input](#user-input)
-    * [:triangular_ruler: :evergreen_tree: Metrics and Logging](#metrics-and-logging)
+    * [:triangular\_ruler: :evergreen\_tree: Metrics and Logging](#metrics-and-logging)
   * [:clapper: Server](#server)
     * [:art: Middleware](#middleware)
 
@@ -75,32 +75,28 @@ Let's build a simple knork service for sending and receiving physical
 
 To start, run the following commands in a new directory:
 
-```
-# inside of your new directory
-$ npm i --save @npm/knork
-$ mkdir -p lib/{models,urls,views}
-$ touch lib/{server,models/{destination,package},urls/index,views/index}.js
-```
+    # inside of your new directory
+    $ npm i --save @npm/knork
+    $ mkdir -p lib/{models,urls,views}
+    $ touch lib/{server,models/{destination,package},urls/index,views/index}.js
 
 Your directory should have the following structure. If you have the `tree`
 command available, you can easily verify this by running `tree .` inside
 of your new directory.
 
-```
-.
-└── lib
-    ├── server.js
-    ├── models
-    │   ├── destination.js
-    │   └── package.js
-    ├── urls
-    │   └── index.js
-    └── views
-        └── index.js
-```
+    .
+    └── lib
+        ├── server.js
+        ├── models
+        │   ├── destination.js
+        │   └── package.js
+        ├── urls
+        │   └── index.js
+        └── views
+            └── index.js
 
-Make sure you have Postgres installed — follow [the steps
-here][ormnomnom-install-postgres] to make sure you have it available. Once you
+Make sure you have Postgres installed — follow \[the steps
+here]\[ormnomnom-install-postgres] to make sure you have it available. Once you
 have it, run `createdb knork_example`, and then run the following inside of
 `psql knork_example`:
 
@@ -124,11 +120,11 @@ have it, run `createdb knork_example`, and then run the following inside of
 
 Type `\q` and hit enter to exit the shell.
 
-[Table of Contents ⏎](#table-of-contents)
+\[Table of Contents ⏎](#table-of-contents)
 
 <a id="models"></a>
 
-### :floppy_disk: Models
+### :floppy\_disk: Models
 
 Models let us represent rows of a given SQL table as instances of a class, and
 operate on tables using a "Data Access Object", or "DAO" for short.
@@ -171,14 +167,14 @@ Destination.objects = orm(Destination, {
 })
 ```
 
-> :information_source: **Why not `class`?**
+> :information\_source: **Why not `class`?**
 >
 > In the model example above, you may have noticed that we're using
 > the old-style "function declaration" method of defining a class. ES2015
 > introduces a `class` keyword which makes defining a class a bit more
 > straightforward, especially when it comes to inheritence. However, function
 > declarations have one important property that `class`'s do not: they are
-> *hoisted* to the beginning of the scope in which they are defined.
+> _hoisted_ to the beginning of the scope in which they are defined.
 >
 > This behavior helps us avoid circular dependency problems in Node. Until
 > Node gains first-class support for ES2015 module syntax, if we wish to
@@ -305,7 +301,7 @@ and call the associated view.
 
 <a id="views"></a>
 
-### :mount_fuji: Views
+### :mount\_fuji: Views
 
 A Knork **view** is simply a function that takes a [Knork Request
 object][ref-knork-request] and a Map of context values as parameters, and
@@ -451,7 +447,7 @@ code, and return it as our ultimate response.
 
 <a id="paginated-views"></a>
 
-#### :orange_book: Paginated Views
+#### :orange\_book: Paginated Views
 
 Invariably, in every web service there are common views on data, and it's handy
 to be consistent in how those common views respond to user requests. For
@@ -479,16 +475,14 @@ function listPackages (req, context) {
 That's all it takes — you have a fully paginated list endpoint. Responses
 will be in the form:
 
-```
-{
-  "objects": [ <Package>, ],
-  "total": Number,
-  "urls": {
-    "next": "/path/to/url?page=3",
-    "prev": "/path/to/url?page=1"
-  }
-}
-```
+    {
+      "objects": [ <Package>, ],
+      "total": Number,
+      "urls": {
+        "next": "/path/to/url?page=3",
+        "prev": "/path/to/url?page=1"
+      }
+    }
 
 To control the JSON output by a `Package`, we have multiple options:
 
@@ -505,11 +499,11 @@ option is the way to go. Otherwise, you can use the `serialize` option.
 #### :skull: User Input
 
 We're well on our way to a functioning "package management" API, but we're
-missing one *important* detail: a way to register new packages! In order to add
+missing one _important_ detail: a way to register new packages! In order to add
 a package to our system, our [model][model] requires that clients provide us
 with the contents of the package and the package's destination.
 
-However, clients are wiley folk — we don't want to accept just *any* package
+However, clients are wiley folk — we don't want to accept just _any_ package
 contents. We only want to ship to valid destinations, and we only want to ship
 packages smaller than a certain size. If the user has already registered a
 destination with us before, we'd like them to be able to give us a `slug`
@@ -585,7 +579,7 @@ function createPackage (req, context) {
 }
 ```
 
-`validate.body` is a [decorator][def-decorator]; a *decorator* is a function
+`validate.body` is a [decorator][def-decorator]; a _decorator_ is a function
 that takes another function as input and returns a new function that may call
 the original function when executed. In this case, `validate.body` will call
 the original `createPackage` view if and only if the body of the incoming
@@ -672,7 +666,7 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
 > nonetheless.
 >
 > Luckily, Knork runs all views wrapped inside of transactions by default. If
-> the promise returned by a view is *rejected*, the entire transaction will be
+> the promise returned by a view is _rejected_, the entire transaction will be
 > rolled back.
 >
 > Authors are encouraged to always throw errors in exceptional cases. Errors
@@ -684,23 +678,21 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
 
 <a id="metrics-and-logging"></a>
 
-#### :triangular_ruler: :evergreen_tree: Metrics and Logging
+#### :triangular\_ruler: :evergreen\_tree: Metrics and Logging
 
-We may wish to *measure* some aspect of the object creation. Luckily, as
+We may wish to _measure_ some aspect of the object creation. Luckily, as
 long as `req` is present, metrics are just a stone's throw away:
 
-```
-// ... snip snip ...
+    // ... snip snip ...
 
-function createPackage (req, context) {
-  const getDestination = req.validatedBody.get('destination').then(data => {
-    if (typeof data === 'string') {
-      req.metric({
-        name: 'createpackage.used_string'
-      })
-    }
-// ... snip snip ...
-```
+    function createPackage (req, context) {
+      const getDestination = req.validatedBody.get('destination').then(data => {
+        if (typeof data === 'string') {
+          req.metric({
+            name: 'createpackage.used_string'
+          })
+        }
+    // ... snip snip ...
 
 This data will be handed to [a `numbat-emitter` instance][numbat-emitter]
 specifically configured for your Knork server — easy as that!
@@ -718,26 +710,49 @@ specifically configured for your Knork server — easy as that!
 #### :art: Middleware
 
 [hateoas]: https://en.wikipedia.org/wiki/HATEOAS
+
 [rest]: https://en.wikipedia.org/wiki/Representational_state_transfer
+
 [routing-reverse]: https://github.com/chrisdickinson/reverse
+
 [pg]: https://github.com/brianc/node-postgres
+
 [pg-db-session]: https://github.com/npm/pg-db-session
+
 [ormnomnom]: https://github.com/chrisdickinson/ormnomnom
+
 [numbat-emitter]: https://github.com/ceejbot/numbat-emitter
+
 [restify-monitor]: https://github.com/npm/restify-monitor
+
 [bole]: http://github.com/rvagg/bole
+
 [request-lifecycle]: ./topics/lifecycle.md
+
 [topic-docs]: ./topics
+
 [reference-docs]: ./ref
+
 [ormnomnom-install-postgres]: https://github.com/chrisdickinson/ormnomnom/blob/1de3c2fc89136745436e0cc38ed6bc919e699bbc/docs/getting-started.md#getting-postgres
+
 [babel]: https://babeljs.io/
+
 [ref-knork-request]: ./reference/request.md
+
 [ref-knork-reply]: ./reference/reply.md
+
 [model]: #models
+
 [joi]: https://github.com/hapijs/joi
+
 [ref-knork-validate]: ./ref/decorators.md#validate
+
 [def-decorator]: https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841#.dnzdeh2v6
+
 [ormnomnom-resolution]: https://github.com/chrisdickinson/ormnomnom/blob/master/docs/making-queries.md#basic-querying
+
 [ormnomnom-getorcreate]: https://github.com/chrisdickinson/ormnomnom/blob/master/docs/ref/dao.md#daomodelgetorcreateobject--promiseboolean-model
+
 [reverse-reverse]: https://github.com/chrisdickinson/reverse#routerreversenamestring-argsobject--string--null
+
 [bluebird-catch-clause]: http://bluebirdjs.com/docs/api/catch.html
