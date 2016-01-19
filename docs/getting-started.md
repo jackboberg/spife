@@ -120,7 +120,7 @@ have it, run `createdb knork_example`, and then run the following inside of
 
 Type `\q` and hit enter to exit the shell.
 
-\[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#table-of-contents)
 
 <a id="models"></a>
 
