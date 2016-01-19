@@ -7,9 +7,11 @@ const reply = require('knork/reply')
 Contains methods for creating and manipulating [HTTP
 responses][topic-http-response].
 
-## Types
+## Table of Contents
 
-### `Response<Any>`
+### Types
+
+#### `Response<Any>`
 
 A pseudo-type for the purposes of this documentation. Any `Request<Object>`
 will return `Object`. [Primitive values][def-primitive], like strings, boolean
@@ -33,7 +35,7 @@ reply('example') !== 'example'
 reply('example') instanceof require('stream').Readable
 ```
 
-### `HTTPError`
+#### `HTTPError`
 
 A base class for all HTTP errors. 
 
@@ -47,11 +49,11 @@ A base class for all HTTP errors.
 > throw new reply.HTTPError() // not OK!
 > ```
 
-### `ServerError extends HTTPError`
+#### `ServerError extends HTTPError`
 
 A base class for `5XX` range HTTP errors. Not instantiable.
 
-#### Concrete `ServerError` Subclasses
+##### Concrete `ServerError` Subclasses
 
 Concrete subclasses are automatically assigned an error code and a default
 error message that may be overridden by the user.
@@ -88,11 +90,11 @@ Class name                              | Code
 `NotExtendedError`                      | 510
 `NetworkAuthenticationRequiredError`    | 511
 
-### `ClientError`
+#### `ClientError`
 
 A base class for `4XX` range HTTP errors. Not instantiable.
 
-#### Concrete `ClientError` Subclasses
+##### Concrete `ClientError` Subclasses
 
 Concrete subclasses are automatically assigned an error code and a default
 error message that may be overridden by the user.
@@ -145,9 +147,9 @@ Class name                              | Code
 `RequestHeaderFieldsTooLargeError`      | 431
 `UnavailableForLegalReasonsError`       | 451
 
-## Methods
+### Methods
 
-### `reply(resp[, code][, headers]) → Response<resp>`
+#### `reply(resp[, code][, headers]) → Response<resp>`
 
 Create a `Response<T>` from `resp`, optionally associating a status code
 and a set of headers. When given, the `code` and `headers` parameters will
@@ -177,7 +179,7 @@ module.exports = function myView (req, context) {
 > could otherwise insert UTF8 values that will decompose to newlines, which
 > allows for an attack known as [response splitting][def-response-splitting].
 
-### `reply.empty() → Response<''>`
+#### `reply.empty() → Response<''>`
 
 A shorthand for [`raw('')`][shorthand-raw]. Useful for returning `201 Created` or
 `204 No Content` responses.
@@ -196,15 +198,15 @@ module.exports = function myView (req, context) {
 }
 ```
 
-### `reply.link(resp) → Object | undefined`
+#### `reply.link(resp) → Object | undefined`
 
 Return a parsed [link header][def-link] from the response, if any.
 
-### `reply.link(resp, rel) → Object | undefined`
+#### `reply.link(resp, rel) → Object | undefined`
 
 Return a parsed [link header][def-link] *relation* from the response, if any.
 
-### `reply.link(resp, rel, value) → Response<resp>`
+#### `reply.link(resp, rel, value) → Response<resp>`
 
 Add a [link relation][def-link-rel] to a [`link` header][def-link] associated
 with a response, returning the response.
@@ -221,11 +223,11 @@ header(link(resp, [{
 
 > :rotating_light: **See [a note on headers](#a-note-on-headers).**
 
-### `reply.header(resp, header) → String | undefined`
+#### `reply.header(resp, header) → String | undefined`
 
 Returns the current value of the header associated with `resp`, if any.
 
-### `reply.header(resp, header, string) → Response<resp>`
+#### `reply.header(resp, header, string) → Response<resp>`
 
 Associates a response with a header and a value. Replaces an existing header
 by the given name, other headers are left intact.
@@ -245,12 +247,12 @@ module.exports = function myView (req, context) {
 
 > :rotating_light: **See [a note on headers](#a-note-on-headers).**
 
-### `reply.headers(resp) → Object | undefined`
+#### `reply.headers(resp) → Object | undefined`
 
 Return an object representing all headers associated with the response, if
 any. Returns `undefined` if no headers are associated with the response.
 
-### `reply.headers(resp, headers) → Response<resp>`
+#### `reply.headers(resp, headers) → Response<resp>`
 
 Replace all headers associated with the response with those given by `headers`.
 
@@ -268,7 +270,7 @@ module.exports = function myView (req, context) {
 
 > :rotating_light: **See [a note on headers](#a-note-on-headers).**
 
-### `reply.raw(resp) → Response<resp>`
+#### `reply.raw(resp) → Response<resp>`
 
 A shorthand for [`reply(resp)`][shorthand-reply]. Often used with strings or
 other primitive data, when associating headers or status information with such
@@ -287,7 +289,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-### `reply.redirect([resp, ]url[, code = 302]) → Response<resp>`
+#### `reply.redirect([resp, ]url[, code = 302]) → Response<resp>`
 
 A shorthand for [`header(status(empty(), 302), 'location',
 url)`][shorthand-header]. Handy for redirecting clients after the success of an
@@ -310,7 +312,7 @@ module.exports = function myView (req, context) {
 
 * **See also**: [The `Location` header][def-location].
 
-### `reply.status(resp) → Number | undefined`
+#### `reply.status(resp) → Number | undefined`
 
 Given a potential response object, return the status code
 associated with the response, if any.
@@ -322,7 +324,7 @@ reply.status(new reply.NotFound())    // 404
 reply.status({})                     // undefined
 ```
 
-### `reply.status(resp, code) → Response<resp>`
+#### `reply.status(resp, code) → Response<resp>`
 
 Associate a status code with the potential response. If the response is
 [primitive][def-primitive], upcast it to a [`stream.Readable`][stream-readable]
