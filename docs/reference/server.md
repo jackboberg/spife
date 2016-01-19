@@ -25,6 +25,10 @@ The server returned by `knork()`.
 
 #### `Server`
 
+#### `Middleware`
+
+##### `MaybeResponse : Promise<Response | undefined, Error?>`
+
 ### Methods
 
 #### `knork(name, http, urls[, middleware=[]][opts={}]) → Promise<Server>`
@@ -34,3 +38,15 @@ The server returned by `knork()`.
 ##### `options.maxBodySize`
 
 ##### `options.requestIDHeaders` 
+
+#### `Middleware#install(Server) → Promise<>`
+
+#### `Middleware#onServerClose(Server) → Promise<>`
+
+#### `Middleware#processRequest(request, context) → MaybeResponse`
+
+#### `Middleware#processView(request, match, context) → MaybeResponse`
+
+#### `Middleware#processResponse(request, response) → MaybeResponse`
+
+#### `Middleware#processError(request, err) → MaybeResponse`
