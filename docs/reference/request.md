@@ -207,4 +207,4 @@ module.exports = function myView (req, context) {
 
 [ref-middleware-logging]: ./middleware.md#logging
 
-[topic-http-view]: ../topics/request-lifecycle.md#views
+[topic-http-view]: ../topics/request-lifecycle.md#view
