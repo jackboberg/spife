@@ -59,6 +59,7 @@ class Server {
     server
       .on('request', (req, res) => this.onrequest(req, res))
       .on('clientError', (err, sock) => this.onclienterror(err, sock))
+
     // standard has bad opinions about ternaries. there, I said it.
     /* eslint-disable operator-linebreak */
     this.metrics = (
@@ -76,7 +77,6 @@ class Server {
     const kreq = makeKnorkRequest(req, this)
     subdomain.add(req)
     subdomain.add(res)
-
     const getResult = subdomain.run(() => {
       return runProcessRequest(this, kreq).then(userResponse => {
         if (userResponse) {
@@ -89,26 +89,24 @@ class Server {
         return runProcessResponse(this, kreq, userResponse)
       }).catch(err => {
         return runProcessError(this, kreq, err)
-      })
-    }).then(
-      resp => handleResponse(this, kreq, resp),
-      err => handleLifecycleError(this, kreq, err)
-    )
-
-    const flush = getResult.then(response => {
-      res.writeHead(response.statusCode || 200, response.headers || {})
-      return new Promise((resolve, reject) => {
-        ms.pipe(response.stream, res, err => {
-          err ? reject(err) : resolve()
+      }).then(
+        resp => handleResponse(this, kreq, resp),
+        err => handleLifecycleError(this, kreq, err)
+      ).then(response => {
+        res.writeHead(response.status || 200, response.headers || {})
+        return new Promise((resolve, reject) => {
+          ms.pipe(response.stream, res, err => {
+            err ? reject(err) : resolve()
+          })
         })
       })
     })
 
-    return flush.finally(() => {
+    return getResult.finally(() => {
       subdomain.remove(req)
       subdomain.remove(res)
+      subdomain.exit()
     }).catch(err => {
-      console.log(err.stack)
       handleStreamError(this, err)
     })
   }
@@ -229,7 +227,7 @@ function handleResponse (knork, req, data) {
   }
 
   if (!knork.opts.isExternal) {
-    headers['x-request-id'] = req.id
+    headers['request-id'] = req.id
   }
 
   if (!Buffer.isBuffer(data)) {
@@ -249,7 +247,6 @@ function handleResponse (knork, req, data) {
   headers['content-length'] = asOctetStream.length
   const stream = new Readable({
     read (n) {
-      console.log('no')
       this.push(asOctetStream)
       this.push(null)
     }
