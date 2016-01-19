@@ -28,14 +28,14 @@ request.
     * [request.accept → Accept](#requestaccept--accept)
     * [request.body → Promise&lt;JSON>](#requestbody--promisejson)
     * [request.getRanges(size) → Ranges](#requestgetrangessize--ranges)
-    * [request.headers → Object&amp;lt;String → String>](#requestheaders--objectltstring--string)
+    * [request.headers → Object&lt;String → String>](#requestheaders--objectstring--string)
     * [request.httpVersion → String](#requesthttpversion--string)
     * [request.id → String](#requestid--string)
     * [request.method → String](#requestmethod--string)
     * [request.pipe(dst)](#requestpipedst)
-    * [request.query → Object&amp;lt;String : String>](#requestquery--objectltstring--string)
+    * [request.query → Object&lt;String : String>](#requestquery--objectstring--string)
     * [request.raw → http.IncomingMessage](#requestraw--httpincomingmessage)
-    * [request.rawHeaders → Array&amp;lt;Array&amp;lt;String, String>>](#requestrawheaders--arrayltarrayltstring-string)
+    * [request.rawHeaders → Array&lt;Array&lt;String, String>>](#requestrawheaders--arrayarraystring-string)
     * [request.url → String](#requesturl--string)
     * [request.urlObject → URL](#requesturlobject--url)
 
@@ -93,7 +93,7 @@ module.exports = function myView (req, context) {
 
 Parse the "Range" header into a [series of ranges][pkg-range-parser].
 
-#### `request.headers → Object&lt;String → String>`
+#### `request.headers → Object<String → String>`
 
 Get [the `IncomingMessage` headers][def-http-headers].
 
@@ -137,7 +137,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### `request.query → Object&lt;String : String>`
+#### `request.query → Object<String : String>`
 
 Get the query portion of the URL, [as returned by
 `querystring.parse`][def-querystring-parse].
@@ -156,7 +156,7 @@ module.exports = function myView (req, context) {
 
 Get the original request. Disables automatic body parsing support.
 
-#### `request.rawHeaders → Array&lt;Array&lt;String, String>>`
+#### `request.rawHeaders → Array<Array<String, String>>`
 
 Get the [raw headers, per `IncomingMessage`][def-http-raw-headers].
 
