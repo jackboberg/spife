@@ -727,7 +727,7 @@ specifically configured for your Knork server — easy as that!
 
 [bole]: http://github.com/rvagg/bole
 
-[request-lifecycle]: ./topics/lifecycle.md
+[request-lifecycle]: ./topics/request-lifecycle.md
 
 [topic-docs]: ./topics
 
@@ -745,7 +745,7 @@ specifically configured for your Knork server — easy as that!
 
 [joi]: https://github.com/hapijs/joi
 
-[ref-knork-validate]: ./ref/decorators.md#validate
+[ref-knork-validate]: ./reference/decorators.md#validate
 
 [def-decorator]: https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841#.dnzdeh2v6
 
