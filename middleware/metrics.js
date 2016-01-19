@@ -2,7 +2,7 @@
 
 module.exports = createMiddleware
 
-const publicHTTP = require('../http')
+const reply = require('../reply')
 const REQ_TO_STATS = new WeakMap()
 
 function createMiddleware (metrics) {
@@ -56,7 +56,7 @@ function recordMetric (req, res, defaultCode) {
   })
   req.metric({
     name: 'response',
-    statusCode: publicHTTP.status(res) || defaultCode,
+    statusCode: reply.status(res) || defaultCode,
     value: latency,
     route: stats.view
   })

@@ -2,7 +2,7 @@
 
 module.exports = createMiddleware
 
-const publicHTTP = require('../http')
+const reply = require('../reply')
 
 function createMiddleware () {
   return {
@@ -15,18 +15,18 @@ function createMiddleware () {
           `responses should be an object, not ${typeof response}`
         )
       }
-      if (!publicHTTP.status(response)) {
-        publicHTTP.status(response, 200)
+      if (!reply.status(response)) {
+        reply.status(response, 200)
       }
     },
     processError (req, err) {
-      if (!publicHTTP.status(err)) {
+      if (!reply.status(err)) {
         if (this.isExternal && process.env.ENVIRONMENT === 'production') {
-          throw new publicHTTP.InternalServerError(
+          throw new reply.InternalServerError(
             `An Internal Server Error occurred.`
           )
         }
-        publicHTTP.status(err, 500)
+        reply.status(err, 500)
       }
       err['request_id'] = req.id
     }

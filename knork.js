@@ -9,7 +9,7 @@ const ms = require('mississippi')
 const domain = require('domain')
 
 const makeKnorkRequest = require('./lib/request')
-const publicHTTP = require('./http')
+const reply = require('./reply')
 
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
@@ -84,7 +84,7 @@ class Server {
         }
         return runProcessView(this, kreq)
       }).then(userResponse => {
-        userResponse = publicHTTP.response(userResponse)
+        userResponse = reply(userResponse)
 
         return runProcessResponse(this, kreq, userResponse)
       }).catch(err => {
@@ -128,7 +128,7 @@ function runProcessRequest (knork, request) {
 function runProcessView (knork, request) {
   const match = knork.urls.match(request.method, request.urlObject.pathname)
   if (!match) {
-    throw new publicHTTP.NotFoundError()
+    throw new reply.NotFoundError()
   }
   match.execute = function () {
     return match.controller[match.name](request, context)
@@ -188,7 +188,7 @@ function _iterateMiddleware (middleware, callMW, noResponse) {
   function iter (response) {
     if (response) {
       if (typeof response === 'string') {
-        response = publicHTTP.raw(response)
+        response = reply.raw(response)
       }
       return resolve(response)
     }
@@ -201,22 +201,22 @@ function _iterateMiddleware (middleware, callMW, noResponse) {
 }
 
 function handleLifecycleError (knork, req, err) {
-  const out = publicHTTP.response(
+  const out = reply(
     Object.assign(
       {message: err.message},
       knork.opts.isExternal ? {} : {stack: err.stack},
       err.context || {}
     ),
-    publicHTTP.status(err) || 500,
-    publicHTTP.headers(err)
+    reply.status(err) || 500,
+    reply.headers(err)
   )
   return handleResponse(knork, req, out)
 }
 
 function handleResponse (knork, req, data) {
-  const resp = publicHTTP.response(data)
-  const headers = publicHTTP.headers(resp)
-  const status = publicHTTP.status(resp)
+  const resp = reply(data)
+  const headers = reply.headers(resp)
+  const status = reply.status(resp)
 
   if (resp.pipe) {
     return {

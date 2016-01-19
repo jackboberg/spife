@@ -1,7 +1,7 @@
-# HTTP Module
+# Reply Module
 
 ```javascript
-const http = require('knork/http')
+const reply = require('knork/reply')
 ```
 
 Contains methods for creating and manipulating [HTTP
@@ -19,18 +19,18 @@ original value stringified via `toString`.
 For example:
 
 ```javascript
-const http = require('knork/http')
+const reply = require('knork/reply')
 const obj = {}
 const rex = /asdf/
 const fn = function () {}
 
-http.response(obj) === obj
-http.response(rex) === rex
-http.response(fn) === fn
+reply(obj) === obj
+reply(rex) === rex
+reply(fn) === fn
 
 // while ...
-http.response('example') !== 'example'
-http.response('example') instanceof require('stream').Readable
+reply('example') !== 'example'
+reply('example') instanceof require('stream').Readable
 ```
 
 ### `HTTPError`
@@ -43,8 +43,8 @@ A base class for all HTTP errors.
 > instantiation. Use one of the [concrete error subclasses][subclasses] below.
 >
 > ```javascript
-> someOperation().catch(http.HTTPError, err => doSomething(err))  // OK!
-> throw new http.HTTPError() // not OK!
+> someOperation().catch(reply.HTTPError, err => doSomething(err))  // OK!
+> throw new reply.HTTPError() // not OK!
 > ```
 
 ### `ServerError extends HTTPError`
@@ -59,7 +59,7 @@ error message that may be overridden by the user.
 ```javascript
 'use strict'
 
-const http = require('knork/http')
+const reply = require('knork/reply')
 const request = require('request')
 
 module.exports = myView
@@ -67,7 +67,7 @@ module.exports = myView
 function myView (req, context) {
   return someBackendOperation()
     .catch(err => {
-      throw new http.NotImplementedError('optional message!')
+      throw new reply.NotImplementedError('optional message!')
     })
   })
 }
@@ -100,7 +100,7 @@ error message that may be overridden by the user.
 ```javascript
 'use strict'
 
-const http = require('knork/http')
+const reply = require('knork/reply')
 const request = require('request')
 
 module.exports = myView
@@ -108,7 +108,7 @@ module.exports = myView
 function myView (req, context) {
   return req.body.then(body => {
     if (body.waffles && body.pancakes) {
-      throw new http.ConflictError('I literally cannot decide')
+      throw new reply.ConflictError('I literally cannot decide')
     }
   })
 }
@@ -147,34 +147,64 @@ Class name                              | Code
 
 ## Methods
 
-### `empty() → Response<''>`
+### `reply(resp[, code][, headers]) → Response<resp>`
+
+Create a `Response<T>` from `resp`, optionally associating a status code
+and a set of headers. When given, the `code` and `headers` parameters will
+replace any corresponding values associated with `resp`.
+
+```javascript
+'use strict'
+const reply = require('knork/reply')
+
+module.exports = function myView (req, context) {
+  return reply(
+    'dogs are just small bears',
+    203,
+    {'content-type': text/plain+lies'}
+  )
+}
+```
+
+<a id="a-note-on-headers"></a>
+
+> :rotating_light: **Header keys and values are interpreted as
+> [ISO-8859-1][def-latin-1].**
+>
+> Because of this behavior in the underlying HTTP specification, knork does not
+> allow non-[ASCII][def-ascii] characters to be passed in as header keys or
+> values, throwing an error if it detects non-ASCII characters. Malicious clients
+> could otherwise insert UTF8 values that will decompose to newlines, which
+> allows for an attack known as [response splitting][def-response-splitting].
+
+### `reply.empty() → Response<''>`
 
 A shorthand for [`raw('')`][shorthand-raw]. Useful for returning `201 Created` or
 `204 No Content` responses.
 
 ```javascript
 'use strict'
-const http = require('knork/http')
+const reply = require('knork/reply')
 
 module.exports = function myView (req, context) {
   return deleteSomeModel().then(() => {
-    return http.status(
-      http.empty(),
+    return reply.status(
+      reply.empty(),
       204
     )
   })
 }
 ```
 
-### `link(resp) → Object | undefined`
+### `reply.link(resp) → Object | undefined`
 
 Return a parsed [link header][def-link] from the response, if any.
 
-### `link(resp, rel) → Object | undefined`
+### `reply.link(resp, rel) → Object | undefined`
 
 Return a parsed [link header][def-link] *relation* from the response, if any.
 
-### `link(resp, rel, value) → Response<resp>`
+### `reply.link(resp, rel, value) → Response<resp>`
 
 Add a [link relation][def-link-rel] to a [`link` header][def-link] associated
 with a response, returning the response.
@@ -191,21 +221,21 @@ header(link(resp, [{
 
 > :rotating_light: **See [a note on headers](#a-note-on-headers).**
 
-### `header(resp, header) → String | undefined`
+### `reply.header(resp, header) → String | undefined`
 
 Returns the current value of the header associated with `resp`, if any.
 
-### `header(resp, header, string) → Response<resp>`
+### `reply.header(resp, header, string) → Response<resp>`
 
 Associates a response with a header and a value. Replaces an existing header
 by the given name, other headers are left intact.
 
 ```
 'use strict'
-const http = require('knork/http')
+const reply = require('knork/reply')
 
 module.exports = function myView (req, context) {
-  return http.header(
+  return reply.header(
     'cool text!'
     'content-type'
     'text/plain'
@@ -213,32 +243,23 @@ module.exports = function myView (req, context) {
 }
 ```
 
-<a id="a-note-on-headers"></a>
+> :rotating_light: **See [a note on headers](#a-note-on-headers).**
 
-> :rotating_light: **Header keys and values are interpreted as
-> [ISO-8859-1][def-latin-1].**
->
-> Because of this behavior in the underlying HTTP specification, knork does not
-> allow non-[ASCII][def-ascii] characters to be passed in as header keys or
-> values, throwing an error if it detects non-ASCII characters. Malicious clients
-> could otherwise insert UTF8 values that will decompose to newlines, which
-> allows for an attack known as [response splitting][def-response-splitting].
-
-### `headers(resp) → Object | undefined`
+### `reply.headers(resp) → Object | undefined`
 
 Return an object representing all headers associated with the response, if
 any. Returns `undefined` if no headers are associated with the response.
 
-### `headers(resp, headers) → Response<resp>`
+### `reply.headers(resp, headers) → Response<resp>`
 
 Replace all headers associated with the response with those given by `headers`.
 
 ```javascript
 'use strict'
-const http = require('knork/http')
+const reply = require('knork/reply')
 
 module.exports = function myView (req, context) {
-  return http.headers(
+  return reply.headers(
     'cool text!'
     {'content-type': 'text/plain'}
   )
@@ -247,7 +268,7 @@ module.exports = function myView (req, context) {
 
 > :rotating_light: **See [a note on headers](#a-note-on-headers).**
 
-### `raw(resp) → Response<resp>`
+### `reply.raw(resp) → Response<resp>`
 
 A shorthand for [`response(resp)`][shorthand-response]. Often used with strings
 or other primitive data, when associating headers or status information with
@@ -256,17 +277,17 @@ such a response is desired. Returns a [`stream.Readable`][stream-readable] for
 
 ```javascript
 'use strict'
-const http = require('knork/http')
+const reply = require('knork/reply')
 
 module.exports = function myView (req, context) {
-  return http.status(
-    http.raw('aw dang I could not find that for you'),
+  return reply.status(
+    reply.raw('aw dang I could not find that for you'),
     404
   )
 }
 ```
 
-### `redirect([resp = empty(), ]url[, code = 302]) → Response<resp>`
+### `reply.redirect([resp, ]url[, code = 302]) → Response<resp>`
 
 A shorthand for [`header(status(empty(), 302), 'location',
 url)`][shorthand-header]. Handy for redirecting clients after the success of an
@@ -275,12 +296,12 @@ operation, or when a resource exists elsewhere. Combine with
 
 ```javascript
 'use strict'
-const http = require('knork/http')
+const reply = require('knork/reply')
 const myUrls = require('../urls/path/to/my/urls')
 
 module.exports = function myView (req, context) {
   return createSomeModel().then(instance => {
-    return http.redirect(
+    return reply.redirect(
       myUrls.reverse('somemodel.view', {slug: instance.slug})
     )
   })
@@ -289,40 +310,19 @@ module.exports = function myView (req, context) {
 
 * **See also**: [The `Location` header][def-location].
 
-### `response(resp[, code][, headers]) → Response<resp>`
-
-Create a `Response<T>` from `resp`, optionally associating a status code
-and a set of headers. When given, the `code` and `headers` parameters will
-replace any corresponding values associated with `resp`.
-
-```javascript
-'use strict'
-const http = require('knork/http')
-
-module.exports = function myView (req, context) {
-  return http.response(
-    'dogs are just small bears',
-    203,
-    {'content-type': text/plain+lies'}
-  )
-}
-```
-
-> :rotating_light: **See [a note on headers](#a-note-on-headers).**
-
-### `status(resp) → Number | undefined`
+### `reply.status(resp) → Number | undefined`
 
 Given a potential response object, return the status code
 associated with the response, if any.
 
 ```javascript
 'use strict'
-const http = require('knork/http')
-http.status(new http.NotFound())    // 404
-http.status({})                     // undefined
+const reply = require('knork/reply')
+reply.status(new reply.NotFound())    // 404
+reply.status({})                     // undefined
 ```
 
-### `status(resp, code) → Response<resp>`
+### `reply.status(resp, code) → Response<resp>`
 
 Associate a status code with the potential response. If the response is
 [primitive][def-primitive], upcast it to a [`stream.Readable`][stream-readable]
@@ -330,10 +330,10 @@ and associate the status with that object.
 
 ```javascript
 'use strict'
-const http = require('knork/http')
+const reply = require('knork/reply')
 const resp = {}
-http.status(resp, 204)              // === resp, w/ 204 status
-http.status('', 204)                // === stream.Readable w/ 204 status
+reply.status(resp, 204)              // === resp, w/ 204 status
+reply.status('', 204)                // === stream.Readable w/ 204 status
 ```
 
 [reverse-reverse]: https://github.com/chrisdickinson/reverse#routerreversenamestring-argsobject--string--null

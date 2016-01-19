@@ -2,10 +2,10 @@
 
 module.exports = rethrow
 
+const reply = require('../reply')
+
 function rethrow (code) {
   return err => {
-    throw Object.assign(err, {
-      statusCode: code
-    })
+    throw reply.status(err, code)
   }
 }

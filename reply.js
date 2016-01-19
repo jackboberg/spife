@@ -1,3 +1,3 @@
 'use strict'
 
-module.exports = require('./lib/http')
+module.exports = require('./lib/reply')

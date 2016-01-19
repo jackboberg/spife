@@ -5,7 +5,7 @@ module.exports = {
   query: validateQuery
 }
 
-const http = require('../http')
+const reply = require('../reply')
 const joi = require('joi')
 
 function validateBody (schema, view) {
@@ -16,7 +16,7 @@ function validateBody (schema, view) {
     return req.body.then(body => {
       const result = joi.validate(body, schema)
       if (result.error) {
-        throw new http.BadRequestError(result.error)
+        throw new reply.BadRequestError(result.error)
       }
       req.validatedBody = Promise.resolve(result.value)
       return view.apply(this, args)
@@ -31,7 +31,7 @@ function validateQuery (schema, view) {
     const args = Array.from(arguments)
     const result = joi.validate(req.query, schema)
     if (result.error) {
-      throw new http.BadRequestError(result.error)
+      throw new reply.BadRequestError(result.error)
     }
     req.validatedQuery = result.value
     return view.apply(this, args)

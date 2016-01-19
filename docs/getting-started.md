@@ -383,7 +383,7 @@ status code. We'd like to be more specific than that, so let's handle that:
 'use strict'
 
 const Package = require('../models/package')
-const http = require('knork/http')
+const reply = require('knork/reply')
 
 module.exports = {
   viewPackage,
@@ -396,14 +396,14 @@ function viewPackage (req, context) {
   return Package.objects.get({
     public_id: context.get('package')
   }).catch(Package.objects.NotFound, err => { // catch only "NotFound" exceptions...
-    throw http.status(err, 404)               // and rethrow it, decorated with a "404" status.
+    throw reply.status(err, 404)              // and rethrow it, decorated with a "404" status.
   })
 }
 
 // ... snip snip ...
 ```
 
-The [`knork/http` module][ref-knork-http] provides access to functions that can
+The [`knork/reply` module][ref-knork-reply] provides access to functions that can
 decorate a response with header and status information. Objects are
 transparently decorated with this information but are otherwise not modified.
 Primitive values, like strings, are cast up into Streams containing their
@@ -416,7 +416,7 @@ take a look at how to do that:
 'use strict'
 
 const Package = require('../models/package')
-const http = require('knork/http')
+const reply = require('knork/reply')
 
 // ... snip snip ...
 
@@ -426,9 +426,9 @@ function deletePackage (req, context) {
   }).delete().then(count => {
     // 404 if we didn't delete anything, 204 if we did.
     if (count === 0) {
-      throw new http.NotFoundError()
+      throw new reply.NotFoundError()
     }
-    return http.status(http.empty(), 204)
+    return reply.status(reply.empty(), 204)
   })
 }
 
@@ -441,10 +441,10 @@ single query: `DELETE FROM packages WHERE public_id=$1`, which returns the
 number of affected rows.
 
 We want to 404 when nothing was deleted, and 204 otherwise. Note that we're able
-to cause a 404 by **throwing** a `new http.NotFoundError()`. In general, if you
+to cause a 404 by **throwing** a `new reply.NotFoundError()`. In general, if you
 need to return a non-2XX or non-3XX response, it's best to throw these objects.
 
-Finally, we create an empty response using `http.empty()`, give it a status
+Finally, we create an empty response using `reply.empty()`, give it a status
 code, and return it as our ultimate response.
 
 [Table of Contents ⏎](#table-of-contents)
@@ -606,7 +606,7 @@ From this, we can finish our Package creation API:
 // ... snip snip ...
 
 const rethrow = require('knork/utils/rethrow')
-const http = require('knork/http')
+const reply = require('knork/reply')
 
 const urls = require('../urls')
 
@@ -634,7 +634,7 @@ function createPackage (req, context) {
   // return a 201 created with a location header that
   // points to the newly created package url. 
   const sendCreatedResponse = createPackage.then(pkg => {
-    return http.response(http.empty(), 201, { // Note 2
+    return reply(reply.empty(), 201, { // Note 2
       location: urls().reverse('viewPackage', { // Note 3
         package: pkg.public_id
       })
@@ -658,7 +658,7 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
   [without waiting for the destination to resolve][ormnomnom-resolution];
 * :one: That destination promise uses [`getOrCreate`][ormnomnom-getorcreate] to
   obtain the destination row;
-* :two: We create [an empty response with a location header][ref-knork-http];
+* :two: We create [an empty response with a location header][ref-knork-reply];
 * :three: The location header uses the routes we defined in `lib/urls/index.js`
   [to create a full URL][reverse-reverse];
 * :four: We catch potential database-level errors and explicitly cast them
@@ -731,8 +731,8 @@ specifically configured for your Knork server — easy as that!
 [reference-docs]: ./ref
 [ormnomnom-install-postgres]: https://github.com/chrisdickinson/ormnomnom/blob/1de3c2fc89136745436e0cc38ed6bc919e699bbc/docs/getting-started.md#getting-postgres
 [babel]: https://babeljs.io/
-[ref-knork-request]: ./ref/request.md
-[ref-knork-http]: ./ref/http.md
+[ref-knork-request]: ./reference/request.md
+[ref-knork-reply]: ./reference/reply.md
 [model]: #models
 [joi]: https://github.com/hapijs/joi
 [ref-knork-validate]: ./ref/decorators.md#validate

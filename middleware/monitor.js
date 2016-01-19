@@ -5,7 +5,7 @@ module.exports = makeMonitorMiddleware
 const exec = require('child_process').exec
 const Promise = require('bluebird')
 
-const publicHTTP = require('../http')
+const reply = require('../reply')
 
 function makeMonitorMiddleware () {
   return {
@@ -24,7 +24,7 @@ function makeMonitorMiddleware () {
 }
 
 function pingResponse () {
-  return publicHTTP.raw('pong')
+  return reply.raw('pong')
 }
 
 function statusResponse (name) {
