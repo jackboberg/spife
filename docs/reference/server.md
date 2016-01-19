@@ -1,4 +1,4 @@
-# Knork Server
+# Server Object
 
 ```javascript
 const routing = require('knork/routing')
