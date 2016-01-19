@@ -22,11 +22,28 @@ request.
 
 ## Table of Contents
 
+* [API](#api)
+  * [Methods](#methods)
+
+    * [\`request.accept → Accept'](#requestaccept--accept)
+    * [\`request.body → Promise&lt;JSON>'](#requestbody--promisejson)
+    * [\`request.getRanges(size) → Ranges'](#requestgetrangessize--ranges)
+    * [\`request.headers → Object&lt;String → String>'](#requestheaders--objectstring--string)
+    * [\`request.httpVersion → String'](#requesthttpversion--string)
+    * [\`request.id → String'](#requestid--string)
+    * [\`request.method → String'](#requestmethod--string)
+    * [request.pipe(dst)](#requestpipedst)
+    * [\`request.query → Object&lt;String : String>'](#requestquery--objectstring--string)
+    * [\`request.raw → http.IncomingMessage'](#requestraw--httpincomingmessage)
+    * [\`request.rawHeaders → Array&lt;Array&lt;String, String>>'](#requestrawheaders--arrayarraystring-string)
+    * [\`request.url → String'](#requesturl--string)
+    * [\`request.urlObject → URL'](#requesturlobject--url)
+
 ## API
 
 ### Methods
 
-#### `request.accept → Accept'
+#### \`request.accept → Accept'
 
 Get an accept object for the request, per the [accepts package][pkg-accepts].
 
@@ -46,7 +63,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### `request.body → Promise<JSON>'
+#### \`request.body → Promise<JSON>'
 
 Attempt to fetch the body as JSON. Fails if the body has been disabled (by
 acccessing `.raw` or `.pipe`), if the request is too large, or if the body does
@@ -72,19 +89,19 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### `request.getRanges(size) → Ranges'
+#### \`request.getRanges(size) → Ranges'
 
 Parse the "Range" header into a [series of ranges][pkg-range-parser].
 
-#### `request.headers → Object<String → String>'
+#### \`request.headers → Object&lt;String → String>'
 
 Get [the `IncomingMessage` headers][def-http-headers].
 
-#### `request.httpVersion → String'
+#### \`request.httpVersion → String'
 
 Get [the HTTP Version, per `IncomingMessage`][def-http-version].
 
-#### `request.id → String'
+#### \`request.id → String'
 
 A per-request base64'd uuid. If the knork server [is marked as
 internal][ref-knork-options-internal], then the request ID will be populated by
@@ -94,7 +111,7 @@ incoming headers will be hashed and a unique ID will be appended.
 The [logging middleware][ref-middleware-logging] will automatically included
 the request ID in all log output.
 
-#### `request.method → String'
+#### \`request.method → String'
 
 Get the [original request method, per `IncomingMessage`][def-http-method].
 
@@ -120,7 +137,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### `request.query → Object<String : String>'
+#### \`request.query → Object&lt;String : String>'
 
 Get the query portion of the URL, [as returned by
 `querystring.parse`][def-querystring-parse].
@@ -135,19 +152,19 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### `request.raw → http.IncomingMessage'
+#### \`request.raw → http.IncomingMessage'
 
 Get the original request. Disables automatic body parsing support.
 
-#### `request.rawHeaders → Array<Array<String, String>>'
+#### \`request.rawHeaders → Array&lt;Array&lt;String, String>>'
 
 Get the [raw headers, per `IncomingMessage`][def-http-raw-headers].
 
-#### `request.url → String'
+#### \`request.url → String'
 
 Get the string representing the full URL.
 
-#### `request.urlObject → URL'
+#### \`request.urlObject → URL'
 
 Get the fully parsed request url, [as returned by `url.parse(req,
 true)`][def-url-parse].
@@ -162,15 +179,27 @@ module.exports = function myView (req, context) {
 ```
 
 [def-http-headers]: https://nodejs.org/api/http.html#http_message_headers
+
 [def-http-method]: https://nodejs.org/api/http.html#http_message_method
+
 [def-http-raw-headers]: https://nodejs.org/api/http.html#http_message_rawheaders
+
 [def-http-version]: https://nodejs.org/api/http.html#http_message_httpversion
+
 [def-incoming-message]: https://nodejs.org/api/http.html#http_class_http_incomingmessage
+
 [def-querystring-parse]: https://nodejs.org/api/querystring.html#querystring_querystring_parse_str_sep_eq_options
+
 [def-url-parse]: https://nodejs.org/api/url.html#url_url_parsing
+
 [pkg-accepts]: https://github.com/jshttp/accepts#api
+
 [pkg-range-parser]: https://github.com/jshttp/range-parser#api
+
 [ref-knork-options-headers]: ./server.md#options-headers
+
 [ref-knork-options-internal]: ./server.md#options-internal
+
 [ref-middleware-logging]: ./middleware.md#logging
+
 [topic-http-view]: ../topics/request-lifecycle.md#views
