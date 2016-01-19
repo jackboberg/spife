@@ -15,7 +15,8 @@ function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
     maxBodySize: 1 << 20, // default to 1mb
     metrics: null,
-    isExternal: true
+    isExternal: true,
+    requestIDHeaders: ['request-id']
   }, opts || {})
   if (isNaN(opts.maxBodySize) || opts.maxBodySize < 0) {
     throw new Error(`
