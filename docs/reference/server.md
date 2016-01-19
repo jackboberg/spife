@@ -19,6 +19,35 @@ The server returned by `knork()`.
 
 ## Table of Contents
 
+* [API](#api)
+  * [Types](#types)
+
+    * [Server](#server)
+
+    * [Middleware](#middleware)
+
+      * [MaybeResponse : Promise&lt;Response | undefined, Error?>](#mayberesponse--promiseresponse--undefined-error)
+
+  * [Methods](#methods)
+
+    * [knork(name, http, urls\[, middleware=\[\]\]\[opts={}\]) → Promise&lt;Server>](#knorkname-http-urls-middlewareopts--promiseserver)
+
+      * [options.isExternal](#optionsisexternal)
+      * [options.maxBodySize](#optionsmaxbodysize)
+      * [options.requestIDHeaders](#optionsrequestidheaders)
+
+    * [Middleware#install(Server) → Promise&lt;>](#middlewareinstallserver--promise)
+
+    * [Middleware#onServerClose(Server) → Promise&lt;>](#middlewareonservercloseserver--promise)
+
+    * [Middleware#processRequest(request, context) → MaybeResponse](#middlewareprocessrequestrequest-context--mayberesponse)
+
+    * [Middleware#processView(request, match, context) → MaybeResponse](#middlewareprocessviewrequest-match-context--mayberesponse)
+
+    * [Middleware#processResponse(request, response) → MaybeResponse](#middlewareprocessresponserequest-response--mayberesponse)
+
+    * [Middleware#processError(request, err) → MaybeResponse](#middlewareprocesserrorrequest-err--mayberesponse)
+
 ## API
 
 ### Types
@@ -37,7 +66,7 @@ The server returned by `knork()`.
 
 ##### `options.maxBodySize`
 
-##### `options.requestIDHeaders` 
+##### `options.requestIDHeaders`
 
 #### `Middleware#install(Server) → Promise<>`
 
