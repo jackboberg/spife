@@ -131,6 +131,9 @@ function runProcessView (knork, request) {
   if (!match) {
     throw new reply.NotFoundError()
   }
+  if (!(match.name in match.controller)) {
+    throw new reply.NotImplementedError(`${match.name} is not implemented.`)
+  }
   match.execute = function () {
     return match.controller[match.name](request, context)
   }
@@ -232,7 +235,15 @@ function handleResponse (knork, req, data) {
   }
 
   if (!Buffer.isBuffer(data)) {
-    headers['content-type'] = 'application/json; charset=utf-8'
+    headers['content-type'] = (
+      headers['content-type'] ||
+      'application/json; charset=utf-8'
+    )
+  } else {
+    headers['content-type'] = (
+      headers['content-type'] ||
+      'application/octet-stream'
+    )
   }
 
   const asOctetStream = (
@@ -263,7 +274,7 @@ function noop () {
 }
 
 function handleStreamError (knork, err) {
-
+  knork.server.emit('response-error', err)
 }
 
 function createMetrics (name, str) {
