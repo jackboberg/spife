@@ -66,7 +66,9 @@ Full docs [are available here][docs].
 3. The [topic documentation][topics] lays out the high-level concepts.
 4. [Reference documentation][reference] covers API signatures and methods.
 
-* Knork
+-------------------------------------
+
+* Modules
   * [`require('knork') → createServer`][ref-server]
   * **[Middleware][topic-request-lifecycle]**
     * `require('knork/middleware/transaction') → TransactionMiddleware`
