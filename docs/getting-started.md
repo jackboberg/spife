@@ -661,15 +661,17 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
 
 #### :triangular\_ruler: :evergreen\_tree: Metrics and Logging
 
-We may wish to _measure_ some aspect of the object creation. Luckily, as
-long as `req` is present, metrics are just a stone's throw away:
+We may wish to _measure_ some aspect of the object creation. `knork` will automatically
+configure [`numbat-emitter`][numbat-emitter] based on environment variables for you. This
+means you can simply `process.emit('metric', {name: 'some name', value: 1})` when you want
+to measure something!
 
     // ... snip snip ...
 
     function createPackage (req, context) {
       const getDestination = req.validatedBody.get('destination').then(data => {
         if (typeof data === 'string') {
-          req.metric({
+          process.emit('metric', {
             name: 'createpackage.used_string'
           })
         }

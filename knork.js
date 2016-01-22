@@ -2,6 +2,7 @@
 
 module.exports = makeKnork
 
+const Transform = require('stream').Transform
 const Readable = require('stream').Readable
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
@@ -10,6 +11,8 @@ const domain = require('domain')
 
 const makeKnorkRequest = require('./lib/request')
 const reply = require('./reply')
+
+const IGNORE_RESPONSES = true
 
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
@@ -23,19 +26,26 @@ function makeKnork (name, server, urls, middleware, opts) {
   maxBodySize should be a positive integer, got ${opts.maxBodySize} instead
     `.trim())
   }
-  const knork = new Server(name, server, urls, middleware || [], opts)
+  var resolveClosed = null
+  var rejectClosed = null
+  const closed = new Promise((resolve, reject) => {
+    resolveClosed = resolve
+    rejectClosed = reject
+  })
+  const knork = new Server(name, server, urls, middleware || [], closed, opts)
   server.once('close', () => {
     // we dereference the install promise here so that we ensure that it
     // has completed before we start shutting the middleware down.
     install.then(() => {
-      _iterateMiddleware(knork.middleware, (mw, resolve, reject) => {
+      _iterateMiddleware(knork.reverseMiddleware, (mw, resolve, reject) => {
         if (!mw.onServerClose) {
           return resolve()
         }
-        mw.onServerClose(knork).then(resolve, reject)
-      }, (resolve, reject) => resolve()).catch(err => {
-        server.emit('error', err)
-      })
+        Promise.resolve(mw.onServerClose(knork)).then(resolve, reject)
+      }, resolve => resolve(), IGNORE_RESPONSES).then(
+        resolveClosed,
+        rejectClosed
+      )
     })
   })
 
@@ -44,18 +54,20 @@ function makeKnork (name, server, urls, middleware, opts) {
       return resolve()
     }
     Promise.resolve(mw.install(knork)).then(resolve, reject)
-  }, (resolve, reject) => resolve()).return(knork)
+  }, (resolve, reject) => resolve(), IGNORE_RESPONSES).return(knork)
 
   return install
 }
 
 class Server {
-  constructor (name, server, urls, middleware, opts) {
+  constructor (name, server, urls, middleware, closed, opts) {
     this.name = name
     this.urls = urls
     this.middleware = middleware
+    this.reverseMiddleware = middleware.slice().reverse()
     this.server = server
     this.opts = opts
+    this.closed = closed
     server.removeAllListeners('request')
     server
       .on('request', (req, res) => this.onrequest(req, res))
@@ -85,7 +97,9 @@ class Server {
         }
         return runProcessView(this, kreq)
       }).then(userResponse => {
-        userResponse = reply(userResponse)
+        userResponse = userResponse
+          ? reply(userResponse)
+          : reply(userResponse || '', 204)
 
         return runProcessResponse(this, kreq, userResponse)
       }).catch(err => {
@@ -122,17 +136,22 @@ function runProcessRequest (knork, request) {
     if (!mw.processRequest) {
       return resolve()
     }
-    Promise.resolve(mw.processRequest(request)).then(resolve, reject)
+    Promise.try(() => mw.processRequest(request))
+      .then(resolve, reject)
   }, resolve => resolve())
 }
 
 function runProcessView (knork, request) {
-  const match = knork.urls.match(request.method, request.urlObject.pathname)
+  var match = null
+  try {
+    match = knork.urls.match(request.method, request.urlObject.pathname)
+  } catch (err) {
+    throw new reply.NotImplementedError(
+      `"${request.method} ${request.urlObject.pathname}" is not implemented.`
+    )
+  }
   if (!match) {
     throw new reply.NotFoundError()
-  }
-  if (!(match.name in match.controller)) {
-    throw new reply.NotImplementedError(`${match.name} is not implemented.`)
   }
   match.execute = function () {
     return match.controller[match.name](request, context)
@@ -148,38 +167,41 @@ function runProcessView (knork, request) {
     if (!mw.processView) {
       return resolve()
     }
-    Promise.try(() => {
-      return Promise.resolve(mw.processView(request, match, context))
-    }).then(resolve, reject)
-  }, resolve => {
-    return resolve(match.execute())
+    Promise.try(() => mw.processView(request, match, context))
+      .then(resolve, reject)
+  }, (resolve, reject) => {
+    try {
+      return resolve(match.execute())
+    } catch (err) {
+      return reject(err)
+    }
   })
 }
 
 function runProcessResponse (knork, request, userResponse) {
-  return _iterateMiddleware(knork.middleware.slice().reverse(), (mw, resolve, reject) => {
+  return _iterateMiddleware(knork.reverseMiddleware, (mw, resolve, reject) => {
     if (!mw.processResponse) {
       return resolve()
     }
-    Promise.resolve(mw.processResponse(request, userResponse))
+    Promise.try(() => mw.processResponse(request, userResponse))
       .then(resolve, reject)
   }, resolve => resolve(userResponse))
 }
 
 function runProcessError (knork, request, err) {
-  return _iterateMiddleware(knork.middleware.slice().reverse(), (mw, resolve, reject) => {
+  return _iterateMiddleware(knork.reverseMiddleware, (mw, resolve, reject) => {
     if (!mw.processError) {
       return resolve()
     }
-    Promise.resolve(mw.processError(request, err))
+    Promise.try(() => mw.processError(request, err))
       .then(resolve, reject)
   }, (resolve, reject) => reject(err))
 }
 
-function _iterateMiddleware (middleware, callMW, noResponse) {
-  const list = middleware.slice()
+function _iterateMiddleware (middleware, callMW, noResponse, ignoreResponse) {
   var resolve = null
   var reject = null
+  var idx = 0
   const promise = new Promise((_resolve, _reject) => {
     resolve = _resolve
     reject = _reject
@@ -190,16 +212,16 @@ function _iterateMiddleware (middleware, callMW, noResponse) {
   return promise
 
   function iter (response) {
-    if (response) {
+    if (response && !ignoreResponse) {
       if (typeof response === 'string') {
         response = reply.raw(response)
       }
       return resolve(response)
     }
-    if (!list.length) {
+    if (idx >= middleware.length) {
       return noResponse(resolve, reject)
     }
-    const mw = list.shift()
+    const mw = middleware[idx++]
     callMW(mw, iter, reject)
   }
 }
@@ -217,8 +239,43 @@ function handleLifecycleError (knork, req, err) {
   return handleResponse(knork, req, out)
 }
 
+function _objectModeToNLJSON (data) {
+  const headers = reply.headers(data) || {}
+  const status = reply.status(data)
+  const output = data.pipe(new Transform({
+    objectMode: true,
+    transform (chunk, _, ready) {
+      if (this.closed) {
+        return ready()
+      }
+      try {
+        chunk = JSON.stringify(chunk)
+      } catch (err) {
+        this.closed = true
+        this.push(JSON.stringify({error: err.message}) + '\n')
+        this.push(null)
+        return ready()
+      }
+      ready(null, chunk + '\n')
+    }
+  }))
+
+  if (!('content-type' in headers)) {
+    headers['content-type'] = 'application/x-ndjson; charset=utf-8'
+  }
+
+  return reply(output, status, headers)
+}
+
 function handleResponse (knork, req, data) {
-  const resp = reply(data)
+  const resp = (
+    data &&
+    data.pipe &&
+    data._readableState &&
+    data._readableState.objectMode
+  ) ? _objectModeToNLJSON(data)
+    : reply(data)
+
   const headers = reply.headers(resp)
   const status = reply.status(resp)
 
@@ -259,10 +316,12 @@ function handleResponse (knork, req, data) {
   headers['content-length'] = asOctetStream.length
   const stream = new Readable({
     read (n) {
-      this.push(asOctetStream)
+      this.push(this.original)
       this.push(null)
     }
   })
+  stream.original = asOctetStream
+
   return {
     status,
     headers,

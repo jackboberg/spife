@@ -5,7 +5,7 @@ module.exports = createMiddleware
 const reply = require('../reply')
 const REQ_TO_STATS = new WeakMap()
 
-function createMiddleware (metrics) {
+function createMiddleware () {
   return {
     processRequest (req) {
       REQ_TO_STATS.set(req, new Stats())
@@ -49,12 +49,12 @@ function recordMetric (req, res, defaultCode) {
   }
   const stats = REQ_TO_STATS.get(req)
   const latency = stats.diff()
-  req.metric({
+  process.emit('metric', {
     name: 'latency',
     value: latency,
     route: stats.view
   })
-  req.metric({
+  process.emit('metric', {
     name: 'response',
     statusCode: reply.status(res) || defaultCode,
     value: latency,

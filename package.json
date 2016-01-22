@@ -4,7 +4,7 @@
   "description": ":curry: :knife_fork_plate: a jshttp based µframework :knife_fork_plate: :spaghetti:",
   "main": "knork.js",
   "scripts": {
-    "test:code": "tap test/*-test.js",
+    "test:code": "tap test/**/*-test.js",
     "test:style": "standard",
     "test": "npm run test:code && npm run test:style",
     "cov:test": "nyc npm run test:code",

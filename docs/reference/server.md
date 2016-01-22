@@ -68,6 +68,8 @@ The server returned by `knork()`.
 
 ##### `options.requestIDHeaders`
 
+#### `Server#closed → Promise<>`
+
 #### `Middleware#install(Server) → Promise<>`
 
 #### `Middleware#onServerClose(Server) → Promise<>`
