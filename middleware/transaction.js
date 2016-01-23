@@ -3,7 +3,6 @@
 module.exports = createTransactionMiddleware
 
 const db = require('../db/session')
-const Promise = require('bluebird')
 
 function createTransactionMiddleware () {
   return {
