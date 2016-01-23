@@ -79,8 +79,8 @@ Full docs [are available here][docs].
     * `require('knork/middleware/common') → CommonMiddleware`
   * **HTTP**
     * [`require('knork/routing') → reverse`][reverse]
-    * [Incoming Requests][ref-request]
     * [`require('knork/reply')`][ref-reply]
+    * [Incoming Requests][ref-request]
   * **Database**
     * [`require('knork/db/session') → pg-db-session`][pg-db-session]
     * [`require('knork/db/connection') → pg`][pg]

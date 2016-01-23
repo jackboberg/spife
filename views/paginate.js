@@ -9,7 +9,7 @@ const rethrow = require('../utils/rethrow')
 
 module.exports = {
   list: validate.query(joi.object({
-    perPage: joi.number().integer().min(0).max(9999).default(10),
+    perPage: joi.number().integer().min(0).default(10),
     page: joi.number().integer().min(0).default(0),
     order: joi.string()
   }), list)
@@ -25,7 +25,10 @@ function list (req, context, opts) {
   }
   const paginator = paginate(
     qs,
-    req.validatedQuery.perPage || Number(opts.perPage) || 10
+    Math.min(
+      req.validatedQuery.perPage || Number(opts.perPage) || 10,
+      opts.maxPerPage || 9999
+    )
   )
   const getPage = paginator.page(req.validatedQuery.page)
   return getPage.then(page => {
