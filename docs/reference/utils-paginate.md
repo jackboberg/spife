@@ -15,6 +15,23 @@ pages, if any.
 
 ## Table of Contents
 
+* [API](#api)
+  * [Types](#types)
+
+    * [Paginator](#paginator)
+    * [Page](#page)
+    * [Paginator.InvalidPage extends Error](#paginatorinvalidpage-extends-error)
+    * [Paginator.OutOfRange extends Error](#paginatoroutofrange-extends-error)
+
+  * [Methods](#methods)
+
+    * [new Paginator(queryset, perPage) → Paginator](#new-paginatorqueryset-perpage--paginator)
+    * [Paginator#page(num) → Promise&lt;Page>](#paginatorpagenum--promisepage)
+    * [Page#hasNext → Boolean](#pagehasnext--boolean)
+    * [Page#hasPrev → Boolean](#pagehasprev--boolean)
+    * [Page#next → Number](#pagenext--number)
+    * [Page#prev → Number](#pageprev--number)
+
 ## API
 
 ### Types
@@ -77,4 +94,5 @@ Returns the page number of the next page.
 Returns the page number of the previous page.
 
 [def-queryset]: https://github.com/chrisdickinson/ormnomnom/blob/master/docs/ref/queryset.md
+
 [def-promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
