@@ -6,8 +6,8 @@ Knork splits request concerns into two broad categories:
 * **Middleware** handles all requests.
 
 **Middleware** is supplied to Knork as a list. The order is important, in that
-it determines _the order of events when a client request comes in._ The lifecycle
-is divided into 7 phases, listed below. 
+it determines _the order of events when a client request comes in._ The
+lifecycle is divided into 7 phases, listed below. 
 
 > :warning: **re: "skip"** 
 >
@@ -83,8 +83,10 @@ a `processResponse` will be skipped.
 * If any `processResponse` returns a truthy value, it will be treated as
   the response, and we'll skip to **[the flush phase (:seven:)](#flush)**.
 * If any `processResponse` throws an error or returns a rejected promise,
-  it will be treated as an error and we'll skip to **[the error middleware phase (:six:)](#error)**.
-* Otherwise, continue to **[the flush phase (:seven:)](#flush)** with the current response.
+  it will be treated as an error and we'll skip to
+  **[the error middleware phase (:six:)](#error)**.
+* Otherwise, continue to **[the flush phase (:seven:)](#flush)** with the
+  current response.
 
 <a id="error"></a>
 
@@ -99,8 +101,10 @@ a `processError` will be skipped.
 * If any `processError` returns a truthy value, it will be treated as the
   response and we'll skip to **[the flush phase (:seven:)](#flush)**.
 * If any `processError` throws an error or returns a rejected promise, it
-  will be treated as the final error and we'll skip to **[the flush phase (:seven:)](#flush)**.
-* Otherwise, proceed to **[the flush phase (:seven:)](#flush)** with the current error.
+  will be treated as the final error and we'll skip to
+  **[the flush phase (:seven:)](#flush)**.
+* Otherwise, proceed to **[the flush phase (:seven:)](#flush)** with the
+  current error.
 
 ## :seven: Flush
 

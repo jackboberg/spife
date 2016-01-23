@@ -1,4 +1,4 @@
-# Paginator
+# Paginator Object
 
 ```javascript
 const Paginator = require('knork/utils/paginate')

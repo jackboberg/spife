@@ -1,7 +1,8 @@
 # :fork_and_knife: Knork :fork_and_knife:
 
-A jshttp-based microframework designed to [help align "doing the right thing" and
-"doing the easy thing"][topic-ethos]. Collects and curates the following packages:
+A jshttp-based microframework designed to [help align "doing the right thing"
+and "doing the easy thing"][topic-ethos]. Collects and curates the following
+packages:
 
 1. **Routing**, courtesy of [`reverse`][reverse],
 2. **Database access**, courtesy of [`pg`][pg]
@@ -108,12 +109,12 @@ in the repository directory. From there you can:
 * `npm test`: Run both the linter and the code tests.
 * `npm run cov:test`: Run the code tests with code coverage enabled.
 * `npm run cov:html`: Run the code tests and output a coverage directory.
-* `npm run cov:view`: Run the code tests, generate a coverage directory, and serve the directory at `http://localhost:60888`.
+* `npm run cov:view`: Run the code tests, generate a coverage directory, and
+  serve the directory at `http://localhost:60888`.
 
 ## License
 
 Unlicensed.
-
 
 [bole]: http://github.com/rvagg/bole
 [docs]: ./docs

@@ -28,3 +28,5 @@ A function that provides a basic paginated list [view][def-view].
 * `maxPerPage`: `Number`
 * `url`: `Function → String`
 * `serialize`: `Function → String`
+
+[def-view]: ../topics/views.md

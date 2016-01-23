@@ -270,7 +270,7 @@ test('client disconnect', assert => Promise.try(() => {
     }
   }), [], {})
 
-  server.on('response-error', err => {
+  server.on('response-error', () => {
     clearTimeout(timeout)
     list.push('response-error')
     server.close()

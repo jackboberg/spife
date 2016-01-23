@@ -205,6 +205,6 @@ module.exports = function myView (req, context) {
 
 [ref-knork-options-internal]: ./server.md#options-internal
 
-[ref-middleware-logging]: ./middleware.md#logging
+[ref-middleware-logging]: ./middleware/logging.md
 
 [topic-http-view]: ../topics/request-lifecycle.md#view

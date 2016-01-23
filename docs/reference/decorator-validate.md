@@ -22,3 +22,5 @@ input validation.
 #### `validate.body(Joi, Function) → (Function → Promise)`
 
 #### `validate.query(Joi, Function) → (Function → Promise)`
+
+[def-view]: ../topics/views.md

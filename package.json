@@ -6,7 +6,8 @@
   "scripts": {
     "test:code": "tap test/**/*-test.js",
     "test:style": "standard",
-    "test": "npm run test:code && npm run test:style",
+    "doc:lint": "remark README.md docs",
+    "test": "npm run test:code && npm run test:style && npm run doc:lint",
     "cov:test": "nyc npm run test:code",
     "cov:html": "npm run cov:test && nyc report --reporter=lcov",
     "cov:view": "npm run cov:html && ecstatic coverage/lcov-report -p 60888"
@@ -29,7 +30,7 @@
   "devDependencies": {
     "ecstatic": "^1.4.0",
     "nyc": "^5.3.0",
-    "remark": "^3.2.0",
+    "remark": "^3.2.2",
     "remark-lint": "^2.2.1",
     "remark-toc": "^2.0.1",
     "remark-validate-links": "^2.0.2",

@@ -2,7 +2,8 @@
 
 Knork is, first and foremost, a glue package — it curates several smaller
 packages and re-exports them as a whole in order to make it easier to build
-small, [HATEOAS][hateoas]-y, [REST][rest]ful APIs. It provides the following functionality:
+small, [HATEOAS][hateoas]-y, [REST][rest]ful APIs. It provides the following
+functionality:
 
 1. **Routing**, courtesy of [`reverse`][routing-reverse],
 2. **Database access**, courtesy of [`pg`][pg]
@@ -24,9 +25,10 @@ the section.
 > :information\_source: **For folks who prefer to dive in...**
 >
 > If you're confident you can figure it out, and would like to hop right in,
-> please check out the [reference documentation][reference-docs], which will link
-> to [topical documentation][topic-docs] where appropriate. If that all looks
-> like :spaghetti:, though, remember this doc is here for you! :revolving\_hearts:
+> please check out the [reference documentation][reference-docs], which will
+> link to [topical documentation][topic-docs] where appropriate. If that all
+> looks like :spaghetti:, though, remember this doc is here for you!
+> :revolving\_hearts:
 
 <a id="table-of-contents"></a>
 
@@ -56,28 +58,32 @@ Let's build a simple knork service for sending and receiving physical
 
 To start, run the following commands in a new directory:
 
-    # inside of your new directory
-    $ npm i --save @npm/knork
-    $ mkdir -p lib/{models,urls,views}
-    $ touch lib/{server,models/{destination,package},urls/index,views/index}.js
+```bash
+# inside of your new directory
+$ npm i --save @npm/knork
+$ mkdir -p lib/{models,urls,views}
+$ touch lib/{server,models/{destination,package},urls/index,views/index}.js
+```
 
 Your directory should have the following structure. If you have the `tree`
 command available, you can easily verify this by running `tree .` inside
 of your new directory.
 
-    .
-    └── lib
-        ├── server.js
-        ├── models
-        │   ├── destination.js
-        │   └── package.js
-        ├── urls
-        │   └── index.js
-        └── views
-            └── index.js
+```console
+.
+└── lib
+    ├── server.js
+    ├── models
+    │   ├── destination.js
+    │   └── package.js
+    ├── urls
+    │   └── index.js
+    └── views
+        └── index.js
+```
 
-Make sure you have Postgres installed — follow \[the steps
-here]\[ormnomnom-install-postgres] to make sure you have it available. Once you
+Make sure you have Postgres installed — follow [the steps
+here][ormnomnom-install-postgres] to make sure you have it available. Once you
 have it, run `createdb knork_example`, and then run the following inside of
 `psql knork_example`:
 
@@ -326,9 +332,9 @@ function listPackages (req, context) {
 }
 ```
 
-For now, all of our views simply return the string "hello world". Knork
-will handle turning this into a `content-type: text/plain, 200 OK` response.
-Let's edit this so that we have more functional views, starting with `viewPackage`:
+For now, all of our views simply return the string "hello world". Knork will
+handle turning this into a `content-type: text/plain, 200 OK` response. Let's
+edit this so that we have more functional views, starting with `viewPackage`:
 
 ```javascript
 'use strict'
@@ -380,8 +386,8 @@ function viewPackage (req, context) {
 // ... snip snip ...
 ```
 
-The [`knork/reply` module][ref-knork-reply] provides access to functions that can
-decorate a response with header and status information. Objects are
+The [`knork/reply` module][ref-knork-reply] provides access to functions that
+can decorate a response with header and status information. Objects are
 transparently decorated with this information but are otherwise not modified.
 Primitive values, like strings, are cast up into Streams containing their
 value.
@@ -456,14 +462,16 @@ function listPackages (req, context) {
 That's all it takes — you have a fully paginated list endpoint. Responses
 will be in the form:
 
-    {
-      "objects": [ <Package>, ],
-      "total": Number,
-      "urls": {
-        "next": "/path/to/url?page=3",
-        "prev": "/path/to/url?page=1"
-      }
-    }
+```javascript
+{
+  "objects": [ <Package>, ],
+  "total": Number,
+  "urls": {
+    "next": "/path/to/url?page=3",
+    "prev": "/path/to/url?page=1"
+  }
+}
+```
 
 To control the JSON output by a `Package`, we have multiple options:
 
@@ -629,8 +637,9 @@ function createPackage (req, context) {
 
 This is a pretty meaty view! Some highlights, corresponding to the notes above:
 
-* :zero: We are passing a **promise for a destination** to `Package.objects.create`,
-  [without waiting for the destination to resolve][ormnomnom-resolution];
+* :zero: We are passing a **promise for a destination** to
+  `Package.objects.create`, [without waiting for the destination 
+  to resolve][ormnomnom-resolution];
 * :one: That destination promise uses [`getOrCreate`][ormnomnom-getorcreate] to
   obtain the destination row;
 * :two: We create [an empty response with a location header][ref-knork-reply];
@@ -661,21 +670,23 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
 
 #### :triangular\_ruler: :evergreen\_tree: Metrics and Logging
 
-We may wish to _measure_ some aspect of the object creation. `knork` will automatically
-configure [`numbat-emitter`][numbat-emitter] based on environment variables for you. This
-means you can simply `process.emit('metric', {name: 'some name', value: 1})` when you want
-to measure something!
+We may wish to _measure_ some aspect of the object creation. `knork` will
+automatically configure [`numbat-emitter`][numbat-emitter] based on environment
+variables for you. This means you can simply `process.emit('metric', {name:
+'some name', value: 1})` when you want to measure something!
 
-    // ... snip snip ...
+```javascript
+// ... snip snip ...
 
-    function createPackage (req, context) {
-      const getDestination = req.validatedBody.get('destination').then(data => {
-        if (typeof data === 'string') {
-          process.emit('metric', {
-            name: 'createpackage.used_string'
-          })
-        }
-    // ... snip snip ...
+function createPackage (req, context) {
+  const getDestination = req.validatedBody.get('destination').then(data => {
+    if (typeof data === 'string') {
+      process.emit('metric', {
+        name: 'createpackage.used_string'
+      })
+    }
+// ... snip snip ...
+```
 
 This data will be handed to [a `numbat-emitter` instance][numbat-emitter]
 specifically configured for your Knork server — easy as that!
@@ -715,8 +726,6 @@ specifically configured for your Knork server — easy as that!
 [topic-docs]: ./topics
 
 [reference-docs]: ./reference
-
-[ormnomnom-install-postgres]: https://github.com/chrisdickinson/ormnomnom/blob/1de3c2fc89136745436e0cc38ed6bc919e699bbc/docs/getting-started.md#getting-postgres
 
 [babel]: https://babeljs.io/
 

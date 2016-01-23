@@ -1,11 +1,16 @@
 {
-  "output": true,
   "plugins": {
     "toc": {
       "tight": true
     },
     "lint": {
-      "no-html": false
+      "no-html": false,
+      "list-item-spacing": false,
+      "list-item-indent": "mixed",
+      "code-block-style": "fenced",
+      "maximum-heading-length": 80,
+      "no-heading-punctuation": false,
+      "no-missing-blank-lines": false
     }
   },
   "settings": {

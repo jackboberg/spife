@@ -6,7 +6,8 @@ Welcome to Knork! It cuts like a knife, but stabs like a fork!
 
 This documentation is split into three categories:
 
-* **Guide**, or **tutorial**, content which exists as files in _this_ directory (`docs/`).
+* **Guide**, or **tutorial**, content which exists as files in _this_ 
+  directory (`docs/`).
   * See the [getting started guide][guide-getting-started] for a tour of Knork.
   * See the [FAQ][guide-faq] for frequently asked questions.
 * **Topic** content which lives in `docs/topics/`. This covers high-level
@@ -43,9 +44,12 @@ you see a jargon term that is not linked, please fix it and send a PR!
 
 API docs are broken down into three sections:
 
-1. **Definition.** This covers how to get at the module or object being documented.
-2. **Types.** This lists all of the [types][def-types] provided by the object or module.
-3. **Methods.** This lists all of the [functions][def-functions] provided by the object or module.
+1. **Definition.** This covers how to get at the module or object being
+   documented.
+2. **Types.** This lists all of the [types][def-types] provided by the object
+   or module.
+3. **Methods.** This lists all of the [functions][def-functions] provided by
+   the object or module.
 
 The **Methods** subheadings use the following nomenclature:
 

@@ -23,6 +23,8 @@ to the database connection.
 
 #### `txn.atomic(Function) → (Function → Promise)`
 
+The same as [`pg-db-session.atomic`][pg-db-session-atomic].
+
 #### `txn.noTransaction(Function) → (Function → Promise)`
 
 **For [view functions][topic-view] only.** Because the
@@ -47,3 +49,13 @@ module.exports = txn.noTransaction(req => {
 ```
 
 #### `txn.transaction(Function) → (Function → Promise)`
+
+The same as [`pg-db-session.transaction`][pg-db-session-transaction].
+
+[def-transaction]: http://www.postgresql.org/docs/9.5/static/tutorial-transactions.html
+[def-atomicity]: https://github.com/npm/pg-db-session#dbatomicfunction--promiset--function
+[topic-view]: ../topics/views.md
+[ref-transaction-mw]: ./middleware/transaction.md
+[ref-database-mw]: ./middleware/database.md
+[pg-db-session-atomic]: https://github.com/npm/pg-db-session#dbatomicfunction--promiset--function
+[pg-db-session-transaction]: https://github.com/npm/pg-db-session#dbtransactionfunction--promiset--function
