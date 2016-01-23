@@ -35,6 +35,7 @@ The server returned by `knork()`.
       * [options.isExternal](#optionsisexternal)
       * [options.maxBodySize](#optionsmaxbodysize)
       * [options.requestIDHeaders](#optionsrequestidheaders)
+      * [options.onclienterror](#optionsonclienterror)
 
     * [Server#closed → Promise&lt;>](#serverclosed--promise)
 

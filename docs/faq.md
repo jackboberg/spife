@@ -8,7 +8,8 @@ You can either return `undefined`, or use
 [`require('knork/reply').empty()`](./reference/reply.md#replyempty--response).
 
 ## Why are my logs all JSON-y?
-#### Alternatively: Why *aren't* my logs all JSON-y?
+
+#### Alternatively: Why _aren't_ my logs all JSON-y?
 
 `console.{log,info,warn,error}()` methods are all trapped by Knork's
 [`LoggingMiddleware`][ref-logging]. If those functions are called while a

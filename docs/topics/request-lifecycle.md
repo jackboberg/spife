@@ -6,7 +6,7 @@ Knork splits request concerns into two broad categories:
 * **Middleware** handles all requests.
 
 **Middleware** is supplied to Knork as a list. The order is important, in that
-it determines *the order of events when a client request comes in.* The lifecycle
+it determines _the order of events when a client request comes in._ The lifecycle
 is divided into 7 phases, listed below. 
 
 > :warning: **re: "skip"** 
@@ -127,9 +127,15 @@ Any streaming errors will be re-emitted on the [`http.Server`][ref-http-server]
 held by knork as `response-error` events.
 
 [ref-request]: ../reference/request.md
+
 [ref-server]: ../reference/server.md
+
 [ref-reverse-match]: https://github.com/chrisdickinson/reverse#match-object
+
 [ref-reverse-context]: https://github.com/chrisdickinson/reverse#routermatchmethodstring-routestring--match--null
+
 [def-content-type]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.17
+
 [ref-http-response]: https://nodejs.org/api/http.html#http_class_http_serverresponse
+
 [ref-http-server]: https://nodejs.org/api/http.html#http_class_http_server
