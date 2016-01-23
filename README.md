@@ -79,16 +79,16 @@ with Knork.*
     * `require('knork/middleware/logging') → LoggingMiddleware`
     * `require('knork/middleware/common') → CommonMiddleware`
   * **HTTP**
-    * [`require('knork/routing') → reverse`][reverse] :package:
+    * :package: [`require('knork/routing') → reverse`][reverse]
     * [`require('knork/reply')`][ref-reply]
     * [Incoming Requests][ref-request]
   * **Database**
-    * [`require('knork/db/session') → pg-db-session`][pg-db-session] :package:
-    * [`require('knork/db/connection') → pg`][pg] :package:
-    * [`require('knork/db/orm') → ormnomnom`][ormnomnom] :package:
+    * :package: [`require('knork/db/session') → pg-db-session`][pg-db-session]
+    * :package: [`require('knork/db/connection') → pg`][pg]
+    * :package: [`require('knork/db/orm') → ormnomnom`][ormnomnom]
   * **Sub-packages**
-    * [`require('knork/logging') → bole`][bole] :package:
-    * [`require('knork/joi') → joi`][joi] :package:
+    * :package: [`require('knork/logging') → bole`][bole]
+    * :package: [`require('knork/joi') → joi`][joi]
   * **Common Decorators**
     * [`require('knork/decorators/transaction')`][ref-transaction]
     * [`require('knork/decorators/validate')`][ref-validate]
