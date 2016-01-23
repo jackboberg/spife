@@ -23,7 +23,7 @@ request.
 > :information\_source: **`Request` is not an `EventEmitter`**
 >
 > Unlike the `IncomingMessage` object provided by Node servers directly,
-> requests coming in from Knork are *not* `EventEmitter` instances!
+> requests coming in from Knork are _not_ `EventEmitter` instances!
 
 ## Table of Contents
 

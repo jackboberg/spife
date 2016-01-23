@@ -8,6 +8,15 @@ A function that provides a basic paginated list [view][def-view].
 
 ## Table of Contents
 
+* [API](#api)
+  * [Methods](#methods)
+
+    * [paginate(req, context, options: Options) → Response](#paginatereq-context-options-options--response)
+
+      * [Options](#options)
+
+## API
+
 ### Methods
 
 #### `paginate(req, context, options: Options) → Response`

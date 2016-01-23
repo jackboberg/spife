@@ -9,6 +9,12 @@ input validation.
 
 ## Table of Contents
 
+* [API](#api)
+  * [Methods](#methods)
+
+    * [validate.body(Joi, Function) → (Function → Promise)](#validatebodyjoi-function--function--promise)
+    * [validate.query(Joi, Function) → (Function → Promise)](#validatequeryjoi-function--function--promise)
+
 ## API
 
 ### Methods

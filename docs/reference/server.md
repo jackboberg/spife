@@ -36,6 +36,8 @@ The server returned by `knork()`.
       * [options.maxBodySize](#optionsmaxbodysize)
       * [options.requestIDHeaders](#optionsrequestidheaders)
 
+    * [Server#closed → Promise&lt;>](#serverclosed--promise)
+
     * [Middleware#install(Server) → Promise&lt;>](#middlewareinstallserver--promise)
 
     * [Middleware#onServerClose(Server) → Promise&lt;>](#middlewareonservercloseserver--promise)
