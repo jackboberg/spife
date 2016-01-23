@@ -6,12 +6,14 @@ module.exports = createPaginator
 
 class InvalidPage extends Error {
   constructor (num) {
+    /* eslint-disable operator-linebreak */
     super(
       isNaN(num) ? `Expected page number to be a number, not ${num}` :
       num < 0 ? `Expected page number to be greater than zero` :
       !isFinite(num) ? `Expected page number to be finite` :
       `Bad page number ${num}`
     )
+    /* eslint-enable operator-linebreak */
     Error.captureStackTrace(this, InvalidPage)
   }
 }

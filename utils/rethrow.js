@@ -4,8 +4,10 @@ module.exports = rethrow
 
 const reply = require('../reply')
 
-function rethrow (code) {
+function rethrow (code, headers) {
   return err => {
-    throw reply.status(err, code)
+    throw headers
+      ? reply(err, code, headers)
+      : reply(err, code)
   }
 }
