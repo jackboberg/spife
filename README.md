@@ -33,8 +33,6 @@ bole.output({
 })
 
 const urls = routing`
-  *     /favicon.ico    send404
-  POST  /example        handleBody
   GET   /               hello
 `({
   hello (req) {
@@ -68,6 +66,9 @@ Full docs [are available here][docs].
 
 -------------------------------------
 
+*:package: denotes a link to an external package that has been bundled
+with Knork.*
+
 * Modules
   * [`require('knork') → createServer`][ref-server]
   * **[Middleware][topic-request-lifecycle]**
@@ -78,16 +79,16 @@ Full docs [are available here][docs].
     * `require('knork/middleware/logging') → LoggingMiddleware`
     * `require('knork/middleware/common') → CommonMiddleware`
   * **HTTP**
-    * [`require('knork/routing') → reverse`][reverse]
+    * [`require('knork/routing') → reverse`][reverse] :package:
     * [`require('knork/reply')`][ref-reply]
     * [Incoming Requests][ref-request]
   * **Database**
-    * [`require('knork/db/session') → pg-db-session`][pg-db-session]
-    * [`require('knork/db/connection') → pg`][pg]
-    * [`require('knork/db/orm') → ormnomnom`][ormnomnom]
+    * [`require('knork/db/session') → pg-db-session`][pg-db-session] :package:
+    * [`require('knork/db/connection') → pg`][pg] :package:
+    * [`require('knork/db/orm') → ormnomnom`][ormnomnom] :package:
   * **Sub-packages**
-    * [`require('knork/logging') → bole`][bole]
-    * [`require('knork/joi') → joi`][joi]
+    * [`require('knork/logging') → bole`][bole] :package:
+    * [`require('knork/joi') → joi`][joi] :package:
   * **Common Decorators**
     * [`require('knork/decorators/transaction')`][ref-transaction]
     * [`require('knork/decorators/validate')`][ref-validate]
