@@ -77,3 +77,4 @@ Returns the page number of the next page.
 Returns the page number of the previous page.
 
 [def-queryset]: https://github.com/chrisdickinson/ormnomnom/blob/master/docs/ref/queryset.md
+[def-promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
