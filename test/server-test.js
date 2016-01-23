@@ -12,7 +12,35 @@ const routing = require('../routing')
 const reply = require('../reply')
 const knork = require('..')
 
+const Emitter = require('numbat-emitter')
+
+// no retries, please.
+Emitter.prototype.maxretries = 0
+
 process.env.DEBUG = ''
+process.env.METRICS = ''
+
+test('bad maxBodySize throws error on NaN', assert => {
+  try {
+    knork('anything', {}, null, [], {maxBodySize: 'string'})
+  } catch (err) {
+    assert.ok(/maxBodySize/.test(err.message))
+    return assert.end()
+  }
+  assert.fail('should have thrown')
+  assert.end()
+})
+
+test('bad maxBodySize throws error on <0', assert => {
+  try {
+    knork('anything', {}, null, [], {maxBodySize: -1})
+  } catch (err) {
+    assert.ok(/maxBodySize/.test(err.message))
+    return assert.end()
+  }
+  assert.fail('should have thrown')
+  assert.end()
+})
 
 test('server promise resolves once http server listening', assert => Promise.try(() => {
   const ee = new EE()
@@ -53,7 +81,7 @@ test('http server listening triggers mw installs', assert => Promise.try(() => {
     assert.equal(list.length, 3)
     assert.deepEqual(list.map(xs => xs.name), ['1', '2', '3'])
   })
-  ee.emit('listening') 
+  ee.emit('listening')
   return onServer
 }))
 
@@ -117,6 +145,154 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
   })
 }))
 
+test('server metrics option as object sets metrics', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const expect = {}
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return 'ok'
+    }
+  }), [], {metrics: expect})
+
+  kserver.then(knork => {
+    assert.equal(knork.metrics, expect)
+    server.close()
+  })
+  return kserver.get('closed')
+}))
+
+test('create metrics: string', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const metricsServer = net.createServer().listen(60881)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return 'ok'
+    }
+  }), [], {metrics: 'tcp://localhost:60881'})
+
+  const timeout = setTimeout(() => {
+    assert.fail('timed out')
+    metricsServer.close()
+    server.close()
+  }, 200)
+
+  metricsServer.on('connection', conn => {
+    clearTimeout(timeout)
+    conn.end()
+    metricsServer.close(function () {
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('create metrics: envvar', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const metricsServer = net.createServer().listen(60881)
+  process.env.METRICS = 'tcp://localhost:60881'
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return 'ok'
+    }
+  }), [])
+
+  const timeout = setTimeout(() => {
+    assert.fail('timed out')
+    metricsServer.close()
+    server.close()
+  }, 200)
+
+  metricsServer.on('connection', conn => {
+    clearTimeout(timeout)
+    process.env.METRICS = ''
+    conn.end()
+    metricsServer.close(function () {
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('bad client', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return reply('hello!', 200, {
+        [req.query.p]: 'OK'
+      })
+    }
+  }), [], {
+    onclienterror (exc, sock) {
+      clearTimeout(timeout)
+      assert.equal(exc.code, 'HPE_INVALID_METHOD')
+      server.close()
+    }
+  })
+
+  const timeout = setTimeout(() => {
+    assert.fail('timed out')
+    server.close()
+  }, 200)
+
+  const conn = net.connect(60880)
+  conn.on('data', data => {
+    assert.fail('should not receive data')
+    server.close()
+  })
+  conn.end(`GEM / HTTP/1.1
+Host: localhost:60880
+Connection: close\r\n\r\n`)
+
+  return kserver.get('closed')
+}))
+
+test('client disconnect', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const list = []
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return fs.createReadStream(__filename)
+        .on('close', () => {
+          list.push('closed')
+        })
+    }
+  }), [], {})
+
+  server.on('response-error', err => {
+    clearTimeout(timeout)
+    list.push('response-error')
+    server.close()
+  })
+
+  const timeout = setTimeout(() => {
+    assert.fail('timed out')
+    server.close()
+  }, 200)
+
+  const conn = net.connect(60880)
+  conn.on('data', data => {
+    conn.destroy()
+  })
+  conn.end(`GET / HTTP/1.1
+Host: localhost:60880
+Connection: close\r\n\r\n`)
+  return kserver.get('closed').then(() => {
+    assert.deepEqual(list, ['closed', 'response-error'])
+  })
+}))
+
 test('returning nothing from request mw runs view', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const list = []
@@ -133,7 +309,6 @@ test('returning nothing from request mw runs view', assert => Promise.try(() => 
       return 'ok'
     }
   }), mw)
-
 
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
@@ -164,7 +339,6 @@ test('returning value from request mw returns request', assert => Promise.try(()
       return 'ok'
     }
   }), mw)
-
 
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
@@ -198,7 +372,6 @@ test('response mw sees response from request mw', assert => Promise.try(() => {
       return 'ok'
     }
   }), mw)
-
 
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
@@ -235,7 +408,6 @@ test('response mw sees response from view mw', assert => Promise.try(() => {
       return 'ok'
     }
   }), mw)
-
 
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
@@ -274,7 +446,6 @@ test('response mw does not see response from response mw', assert => Promise.try
     }
   }), mw)
 
-
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
       assert.equal(data + '', 'banana')
@@ -305,7 +476,6 @@ test('view mw response skips view', assert => Promise.try(() => {
     }
   }), mw)
 
-
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
       assert.equal(data + '', '{"message":"hello"}')
@@ -335,7 +505,6 @@ test('view mw error skips view', assert => Promise.try(() => {
     }
   }), mw)
 
-
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
       assert.equal(res.statusCode, 500)
@@ -359,7 +528,6 @@ test('not implemented works', assert => Promise.try(() => {
   const kserver = knork('anything', server, routing`
     GET / view
   `({}), mw)
-
 
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
@@ -388,7 +556,6 @@ test('not found works', assert => Promise.try(() => {
       return 'hi there!'
     }
   }), mw)
-
 
   http.get({method: 'GET', path: '/asdf', port: 60880}, res => {
     res.on('data', data => {
@@ -444,7 +611,6 @@ test('error mw: no response', assert => Promise.try(() => {
 
 test('error mw: response', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const list = []
   const mw = [{
     processError (req, err) {
       return 'we should not be called since the next one returns'
@@ -488,7 +654,6 @@ test('error mw: response', assert => Promise.try(() => {
 
 test('error mw: throw', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const list = []
   const mw = [{
     processError (req, err) {
       return 'we should not be called since the next one throws'
@@ -528,7 +693,6 @@ test('error mw: throw', assert => Promise.try(() => {
 
 test('error mw: rejection', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const list = []
   const mw = [{
     processError (req, err) {
       return 'we should not be called since the next one throws'
@@ -568,15 +732,13 @@ test('error mw: rejection', assert => Promise.try(() => {
 
 test('returning stream works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const mw = []
   const kserver = knork('anything', server, routing`
     GET / view
   `({
     view (req) {
       return fs.createReadStream(__filename)
     }
-  }), mw)
-
+  }))
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     const acc = []
@@ -739,7 +901,6 @@ test('returning string works', assert => Promise.try(() => {
     }
   }), [])
 
-
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     res.on('data', data => {
       assert.equal(res.statusCode, 200)
@@ -761,7 +922,6 @@ test('returning empty string omits content-type', assert => Promise.try(() => {
       return ''
     }
   }), [])
-
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     const acc = []
@@ -790,7 +950,6 @@ test('returning nothing works', assert => Promise.try(() => {
     }
   }), [])
 
-
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     const acc = []
     res.on('data', data => {
@@ -818,7 +977,6 @@ test('returning buffer works: no content-type', assert => Promise.try(() => {
       return new Buffer('hello world')
     }
   }), [])
-
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     const acc = []
@@ -852,7 +1010,6 @@ test('returning buffer works: w/ content-type', assert => Promise.try(() => {
     }
   }), [])
 
-
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     const acc = []
     res.on('data', data => {
@@ -884,7 +1041,6 @@ test('returning object works', assert => Promise.try(() => {
       return {test: 'anything!'}
     }
   }), [])
-
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     const acc = []
@@ -918,7 +1074,6 @@ test('throwing error works: external service', assert => Promise.try(() => {
     }
   }), [])
 
-
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     const acc = []
     res.on('data', data => {
@@ -951,7 +1106,6 @@ test('throwing error works: external service DEBUG=1', assert => Promise.try(() 
       throw new Error('It fails!')
     }
   }), [])
-
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     process.env.DEBUG = ''
@@ -987,7 +1141,6 @@ test('throwing error works: internal service', assert => Promise.try(() => {
     }
   }), [], {isExternal: false})
 
-
   http.get({method: 'GET', path: '/', port: 60880}, res => {
     process.env.DEBUG = ''
     const acc = []
@@ -1017,6 +1170,5 @@ test('throwing error works: internal service', assert => Promise.try(() => {
 }))
 
 test('returning rejection works', assert => Promise.try(() => {
-  
 }))
 
