@@ -90,7 +90,7 @@ about the `Object` in particular so we haven't defined it further (like
 
 [topic-index]: ./topics/README.md
 
-[ref-index]: ./reference/README.md
+[ref-index]: ./reference
 
 [def-types]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures
 

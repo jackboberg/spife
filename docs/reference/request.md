@@ -201,10 +201,10 @@ module.exports = function myView (req, context) {
 
 [pkg-range-parser]: https://github.com/jshttp/range-parser#api
 
-[ref-knork-options-headers]: ./server.md#options-headers
+[ref-knork-options-headers]: ./server.md#optionsrequestidheaders
 
-[ref-knork-options-internal]: ./server.md#options-internal
+[ref-knork-options-internal]: ./server.md#optionsisexternal
 
 [ref-middleware-logging]: ./middleware/logging.md
 
-[topic-http-view]: ../topics/request-lifecycle.md#view
+[topic-http-view]: ../topics/request-lifecycle.md#four-view-execution

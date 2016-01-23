@@ -4,8 +4,7 @@
 const reply = require('knork/reply')
 ```
 
-Contains methods for creating and manipulating [HTTP
-responses][topic-http-response].
+Contains methods for creating and manipulating HTTP responses.
 
 ## Table of Contents
 
@@ -202,7 +201,7 @@ module.exports = function myView (req, context) {
 }
 ```
 
-<a id="a-note-on-headers"></a>
+##### A Note On Headers
 
 > :rotating\_light: **Header keys and values are interpreted as
 > [ISO-8859-1][def-latin-1].**
@@ -372,8 +371,6 @@ const resp = {}
 reply.status(resp, 204)              // === resp, w/ 204 status
 reply.status('', 204)                // === stream.Readable w/ 204 status
 ```
-
-[topic-http-response]: ../topics/request-lifecycle.md#response
 
 [shorthand-raw]: #replyrawresp--responseresp
 

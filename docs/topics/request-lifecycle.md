@@ -15,8 +15,6 @@ lifecycle is divided into 7 phases, listed below.
 > the step should not execute and execution will proceed directly to the noted
 > phase.
 
-<a id="request"></a>
-
 ## :one: `Request` middleware
 
 Executed from the first middleware to the last. Any middleware that has a
@@ -25,12 +23,10 @@ will be skipped. `processRequest` will be called with a [knork
 request][ref-request] as the first parameter.
 
 * If any `processRequest` returns a truthy promise from that middleware, it
-  will be treated as the response, and we'll skip to **[the response middleware phase (:five:)](#response)**.
+  will be treated as the response, and we'll skip to **[the response middleware phase (:five:)](#five-response-middleware)**.
 * If any `processRequest` throws an error or returns a rejected promise, it
-  will be treated as an error and we'll skip to **[the error middleware phase (:six:)](#error)**.
-* Otherwise, continue to **[view resolution (:two:)](#view-resolution)**.
-
-<a id="view-resolution"></a>
+  will be treated as an error and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware)**.
+* Otherwise, continue to **[view resolution (:two:)](#two-view-resolution)**.
 
 ## :two: `View` resolution
 
@@ -39,12 +35,10 @@ The matched view will be attached to the `match` object that will be passed
 to middleware as `match.execute() → Promise<Response>`.
 
 * If the given route does not match a url known to knork, a 404 error will
-  be thrown and we'll skip to **[the error middleware phase (:six:)](#error).**
+  be thrown and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware).**
 * If the route exists but does not have an assocatied view, a 501 error will
-  be thrown and we'll skip to **[the error middleware phase (:six:)](#error).**
-* Otherwise, continue to **[the view middleware phase (:three:)](#view-middleware)**.
-
-<a id="view-middleware"></a>
+  be thrown and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware).**
+* Otherwise, continue to **[the view middleware phase (:three:)](#three-view-middleware)**.
 
 ## :three: `View` middleware
 
@@ -54,12 +48,10 @@ skipped. `processView` will be called with a [knork-request][ref-request], a
 [`reverse.Match`][ref-reverse-match], and a [context map][ref-reverse-context].
 
 * If any `processView` returns a truthy value, it will be treated as the
-  response, and we'll skip to **[the response middleware phase (:five:)](#response)**.
+  response, and we'll skip to **[the response middleware phase (:five:)](#five-response-middleware)**.
 * If any `processView` throws an error or returns a rejected promise, it
-  will be treated as an error and we'll skip to **[the error middleware phase (:six:)](#error)**.
-* Otherwise, proceed to **[view execution (:four:)](#view-execution)**.
-
-<a id="view"></a>
+  will be treated as an error and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware)**.
+* Otherwise, proceed to **[view execution (:four:)](#four-view-execution)**.
 
 ## :four: `View` execution
 
@@ -68,11 +60,9 @@ request][ref-request] and the [context map][ref-reverse-context] from the route
 match.
 
 * If the view throws an error or returns a rejected promise, it will be
-  treated as an error and we'll skip to **[the error middleware phase (:six:)](#error)**.
+  treated as an error and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware)**.
 * Otherwise, **any** value or promise for a value returned by the view will
-  be treated as the current response. Continue to **[the response middleware phase (:five:)](#response)**.
-
-<a id="response">
+  be treated as the current response. Continue to **[the response middleware phase (:five:)](#five-response-middleware)**.
 
 ## :five: `Response` middleware
 
@@ -81,29 +71,27 @@ middleware that has a `processResponse` will execute. Middleware lacking
 a `processResponse` will be skipped.
 
 * If any `processResponse` returns a truthy value, it will be treated as
-  the response, and we'll skip to **[the flush phase (:seven:)](#flush)**.
+  the response, and we'll skip to **[the flush phase (:seven:)](#seven-flush)**.
 * If any `processResponse` throws an error or returns a rejected promise,
   it will be treated as an error and we'll skip to
-  **[the error middleware phase (:six:)](#error)**.
-* Otherwise, continue to **[the flush phase (:seven:)](#flush)** with the
+  **[the error middleware phase (:six:)](#six-error-middleware)**.
+* Otherwise, continue to **[the flush phase (:seven:)](#seven-flush)** with the
   current response.
-
-<a id="error"></a>
 
 ## :six: `Error` middleware
 
-If no error has occurred, continue to **[the flush phase (:seven:)](#flush)**.
+If no error has occurred, continue to **[the flush phase (:seven:)](#seven-flush)**.
 
 Executed in **reverse order**, from the last middleware to the first. Any
 middleware that has a `processError` will execute. Middleware lacking
 a `processError` will be skipped.
 
 * If any `processError` returns a truthy value, it will be treated as the
-  response and we'll skip to **[the flush phase (:seven:)](#flush)**.
+  response and we'll skip to **[the flush phase (:seven:)](#seven-flush)**.
 * If any `processError` throws an error or returns a rejected promise, it
   will be treated as the final error and we'll skip to
-  **[the flush phase (:seven:)](#flush)**.
-* Otherwise, proceed to **[the flush phase (:seven:)](#flush)** with the
+  **[the flush phase (:seven:)](#seven-flush)**.
+* Otherwise, proceed to **[the flush phase (:seven:)](#seven-flush)** with the
   current error.
 
 ## :seven: Flush

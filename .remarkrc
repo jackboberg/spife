@@ -11,7 +11,8 @@
       "maximum-heading-length": 80,
       "no-heading-punctuation": false,
       "no-missing-blank-lines": false
-    }
+    },
+    "validate-links": true
   },
   "settings": {
     "listItemIndent": "1",

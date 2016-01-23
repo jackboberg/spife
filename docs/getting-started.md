@@ -30,21 +30,17 @@ the section.
 > looks like :spaghetti:, though, remember this doc is here for you!
 > :revolving\_hearts:
 
-<a id="table-of-contents"></a>
-
 ## :books: Table of Contents
 
-* [:beginner: Your First Knork](#setup)
-  * [:floppy\_disk: Models](#models)
-  * [:busstop: Routes](#routes)
-  * [:mount\_fuji: Views](#views)
-    * [:orange\_book: Paginated Views](#paginated-views)
-    * [:skull: User Input](#user-input)
-    * [:triangular\_ruler: :evergreen\_tree: Metrics and Logging](#metrics-and-logging)
-  * [:clapper: Server](#server)
-    * [:art: Middleware](#middleware)
-
-<a id="setup">
+* [:beginner: Your First Knork](#beginner-your-first-knork)
+  * [:floppy\_disk: Models](#floppydisk-models)
+  * [:busstop: Routes](#busstop-routes)
+  * [:mount\_fuji: Views](#mountfuji-views)
+    * [:orange\_book: Paginated Views](#orangebook-paginated-views)
+    * [:skull: User Input](#skull-user-input)
+    * [:triangular\_ruler: :evergreen\_tree: Metrics and Logging](#triangularruler-evergreentree-metrics-and-logging)
+  * [:clapper: Server](#clapper-server)
+    * [:art: Middleware](#art-middleware)
 
 ## :beginner: Your First Knork
 
@@ -107,7 +103,7 @@ have it, run `createdb knork_example`, and then run the following inside of
 
 Type `\q` and hit enter to exit the shell.
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="models"></a>
 
@@ -231,7 +227,7 @@ Package.objects = orm(Package, {
 Easy as that — we have a `Package` with a foreign key to `Destination`.
 We can totally build an API around this!
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="routes"></a>
 
@@ -284,7 +280,7 @@ attached to the parameter. If all of these steps pass for all parameters AND
 the request method matches, the route is matched. Knork will take that match
 and call the associated view.
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="views"></a>
 
@@ -430,7 +426,7 @@ need to return a non-2XX or non-3XX response, it's best to throw these objects.
 Finally, we create an empty response using `reply.empty()`, give it a status
 code, and return it as our ultimate response.
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="paginated-views"></a>
 
@@ -481,7 +477,7 @@ To control the JSON output by a `Package`, we have multiple options:
 If you wish to control overall output of all instances of `Package`, the first
 option is the way to go. Otherwise, you can use the `serialize` option.
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="user-input"></a>
 
@@ -664,7 +660,7 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
 > specific code is desired, authors should catch and rethrow them as in the
 > above example.
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="metrics-and-logging"></a>
 
@@ -691,13 +687,13 @@ function createPackage (req, context) {
 This data will be handed to [a `numbat-emitter` instance][numbat-emitter]
 specifically configured for your Knork server — easy as that!
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="server"></a>
 
 ### :clapper: Server
 
-[Table of Contents ⏎](#table-of-contents)
+[Table of Contents ⏎](#books-table-of-contents)
 
 <a id="middleware"></a>
 
@@ -733,11 +729,13 @@ specifically configured for your Knork server — easy as that!
 
 [ref-knork-reply]: ./reference/reply.md
 
-[model]: #models
+[model]: #floppydisk-models
 
 [joi]: https://github.com/hapijs/joi
 
-[ref-knork-validate]: ./reference/decorators.md#validate
+[ormnomnom-install-postgres]: https://github.com/chrisdickinson/ormnomnom/blob/1de3c2fc89136745436e0cc38ed6bc919e699bbc/docs/getting-started.md#getting-postgres
+
+[ref-knork-validate]: ./reference/decorator-validate.md
 
 [def-decorator]: https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841#.dnzdeh2v6
 
