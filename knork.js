@@ -19,7 +19,8 @@ function makeKnork (name, server, urls, middleware, opts) {
     maxBodySize: 1 << 20, // default to 1mb
     metrics: null,
     isExternal: true,
-    requestIDHeaders: ['request-id']
+    requestIDHeaders: ['request-id'],
+    onclienterror: () => {}
   }, opts || {})
   if (isNaN(opts.maxBodySize) || opts.maxBodySize < 0) {
     throw new Error(`
@@ -71,15 +72,14 @@ class Server {
     server.removeAllListeners('request')
     server
       .on('request', (req, res) => this.onrequest(req, res))
-      .on('clientError', (err, sock) => this.onclienterror(err, sock))
+      .on('clientError', (err, sock) => opts.onclienterror(err, sock))
 
     // standard has bad opinions about ternaries. there, I said it.
     /* eslint-disable operator-linebreak */
     this.metrics = (
       opts.metrics && typeof opts.metrics === 'object' ? opts.metrics :
       typeof opts.metrics === 'string' ? createMetrics(this.name, opts.metrics) :
-      typeof process.env.METRICS === 'string' ? createMetrics(
-        this.name, process.env.METRICS) :
+      process.env.METRICS ? createMetrics(this.name, process.env.METRICS) :
       createFakeMetrics()
     )
     /* eslint-enable operator-linebreak */
@@ -108,7 +108,7 @@ class Server {
         resp => handleResponse(this, kreq, resp),
         err => handleLifecycleError(this, kreq, err)
       ).then(response => {
-        res.writeHead(response.status || 200, response.headers || {})
+        res.writeHead(response.status || 200, response.headers)
         return new Promise((resolve, reject) => {
           ms.pipe(response.stream, res, err => {
             err ? reject(err) : resolve()
@@ -124,10 +124,6 @@ class Server {
     }).catch(err => {
       handleStreamError(this, err)
     })
-  }
-
-  onclienterror (err, sock) {
-
   }
 }
 
@@ -276,7 +272,7 @@ function handleResponse (knork, req, data) {
   ) ? _objectModeToNLJSON(data)
     : reply(data)
 
-  const headers = reply.headers(resp)
+  const headers = reply.headers(resp) || {}
   const status = reply.status(resp)
 
   if (resp.pipe) {
@@ -327,9 +323,6 @@ function handleResponse (knork, req, data) {
     headers,
     stream
   }
-}
-
-function noop () {
 }
 
 function handleStreamError (knork, err) {
