@@ -3,6 +3,9 @@
     "toc": {
       "tight": true
     },
+    "slug": {
+      "library": "github"
+    },
     "lint": {
       "no-html": false,
       "list-item-spacing": false,
