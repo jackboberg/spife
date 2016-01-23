@@ -20,6 +20,8 @@ function createMiddleware () {
       }
     },
     processError (req, err) {
+      console.error(err)
+      err.requestID = req.id
       if (!reply.status(err)) {
         if (this.isExternal && process.env.ENVIRONMENT === 'production') {
           throw new reply.InternalServerError(
@@ -28,7 +30,6 @@ function createMiddleware () {
         }
         reply.status(err, 500)
       }
-      err['request_id'] = req.id
     }
   }
 }

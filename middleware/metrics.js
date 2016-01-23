@@ -54,10 +54,12 @@ function recordMetric (req, res, defaultCode) {
     value: latency,
     route: stats.view
   })
+  const status = reply.status(res) || defaultCode
   process.emit('metric', {
     name: 'response',
-    statusCode: reply.status(res) || defaultCode,
+    statusCode: status,
     value: latency,
     route: stats.view
   })
+  console.log({status, latency})
 }

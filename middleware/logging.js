@@ -2,13 +2,32 @@
 
 module.exports = createLoggingMiddleware
 
-const bole = require('bole')
+const bole = require('../logging')
+const bistre = require('bistre')
 
 const DOMAIN_TO_LOGGER = new WeakMap()
 
-function createLoggingMiddleware (logger, patchObject) {
+function createLoggingMiddleware (opts, patchObject) {
   patchObject = patchObject || console
   patch(patchObject)
+
+  opts = Object.assign({
+    level: 'info',
+    stream: null
+  }, opts || {})
+
+  if (opts.stream === null) {
+    const pretty = bistre()
+    opts.stream = (
+      process.env.TAP || (
+        process.env.ENVIRONMENT !== 'production' &&
+        process.env.ENVIRONMENT !== 'staging'
+      )
+    ) ? (pretty.pipe(process.stdout), pretty) : process.stdout
+  }
+
+  bole.output(opts)
+
   return {
     install (knork) {
       this.name = knork.name
@@ -17,6 +36,7 @@ function createLoggingMiddleware (logger, patchObject) {
       if (process.domain) {
         DOMAIN_TO_LOGGER.set(process.domain, bole(`${this.name}:${req.id}`))
       }
+      req._logRaw()
     },
     processView (req, match, context) {
       // XXX(chrisdickinson): This is a bit of a hack, since the
