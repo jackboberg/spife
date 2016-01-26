@@ -1,6 +1,7 @@
 'use strict'
 
 const querystring = require('querystring')
+const Promise = require('promise')
 const joi = require('joi')
 
 const validate = require('../decorators/validate')
@@ -47,11 +48,11 @@ function list (req, context, opts) {
         {page: page.prev}
       )))
     }
-    return {
-      objects: page.objects.map(xs => opts.serialize(xs)),
+    return Promise.props({
+      objects: Promise.all(page.objects.map(xs => opts.serialize(xs))),
       total: page.total,
       urls
-    }
+    })
   }).catch(paginate.OutOfRange, rethrow(404))
     .catch(paginate.InvalidPage, rethrow(400))
 }
