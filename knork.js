@@ -325,7 +325,7 @@ function handleResponse (knork, req, data) {
       stream
     }
   } catch (err) {
-    return handleLifecycleError(err)
+    return handleLifecycleError(knork, req, err)
   }
 }
 
