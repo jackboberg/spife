@@ -299,29 +299,33 @@ function handleResponse (knork, req, data) {
     )
   }
 
-  const asOctetStream = (
-    Buffer.isBuffer(resp)
-    ? data
-    : new Buffer(
-        process.env.DEBUG
-        ? JSON.stringify(resp, null, 2)
-        : JSON.stringify(resp), 'utf8'
-      )
-  )
+  try {
+    const asOctetStream = (
+      Buffer.isBuffer(resp)
+      ? data
+      : new Buffer(
+          process.env.DEBUG
+          ? JSON.stringify(resp, null, 2)
+          : JSON.stringify(resp), 'utf8'
+        )
+    )
 
-  headers['content-length'] = asOctetStream.length
-  const stream = new Readable({
-    read (n) {
-      this.push(this.original)
-      this.push(null)
+    headers['content-length'] = asOctetStream.length
+    const stream = new Readable({
+      read (n) {
+        this.push(this.original)
+        this.push(null)
+      }
+    })
+    stream.original = asOctetStream
+
+    return {
+      status,
+      headers,
+      stream
     }
-  })
-  stream.original = asOctetStream
-
-  return {
-    status,
-    headers,
-    stream
+  } catch (err) {
+    return handleLifecycleError(err)
   }
 }
 
