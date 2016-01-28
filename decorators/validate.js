@@ -5,8 +5,9 @@ module.exports = {
   query: validateQuery
 }
 
+const Promise = require('bluebird')
 const reply = require('../reply')
-const joi = require('joi')
+const joi = require('../joi')
 
 function validateBody (schema, view) {
   return inner
