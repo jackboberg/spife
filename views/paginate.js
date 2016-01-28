@@ -1,7 +1,7 @@
 'use strict'
 
 const querystring = require('querystring')
-const Promise = require('promise')
+const Promise = require('bluebird')
 const joi = require('joi')
 
 const validate = require('../decorators/validate')
