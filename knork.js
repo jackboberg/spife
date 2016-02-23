@@ -334,10 +334,14 @@ function handleStreamError (knork, err) {
 }
 
 function createMetrics (name, str) {
-  return new Emitter({
+  const emitter = new Emitter({
     app: name,
     uri: str
   })
+  if (Emitter.setGlobalEmitter) {
+    Emitter.setGlobalEmitter(emitter)
+  }
+  return emitter
 }
 
 function createFakeMetrics () {
