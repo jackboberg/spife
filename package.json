@@ -52,6 +52,7 @@
     "pg": "^4.4.3",
     "range-parser": "^1.0.3",
     "reverse": "^1.0.1",
-    "statuses": "^1.2.1"
+    "statuses": "^1.2.1",
+    "uuid": "^2.0.1"
   }
 }
