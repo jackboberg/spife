@@ -8,13 +8,11 @@ const validate = require('../decorators/validate')
 const paginate = require('../utils/paginate')
 const rethrow = require('../utils/rethrow')
 
-module.exports = {
-  list: validate.query(joi.object({
-    perPage: joi.number().integer().min(0).default(10),
-    page: joi.number().integer().min(0).default(0),
-    order: joi.string()
-  }), list)
-}
+module.exports = validate.query(joi.object({
+  perPage: joi.number().integer().min(0).default(10),
+  page: joi.number().integer().min(0).default(0),
+  order: joi.string()
+}), list)
 
 function list (req, context, opts) {
   opts = Object.assign({
