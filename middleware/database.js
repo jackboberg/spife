@@ -17,7 +17,7 @@ function createDatabaseMiddleware (opts) {
     processRequest (request) {
       db.install(process.domain, () => {
         return new Promise((resolve, reject) => {
-          pg.connect(opts.connection, (err, connection, release) => {
+          pg.connect(opts.postgres, (err, connection, release) => {
             err ? reject(err) : resolve({connection, release})
           })
         })
