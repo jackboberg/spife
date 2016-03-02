@@ -12,7 +12,7 @@ module.exports = validate.query(joi.object({
   perPage: joi.number().integer().min(0).default(10),
   page: joi.number().integer().min(0).default(0),
   order: joi.string()
-}), list)
+}).unknown(), list)
 
 function list (req, context, opts) {
   opts = Object.assign({
