@@ -47,7 +47,7 @@
     "format-link-header": "^1.0.0",
     "mississippi": "^1.2.0",
     "numbat-emitter": "^2.3.2",
-    "ormnomnom": "^2.1.2",
+    "ormnomnom": "^2.2.0",
     "parse-link-header": "^0.4.1",
     "pg": "^4.4.3",
     "range-parser": "^1.0.3",
