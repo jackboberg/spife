@@ -154,12 +154,12 @@ function runProcessView (knork, request) {
   }
   const context = new Map(function *() {
     const entries = Array.from(match).reverse()
-    var name = ''
+    const name = []
     for (var xs of entries) {
       yield * xs.context
-      name += xs.name
+      name.push(xs.name)
     }
-    request.viewName = name
+    request.viewName = name.join('.')
   }())
 
   return _iterateMiddleware(knork.middleware, (mw, resolve, reject) => {

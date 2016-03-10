@@ -70,7 +70,7 @@ function createTransactionalTest (baseTest, routes, middleware, dbName) {
           }
         },
         onSubsessionStart (parent, child) {
-          child.queries = parent.queries
+          child.queries = parent.queries || []
           child.routeName = parent.routeName
           child.startTime = parent.startTime
         }
@@ -104,15 +104,14 @@ function createTransactionalTest (baseTest, routes, middleware, dbName) {
         processRequest (req) {
           return getSession.then(() => {
             session.assign(process.domain)
+            db.session.queries = []
+            db.session.startTime = Date.now()
           })
         }
       }
       const trackRouteQueryCountMW = {
         processView (req, match) {
-          const name = Array.from(match).map(xs => xs.name).reverse().join('.')
-          db.session.routeName = name
-          db.session.queries = []
-          db.session.startTime = Date.now()
+          db.session.routeName = req.viewName
         },
         processResponse (req, resp) {
           aggregateInfo(
@@ -120,8 +119,6 @@ function createTransactionalTest (baseTest, routes, middleware, dbName) {
             db.session.queries,
             Date.now() - db.session.startTime
           )
-          db.session.queries =
-          db.session.routeName = null
         }
       }
       orm.setConnection(db.getConnection)
