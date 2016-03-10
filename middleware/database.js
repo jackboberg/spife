@@ -57,7 +57,7 @@ function defaultMetrics (name) {
         emittedIdleExit = true
         process.emit('metric', {
           name: `${name}.idleTime`,
-          value: lastIdleTime - now
+          value: now - lastIdleTime
         })
       }
       batonMap.set(baton, {
