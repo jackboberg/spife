@@ -43,6 +43,7 @@ request.
     * [request.rawHeaders → Array&lt;Array&lt;String, String>>](#requestrawheaders--arrayarraystring-string)
     * [request.url → String](#requesturl--string)
     * [request.urlObject → URL](#requesturlobject--url)
+    * [request.viewName → String](#requestviewname--string)
 
 ## API
 
@@ -180,6 +181,20 @@ true)`][def-url-parse].
 module.exports = function myView (req, context) {
   console.log(req.urlObject.pathname)
   return 'neat.'
+}
+```
+
+#### `request.viewName → String`
+
+Get the dot-delimited view path, suitable for passing to `routes.reverse`.
+
+```javascript
+'use strict'
+
+const routes = require('../path/to/my/apps/routes')
+
+module.exports = function myView (req, context) {
+  return routes.reverse(req.viewName)
 }
 ```
 

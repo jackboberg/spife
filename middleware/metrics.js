@@ -15,11 +15,7 @@ function createMiddleware () {
         return
       }
       const stats = REQ_TO_STATS.get(req)
-      const name = []
-      for (var xs of match) {
-        name.push(xs.name)
-      }
-      stats.setView(name.reverse().join('.'))
+      stats.setView(req.viewName)
     },
     processResponse (req, res) {
       recordMetric(req, res, 200)
