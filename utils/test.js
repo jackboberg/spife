@@ -65,7 +65,7 @@ function createTransactionalTest (baseTest, routes, middleware, dbName) {
         },
         onTransactionConnectionFinish (baton) {
           const startTime = batonMap.get(baton)
-          if (startTime) {
+          if (startTime && db.session.queries) {
             db.session.queries.push(Date.now() - startTime)
           }
         },
