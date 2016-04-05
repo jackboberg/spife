@@ -2,7 +2,7 @@
 
 module.exports = createMiddleware
 
-const procMetrics = require('numbat-metrics')
+const procMetrics = require('numbat-process')
 
 const reply = require('../reply')
 const REQ_TO_STATS = new WeakMap()
