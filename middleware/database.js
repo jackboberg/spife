@@ -12,9 +12,27 @@ function createDatabaseMiddleware (opts) {
   opts = opts || {}
   opts.postgres = opts.postgres || {}
   orm.setConnection(db.getConnection)
+  var poolTimer = null
   return {
     install (knork) {
       opts.metrics = opts.metrics || defaultMetrics(knork.name)
+      const pools = Object.keys(pg.pools.all)
+
+      if (pools.length !== 1) {
+        return
+      }
+
+      const pool = pg.pools.all[pools[0]]
+      poolTimer = setInterval(() => {
+        process.emit('metric', {
+          'name': `${knork.name}.pg-pool-available`,
+          'value': pool.availableObjectsCount()
+        })
+        process.emit('metric', {
+          'name': `${knork.name}.pg-pool-waiting`,
+          'value': pool.waitingClientsCount()
+        })
+      }, 1000)
     },
     processRequest (request) {
       db.install(process.domain, () => {
@@ -33,6 +51,7 @@ function createDatabaseMiddleware (opts) {
       db.session.viewName = req.viewName
     },
     onServerClose () {
+      clearInterval(poolTimer)
       pg.end()
     }
   }
