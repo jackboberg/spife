@@ -2,11 +2,17 @@
 
 module.exports = createMiddleware
 
+const procMetrics = require('numbat-metrics')
+
 const reply = require('../reply')
 const REQ_TO_STATS = new WeakMap()
 
 function createMiddleware () {
+  var closeProcMetrics = null
   return {
+    install (knork) {
+      closeProcMetrics = procMetrics(knork.metrics, 1000)
+    },
     processRequest (req) {
       REQ_TO_STATS.set(req, new Stats())
     },
@@ -22,6 +28,9 @@ function createMiddleware () {
     },
     processError (req, err) {
       recordMetric(req, err, 500)
+    },
+    onServerClose () {
+      closeProcMetrics()
     }
   }
 }
