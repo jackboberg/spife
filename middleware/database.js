@@ -16,14 +16,14 @@ function createDatabaseMiddleware (opts) {
   return {
     install (knork) {
       opts.metrics = opts.metrics || defaultMetrics(knork.name)
-      const pools = Object.keys(pg.pools.all)
-
-      if (pools.length !== 1) {
-        return
-      }
-
-      const pool = pg.pools.all[pools[0]]
       poolTimer = setInterval(() => {
+        const pools = Object.keys(pg.pools.all)
+
+        if (pools.length !== 1) {
+          return
+        }
+
+        const pool = pg.pools.all[pools[0]]
         process.emit('metric', {
           'name': `${knork.name}.pg-pool-available`,
           'value': pool.availableObjectsCount()
