@@ -31,7 +31,7 @@ request.
   * [Methods](#methods)
 
     * [request.accept → Accept](#requestaccept--accept)
-    * [request.body → Promise&lt;Object>](#requestbody--promiseobject)
+    * [request.body → Promise&lt;Object|null>](#requestbody--promiseobjectnull)
     * [request.getRanges(size) → Ranges](#requestgetrangessize--ranges)
     * [request.headers → Object&lt;String : String>](#requestheaders--objectstring--string)
     * [request.httpVersion → String](#requesthttpversion--string)
@@ -69,11 +69,12 @@ module.exports = function myView (req, context) {
 }
 ```
 
-#### `request.body → Promise<Object>`
+#### `request.body → Promise<Object|null>`
 
 Attempt to fetch the body as JSON. Fails if the body has been disabled (by
 acccessing `.raw` or `.pipe`), if the request is too large, or if the body does
-not represent JSON. The value will be cached for future use.
+not represent JSON. The value will be cached for future use. If the request did
+not provide a body, this promise will resolve to `null`.
 
 The body will not be consumed until this property is accessed.
 
