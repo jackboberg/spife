@@ -2,7 +2,7 @@
 
 const querystring = require('querystring')
 const Promise = require('bluebird')
-const joi = require('joi')
+const joi = require('../joi')
 
 const validate = require('../decorators/validate')
 const paginate = require('../utils/paginate')
@@ -54,4 +54,3 @@ function list (req, context, opts) {
   }).catch(paginate.OutOfRange, rethrow(404))
     .catch(paginate.InvalidPage, rethrow(400))
 }
-
