@@ -407,7 +407,7 @@ function deletePackage (req, context) {
     if (count === 0) {
       throw new reply.NotFoundError()
     }
-    return reply.status(reply.empty(), 204)
+    return reply.empty(204)
   })
 }
 

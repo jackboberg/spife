@@ -26,7 +26,7 @@ Contains methods for creating and manipulating HTTP responses.
   * [Methods](#methods)
 
     * [reply(resp\[, code\]\[, headers\]) → Response&lt;resp>](#replyresp-code-headers--responseresp)
-    * [reply.empty() → Response&lt;''>](#replyempty--response)
+    * [reply.empty(code) → Response&lt;''>](#replyempty--response)
     * [reply.link(resp) → Object | undefined](#replylinkresp--object--undefined)
     * [reply.link(resp, rel) → Object | undefined](#replylinkresp-rel--object--undefined)
     * [reply.link(resp, rel, value) → Response&lt;resp>](#replylinkresp-rel-value--responseresp)
@@ -213,10 +213,12 @@ module.exports = function myView (req, context) {
 > which allows for an attack known as [response
 > splitting][def-response-splitting].
 
-#### `reply.empty() → Response<''>`
+<a name="replyempty--response"></a>
+#### `reply.empty(code) → Response<''>`
 
 A shorthand for [`raw('')`][shorthand-raw]. Useful for returning `201 Created`
-or `204 No Content` responses.
+or `204 No Content` responses. If no `code` is given, `204 No Content` will be
+used.
 
 ```javascript
 'use strict'
@@ -224,10 +226,7 @@ const reply = require('knork/reply')
 
 module.exports = function myView (req, context) {
   return deleteSomeModel().then(() => {
-    return reply.status(
-      reply.empty(),
-      204
-    )
+    return reply.empty(204)
   })
 }
 ```
@@ -325,7 +324,7 @@ module.exports = function myView (req, context) {
 
 #### `reply.redirect([resp, ]url[, code = 302]) → Response<resp>`
 
-A shorthand for [`header(status(empty(), 302), 'location',
+A shorthand for [`header(empty(302), 'location',
 url)`][shorthand-header]. Handy for redirecting clients after the success of an
 operation, or when a resource exists elsewhere. Combine with
 [`reverse.reverse`][reverse-reverse] for best results:
