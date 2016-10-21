@@ -59,7 +59,6 @@
     "percentile": "^1.1.0",
     "pg": "^4.4.3",
     "range-parser": "^1.0.3",
-    "redis": "^2.6.2",
     "reverse": "^2.0.0",
     "statuses": "^1.2.1",
     "table": "^3.8.3",
