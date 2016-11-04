@@ -18,9 +18,9 @@ module.exports = {
   createTransactionalTest
 }
 
-function createTransactionalTest (baseTest, routes, middleware, dbName) {
+function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
   process.nextTick(outputRouteMetrics)
-
+  port = port || 60808
   return test
 
   function test (name, run) {
@@ -44,7 +44,7 @@ function createTransactionalTest (baseTest, routes, middleware, dbName) {
       //    the session is rolled back and close the server.
       // 6. then once eeeeeverything else is done, we shutdown the pg pool.
 
-      const server = http.createServer().listen(60808)
+      const server = http.createServer().listen(port)
       const testDomain = domain.create()
 
       const batonMap = new WeakMap()
