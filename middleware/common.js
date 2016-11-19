@@ -20,7 +20,12 @@ function createMiddleware () {
       }
     },
     processError (req, err) {
-      console.error(err)
+      console.error(
+        reply.status(err) < 500
+        ? err.message
+        : err
+      )
+
       err.requestID = req.id
       if (!reply.status(err)) {
         if (this.isExternal && process.env.ENVIRONMENT === 'production') {
