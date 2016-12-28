@@ -46,10 +46,13 @@ test('server promise resolves once http server listening', assert => Promise.try
   const ee = new EE()
   var resolve = null
   var reject = null
+  /* eslint-disable promise/param-names */
   const promise = new Promise((_resolve, _reject) => {
     resolve = _resolve
     reject = _reject
   })
+  /* eslint-enable promise/param-names */
+
   const timeout = setTimeout(() => {
     reject(new Error('did not resolve server on listening'))
   }, 50)
@@ -532,7 +535,7 @@ test('not implemented works', assert => Promise.try(() => {
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
       assert.equal(res.statusCode, 501)
-      assert.equal(data + '', '{"message":"\\\"GET /\\\" is not implemented."}')
+      assert.equal(data + '', '{"message":"\\"GET /\\" is not implemented."}')
       assert.equal(list.length, 0)
       server.close()
     })
@@ -1160,9 +1163,9 @@ test('throwing error works: internal service', assert => Promise.try(() => {
           res.headers['content-type'],
           'application/json; charset=utf-8'
         )
-      } finally {
-        return server.close()
+      } catch (_) {
       }
+      return server.close()
     })
   })
 

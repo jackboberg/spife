@@ -77,9 +77,11 @@ function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
       })
 
       var rollbackTransaction = null
+      /* eslint-disable promise/param-names */
       const transactionPromise = new Promise((_, reject) => {
         rollbackTransaction = reject
       })
+      /* eslint-enable promise/param-names */
 
       var resolveSession = null
       var session = null

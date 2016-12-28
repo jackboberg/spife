@@ -4,13 +4,12 @@
   "description": ":curry: :knife_fork_plate: a jshttp based µframework :knife_fork_plate: :spaghetti:",
   "main": "knork.js",
   "scripts": {
-    "test:code": "tap test/**/*-test.js",
+    "test:code": "tap ${TAP_FLAGS:-'--'} test/**/*-test.js",
     "test:style": "standard",
     "doc:lint": "remark README.md docs",
     "test": "npm run test:code && npm run test:style && npm run doc:lint",
-    "cov:test": "nyc npm run test:code",
-    "cov:html": "npm run cov:test && nyc report --reporter=lcov",
-    "cov:view": "npm run cov:html && ecstatic coverage/lcov-report -p 60888",
+    "cov:test": "TAP_FLAGS='--cov' npm run test:code",
+    "cov:html": "TAP_FLAGS='--coverage-report=html' npm run test:code",
     "release": "standard-version"
   },
   "bin": {
@@ -32,36 +31,35 @@
   },
   "homepage": "https://github.com/npm/knork#readme",
   "devDependencies": {
-    "ecstatic": "^1.4.0",
-    "nyc": "^5.3.0",
+    "ecstatic": "^2.1.0",
     "remark": "^3.2.2",
     "remark-lint": "^2.2.1",
     "remark-slug": "^3.0.1",
     "remark-toc": "^2.0.1",
     "remark-validate-links": "^2.0.2",
-    "standard": "^5.4.1",
+    "standard": "^8.6.0",
     "standard-version": "^2.4.0",
-    "tap": "^5.0.1"
+    "tap": "^8.0.1"
   },
   "dependencies": {
     "@npm/pg-db-session": "^1.3.0",
-    "accepts": "^1.3.0",
+    "accepts": "^1.3.3",
     "ansi-styles": "^2.2.1",
     "bistre": "^1.0.1",
-    "bluebird": "^3.1.1",
-    "bole": "^2.0.0",
-    "format-link-header": "^1.0.0",
+    "bluebird": "^3.4.7",
+    "bole": "^3.0.2",
+    "format-link-header": "^2.0.0",
     "mississippi": "^1.2.0",
-    "numbat-emitter": "^2.3.2",
-    "numbat-process": "^2.0.7",
-    "ormnomnom": "^2.6.0",
+    "numbat-emitter": "^3.2.1",
+    "numbat-process": "^2.1.0",
+    "ormnomnom": "^2.7.0",
     "parse-link-header": "^0.4.1",
-    "percentile": "^1.1.0",
+    "percentile": "^1.2.0",
     "pg": "^4.4.3",
-    "range-parser": "^1.0.3",
+    "range-parser": "^1.2.0",
     "reverse": "^2.1.0",
-    "statuses": "^1.2.1",
-    "table": "^3.8.3",
-    "uuid": "^2.0.1"
+    "statuses": "^1.3.1",
+    "table": "^4.0.1",
+    "uuid": "^3.0.1"
   }
 }

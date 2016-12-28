@@ -201,10 +201,13 @@ function _iterateMiddleware (middleware, callMW, noResponse, ignoreResponse) {
   var resolve = null
   var reject = null
   var idx = 0
+
+  /* eslint-disable promise/param-names */
   const promise = new Promise((_resolve, _reject) => {
     resolve = _resolve
     reject = _reject
   })
+  /* eslint-enable promise/param-names */
 
   Promise.try(iter)
 
@@ -348,5 +351,5 @@ function createMetrics (name, str) {
 }
 
 function createFakeMetrics () {
-  return new class { metric () {} }
+  return new (class { metric () {} })()
 }
