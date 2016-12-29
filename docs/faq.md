@@ -5,7 +5,7 @@
 ## How do I return an empty response?
 
 You can either return `undefined`, or use
-[`require('knork/reply').empty()`](./reference/reply.md#replyempty--response).
+[`require('knork/reply').empty()`](./reference/reply.md#replyemptycode--response).
 
 ## Why are my logs all JSON-y?
 ### <small>Alternatively: Why _aren't_ my logs all JSON-y?</small>

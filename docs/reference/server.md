@@ -34,6 +34,7 @@ The server returned by `knork()`.
 
       * [options.isExternal](#optionsisexternal)
       * [options.maxBodySize](#optionsmaxbodysize)
+      * [options.enableFormParsing](#optionsenableformparsing)
       * [options.requestIDHeaders](#optionsrequestidheaders)
       * [options.onclienterror](#optionsonclienterror)
 
@@ -66,6 +67,8 @@ The server returned by `knork()`.
 #### `knork(name, http, urls[, middleware=[]][opts={}]) → Promise<Server>`
 
 ##### `options.isExternal`
+
+##### `options.enableFormParsing`
 
 ##### `options.maxBodySize`
 

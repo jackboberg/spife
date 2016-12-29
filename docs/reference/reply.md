@@ -26,6 +26,7 @@ Contains methods for creating and manipulating HTTP responses.
   * [Methods](#methods)
 
     * [reply(resp\[, code\]\[, headers\]) → Response&lt;resp>](#replyresp-code-headers--responseresp)
+    * [reply.cookie(resp, name, value, opts) → Response&lt;resp>](#replycookieresp-name-value-opts--responseresp)
     * [reply.empty(code) → Response&lt;''>](#replyempty--response)
     * [reply.link(resp) → Object | undefined](#replylinkresp--object--undefined)
     * [reply.link(resp, rel) → Object | undefined](#replylinkresp-rel--object--undefined)
@@ -212,6 +213,11 @@ module.exports = function myView (req, context) {
 > clients could otherwise insert UTF8 values that will decompose to newlines,
 > which allows for an attack known as [response
 > splitting][def-response-splitting].
+
+#### `reply.cookie(resp, name, value, opts) → Response&lt;resp>`
+
+Set a cookie named `name` to `value`. `opts` accepts the same parameters as the
+[:package: jshttp/cookie package](https://github.com/jshttp/cookie#options-1).
 
 <a name="replyempty--response"></a>
 #### `reply.empty(code) → Response<''>`

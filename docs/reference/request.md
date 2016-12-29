@@ -32,6 +32,8 @@ request.
 
     * [request.accept → Accept](#requestaccept--accept)
     * [request.body → Promise&lt;Object|null>](#requestbody--promiseobjectnull)
+    * [request.cookie(name) → null|String](#requestcookiename--nullstring)
+    * [request.cookies() → null|Object](#requestcookies--nullobject)
     * [request.getRanges(size) → Ranges](#requestgetrangessize--ranges)
     * [request.headers → Object&lt;String : String>](#requestheaders--objectstring--string)
     * [request.httpVersion → String](#requesthttpversion--string)
@@ -95,6 +97,14 @@ module.exports = function myView (req, context) {
   })
 }
 ```
+
+#### `request.cookie(name) → null|String`
+
+Returns the request cookie identified by `name`.
+
+#### `request.cookies() → null|Object`
+
+Returns the request cookie object, if present.
 
 #### `request.getRanges(size) → Ranges`
 

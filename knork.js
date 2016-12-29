@@ -19,6 +19,7 @@ function makeKnork (name, server, urls, middleware, opts) {
     maxBodySize: 1 << 20, // default to 1mb
     metrics: null,
     isExternal: true,
+    enableFormParsing: false,
     requestIDHeaders: ['request-id'],
     onclienterror: () => {}
   }, opts || {})
