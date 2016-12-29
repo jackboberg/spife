@@ -338,9 +338,12 @@ test('request.getRanges(size): return ranges object', assert => {
     }
   }))
 
-  return test.request({json: true, headers: {
-    'ranges': 'bytes=0-10,60-66'
-  }}).then(resp => {
+  return test.request({
+    json: true,
+    headers: {
+      'ranges': 'bytes=0-10,60-66'
+    }
+  }).then(resp => {
     assert.deepEqual(resp.body, [
       {start: 0, end: 10},
       {start: 60, end: 66}
@@ -361,9 +364,12 @@ test('request.accept: return accepts object', assert => {
     }
   }))
 
-  return test.request({json: true, headers: {
-    'accept': 'application/xml; q=0.9, application/json; q=1.0'
-  }}).then(resp => {
+  return test.request({
+    json: true,
+    headers: {
+      'accept': 'application/xml; q=0.9, application/json; q=1.0'
+    }
+  }).then(resp => {
     assert.equal(resp.body, 'application/json')
   })
 })
