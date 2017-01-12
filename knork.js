@@ -14,6 +14,11 @@ const reply = require('./reply')
 
 const IGNORE_RESPONSES = true
 
+const DEBUG = (
+  process.env.DEBUG ||
+  !new Set(['staging', 'production']).has(process.env.NODE_ENV)
+)
+
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
     maxBodySize: 1 << 20, // default to 1mb
@@ -148,6 +153,12 @@ function runProcessView (knork, request) {
     )
   }
   if (!match) {
+    if (DEBUG && request.urlObject.pathname === '/') {
+      let routes = knork.urls.targets.map(function (target) {
+        return target.method + ' ' + target.route[0]
+      })
+      return reply.status(JSON.stringify(routes, null, '\t'), 404)
+    }
     throw new reply.NotFoundError()
   }
   match.execute = function () {
