@@ -1,6 +1,6 @@
-# TemplateMiddleware
+# Template Middleware
 
-```
+```javascript
 const TemplateMiddleware = require('@npm/knork/middleware/template')
 const reply = require('@npm/knork/reply')
 const http = require('http')

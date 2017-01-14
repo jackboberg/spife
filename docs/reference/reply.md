@@ -394,7 +394,6 @@ Create a lazily-rendered template response, to be handled by
 string to use to lookup the template, and a `context` object to use to render
 the template.
 
-
 * **See also**: The [templates guide][templates-guide].
 
 [shorthand-raw]: #replyrawresp--responseresp
@@ -423,4 +422,4 @@ the template.
 
 [templates-guide]: ../topics/using-templates.md
 
-[templates-middleware]: ./middleware/template.md
+[template-middleware]: ./middleware/template.md
