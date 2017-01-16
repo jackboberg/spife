@@ -19,7 +19,7 @@ function createTemplateMiddleware (loaders, context) {
       return Promise.join(
         resp.lookup(this.loaders, req),
         Promise.all(this.context.map(xs => xs(req)))
-      ).then(([pair, contexts]) => {
+      ).spread((pair, contexts) => {
         process.emit('metric', {
           name: 'template.lookup',
           value: Date.now() - start,
