@@ -13,6 +13,8 @@ Contains methods for creating and manipulating HTTP responses.
 
     * [Response&lt;Any>](#responseany)
 
+    * [TemplateResponse](#templateresponse)
+
     * [HTTPError](#httperror)
 
     * [ServerError extends HTTPError](#servererror-extends-httperror)
@@ -39,6 +41,7 @@ Contains methods for creating and manipulating HTTP responses.
     * [reply.redirect(\[resp, \]url\[, code = 302\]) → Response&lt;resp>](#replyredirectresp-url-code--302--responseresp)
     * [reply.status(resp) → Number | undefined](#replystatusresp--number--undefined)
     * [reply.status(resp, code) → Response&lt;resp>](#replystatusresp-code--responseresp)
+    * [reply.template(name, context) → TemplateResponse](#replytemplatename-context--templateresponse)
 
 ## API
 
@@ -67,6 +70,13 @@ reply(fn) === fn
 reply('example') !== 'example'
 reply('example') instanceof require('stream').Readable
 ```
+
+#### `TemplateResponse`
+
+A response type created by [`reply.template(name,
+context)`](#replytemplatename-context--templateresponse), to be lazily rendered
+by [`TemplateMiddleware`][template-middleware]. For more on working with
+templates in knork, see the [templates guide][templates-guide].
 
 #### `HTTPError`
 
@@ -377,6 +387,15 @@ reply.status(resp, 204)              // === resp, w/ 204 status
 reply.status('', 204)                // === stream.Readable w/ 204 status
 ```
 
+#### `reply.template(name, context) → TemplateResponse`
+
+Create a lazily-rendered template response, to be handled by
+[`TemplateMiddleware`][template-middleware]. Takes two arguments: a `name`
+string to use to lookup the template, and a `context` object to use to render
+the template.
+
+* **See also**: The [templates guide][templates-guide].
+
 [shorthand-raw]: #replyrawresp--responseresp
 
 [shorthand-reply]: #replyresp-code-headers--responseresp
@@ -400,3 +419,7 @@ reply.status('', 204)                // === stream.Readable w/ 204 status
 [def-response-splitting]: https://en.wikipedia.org/wiki/HTTP_response_splitting
 
 [def-primitive]: https://developer.mozilla.org/en-US/docs/Glossary/Primitive
+
+[templates-guide]: ../topics/using-templates.md
+
+[template-middleware]: ./middleware/template.md
