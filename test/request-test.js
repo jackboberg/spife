@@ -150,6 +150,42 @@ test('request.cookie(): return cookie', assert => {
   })
 })
 
+test('request.cookie(): return cookie (multi, array)', assert => {
+  test.setController(routes`
+    GET / index
+  `({
+    index (req, context) {
+      return {result: req.cookie('foo')}
+    }
+  }))
+
+  return test.request({
+    json: true,
+    headers: {cookie: ['hello=world', 'foo=bar']}
+  }).then(resp => {
+    assert.equal(resp.statusCode, 200)
+    assert.deepEqual(resp.body, {result: 'bar'})
+  })
+})
+
+test('request.cookie(): return cookie (multi, string w/comma)', assert => {
+  test.setController(routes`
+    GET / index
+  `({
+    index (req, context) {
+      return {result: req.cookie('foo')}
+    }
+  }))
+
+  return test.request({
+    json: true,
+    headers: {cookie: ['hello=world, foo=bar']}
+  }).then(resp => {
+    assert.equal(resp.statusCode, 200)
+    assert.deepEqual(resp.body, {result: 'bar'})
+  })
+})
+
 test('request.body: fail on previous raw access', assert => {
   test.setController(routes`
     GET / index
