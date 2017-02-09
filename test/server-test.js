@@ -55,7 +55,7 @@ test('server promise resolves once http server listening', assert => Promise.try
 
   const timeout = setTimeout(() => {
     reject(new Error('did not resolve server on listening'))
-  }, 50)
+  }, 200)
   knork('anything', ee, null, []).then(server => {
     clearTimeout(timeout)
     resolve()
