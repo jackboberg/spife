@@ -53,7 +53,7 @@
     "mississippi": "^1.2.0",
     "numbat-emitter": "^3.2.1",
     "numbat-process": "^2.1.0",
-    "ormnomnom": "^2.7.0",
+    "ormnomnom": "^2.7.1",
     "parse-link-header": "^0.4.1",
     "percentile": "^1.2.0",
     "pg": "^4.4.3",
