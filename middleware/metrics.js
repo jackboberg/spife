@@ -11,7 +11,7 @@ function createMiddleware () {
   var closeProcMetrics = null
   return {
     install (knork) {
-      closeProcMetrics = procMetrics(knork.metrics, 1000)
+      closeProcMetrics = procMetrics(knork.metrics, 10000)
     },
     processRequest (req) {
       REQ_TO_STATS.set(req, new Stats())
