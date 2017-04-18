@@ -11,7 +11,11 @@ function createMiddleware () {
   var closeProcMetrics = null
   return {
     install (knork) {
-      closeProcMetrics = procMetrics(knork.metrics, 1000)
+      const procMetricsInterval = (
+        Number(process.env.PROCESS_METRICS_INTERVAL) ||
+        1000 * 30
+      )
+      closeProcMetrics = procMetrics(knork.metrics, procMetricsInterval)
     },
     processRequest (req) {
       REQ_TO_STATS.set(req, new Stats())
