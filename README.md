@@ -16,15 +16,15 @@ packages:
 ```javascript
 'use strict'
 
-const TransactionMiddleware = require('knork/middleware/transaction')
-const DatabaseMiddleware = require('knork/middleware/database')
-const LoggingMiddleware = require('knork/middleware/logging')
-const MetricsMiddleware = require('knork/middleware/metrics')
-const MonitorMiddleware = require('knork/middleware/monitor')
-const CommonMiddleware = require('knork/middleware/common')
-const routing = require('knork/routing')
-const bole = require('knork/logging')
-const knork = require('knork')
+const TransactionMiddleware = require('@npm/knork/middleware/transaction')
+const DatabaseMiddleware = require('@npm/knork/middleware/database')
+const LoggingMiddleware = require('@npm/knork/middleware/logging')
+const MetricsMiddleware = require('@npm/knork/middleware/metrics')
+const MonitorMiddleware = require('@npm/knork/middleware/monitor')
+const CommonMiddleware = require('@npm/knork/middleware/common')
+const routing = require('@npm/knork/routing')
+const bole = require('@npm/knork/logging')
+const knork = require('@npm/knork')
 
 const http = require('http')
 
@@ -57,7 +57,7 @@ getServer.then(knorkServer => {
 
 ## API
 
-Full docs [are available here][docs]. 
+Full docs [are available here][docs].
 
 1. If you're just getting started with Knork, you might try the
    [tutorial][getting-started]!
