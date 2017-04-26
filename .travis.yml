@@ -1,9 +1,8 @@
 sudo: false
 language: node_js
 node_js:
-  - '4.2'
-  - '5'
   - '6'
+  - '7'
 before_install:
   - npm install -g npm@latest
   - printf "@npm:registry=https://registry.internal.npmjs.com/\n//registry.internal.npmjs.com/:_authToken=${NPM_TOKEN}\n" >> ~/.npmrc
