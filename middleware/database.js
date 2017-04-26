@@ -44,7 +44,7 @@ function createDatabaseMiddleware (opts) {
     processRequest (request) {
       db.install(process.domain, () => {
         return new Promise((resolve, reject) => {
-          pool.connect(opts.postgres, (err, connection, release) => {
+          pool.connect((err, connection, release) => {
             err ? reject(err) : resolve({connection, release})
           })
         })

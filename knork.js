@@ -12,6 +12,7 @@ const ms = require('mississippi')
 const domain = require('domain')
 /* eslint-enable node/no-deprecated-api */
 
+const domainToRequest = require('./lib/domain-to-request')
 const makeKnorkRequest = require('./lib/request')
 const reply = require('./reply')
 
@@ -100,6 +101,7 @@ class Server {
     subdomain.add(req)
     subdomain.add(res)
     const getResult = subdomain.run(() => {
+      domainToRequest.request = kreq
       return runProcessRequest(this, kreq).then(userResponse => {
         if (userResponse) {
           return userResponse
