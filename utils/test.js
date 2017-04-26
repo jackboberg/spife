@@ -1,9 +1,12 @@
 'use strict'
 
 const Promise = require('bluebird')
-const domain = require('domain')
 const http = require('http')
 const fs = require('fs')
+
+/* eslint-disable node/no-deprecated-api */
+const domain = require('domain')
+/* eslint-enable node/no-deprecated-api */
 
 const pg = require('../db/connection')
 const db = require('../db/session')

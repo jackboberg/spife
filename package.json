@@ -30,8 +30,8 @@
   },
   "homepage": "https://github.com/npm/knork#readme",
   "devDependencies": {
-    "standard": "^8.6.0",
-    "standard-version": "^2.4.0",
+    "standard": "^10.0.2",
+    "standard-version": "^4.0.0",
     "tap": "^10.3.2"
   },
   "dependencies": {
