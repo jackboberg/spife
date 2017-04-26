@@ -4,12 +4,11 @@
   "description": ":curry: :knife_fork_plate: a jshttp based µframework :knife_fork_plate: :spaghetti:",
   "main": "knork.js",
   "scripts": {
-    "test:code": "tap ${TAP_FLAGS:-'--'} test/**/*-test.js",
-    "test:style": "standard",
-    "doc:lint": "remark README.md docs",
-    "test": "npm run test:code && npm run test:style && npm run doc:lint",
-    "cov:test": "TAP_FLAGS='--cov' npm run test:code",
-    "cov:html": "TAP_FLAGS='--coverage-report=html' npm run test:code",
+    "test": "tap ${TAP_FLAGS:-'--'} test/**/*-test.js",
+    "lint": "standard",
+    "posttest": "npm run lint",
+    "cov:test": "TAP_FLAGS='--cov' npm t",
+    "cov:html": "TAP_FLAGS='--coverage-report=html' npm t",
     "release": "standard-version"
   },
   "bin": {
@@ -31,22 +30,16 @@
   },
   "homepage": "https://github.com/npm/knork#readme",
   "devDependencies": {
-    "ecstatic": "^2.1.0",
-    "remark": "^3.2.2",
-    "remark-lint": "^2.2.1",
-    "remark-slug": "^3.0.1",
-    "remark-toc": "^2.0.1",
-    "remark-validate-links": "^2.0.2",
     "standard": "^8.6.0",
     "standard-version": "^2.4.0",
-    "tap": "^10.0.2"
+    "tap": "^10.3.2"
   },
   "dependencies": {
-    "@npm/pg-db-session": "^1.3.0",
+    "@npm/pg-db-session": "^1.3.1",
     "accepts": "^1.3.3",
     "ansi-styles": "^2.2.1",
     "bistre": "^1.0.1",
-    "bluebird": "^3.4.7",
+    "bluebird": "^3.5.0",
     "bole": "^3.0.2",
     "cookie": "^0.3.1",
     "format-link-header": "^2.0.0",
