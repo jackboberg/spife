@@ -8,36 +8,43 @@ const pg = require('../db/connection')
 const db = require('../db/session')
 const orm = require('../db/orm')
 
+const logger = require('../logging')('database')
+
 function createDatabaseMiddleware (opts) {
   opts = opts || {}
   opts.postgres = opts.postgres || {}
   orm.setConnection(db.getConnection)
   var poolTimer = null
+  var pool = null
   return {
     install (knork) {
+      pool = new pg.Pool(opts.postgres)
+      pool.on('error', err => {
+        logger.error('pool client received error:')
+        logger.error(err)
+      })
+
+      const dbMetricsInterval = (
+        Number(process.env.PROCESS_METRICS_INTERVAL) ||
+        1000
+      )
+
       opts.metrics = opts.metrics || defaultMetrics(knork.name)
       poolTimer = setInterval(() => {
-        const pools = Object.keys(pg.pools.all)
-
-        if (pools.length !== 1) {
-          return
-        }
-
-        const pool = pg.pools.all[pools[0]]
         process.emit('metric', {
           'name': `${knork.name}.pg-pool-available`,
-          'value': pool.availableObjectsCount()
+          'value': pool.pool.availableObjectsCount()
         })
         process.emit('metric', {
           'name': `${knork.name}.pg-pool-waiting`,
-          'value': pool.waitingClientsCount()
+          'value': pool.pool.waitingClientsCount()
         })
-      }, 1000)
+      }, dbMetricsInterval)
     },
     processRequest (request) {
       db.install(process.domain, () => {
         return new Promise((resolve, reject) => {
-          pg.connect(opts.postgres, (err, connection, release) => {
+          pool.connect(opts.postgres, (err, connection, release) => {
             err ? reject(err) : resolve({connection, release})
           })
         })
@@ -52,7 +59,9 @@ function createDatabaseMiddleware (opts) {
     },
     onServerClose () {
       clearInterval(poolTimer)
-      pg.end()
+      const closed = pool.end()
+      pool = null
+      return closed
     }
   }
 }
