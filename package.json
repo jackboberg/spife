@@ -24,7 +24,7 @@
     "http"
   ],
   "author": "Chris Dickinson <chris@neversaw.us> (http://neversaw.us/)",
-  "license": "UNLICENSED",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/npm/knork/issues"
   },
