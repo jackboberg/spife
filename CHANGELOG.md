@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.0.0"></a>
+# [5.0.0](https://github.com/npm/knork/compare/v4.0.2...v5.0.0) (2017-04-28)
+
+
+
 <a name="3.0.0-beta0"></a>
 # [3.0.0-beta0](https://github.com/npm/knork/compare/v2.3.0...v3.0.0-beta0) (2016-12-28)
 
