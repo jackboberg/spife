@@ -104,12 +104,10 @@ with Knork.*
 To develop locally, clone this repository, and run `npm install` in a shell
 in the repository directory. From there you can:
 
-* `npm run test:code`: Run *just* the code tests.
-* `npm run test:style`: Run *just* the linter.
 * `npm test`: Run both the linter and the code tests.
+* `npm run lint`: Run *just* the linter.
 * `npm run cov:test`: Run the code tests with code coverage enabled.
 * `npm run cov:html`: Run the code tests and output a coverage directory.
-* `npm run cov:view`: Run the code tests, generate a coverage directory, and
   serve the directory at `http://localhost:60888`.
 
 ## License

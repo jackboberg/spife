@@ -7,8 +7,12 @@ const Readable = require('stream').Readable
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
 const ms = require('mississippi')
-const domain = require('domain')
 
+/* eslint-disable node/no-deprecated-api */
+const domain = require('domain')
+/* eslint-enable node/no-deprecated-api */
+
+const domainToRequest = require('./lib/domain-to-request')
 const makeKnorkRequest = require('./lib/request')
 const reply = require('./reply')
 
@@ -97,6 +101,7 @@ class Server {
     subdomain.add(req)
     subdomain.add(res)
     const getResult = subdomain.run(() => {
+      domainToRequest.request = kreq
       return runProcessRequest(this, kreq).then(userResponse => {
         if (userResponse) {
           return userResponse
@@ -164,7 +169,7 @@ function runProcessView (knork, request) {
   match.execute = function () {
     return match.controller[match.name](request, context)
   }
-  const context = new Map(function *() {
+  const context = new Map(function * () {
     const entries = Array.from(match).reverse()
     const name = []
     for (var xs of entries) {
@@ -321,7 +326,7 @@ function handleResponse (knork, req, data) {
     const asOctetStream = (
       Buffer.isBuffer(resp)
       ? data
-      : new Buffer(
+      : Buffer.from(
           process.env.DEBUG
           ? JSON.stringify(resp, null, 2)
           : JSON.stringify(resp), 'utf8'

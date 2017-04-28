@@ -977,7 +977,7 @@ test('returning buffer works: no content-type', assert => Promise.try(() => {
     GET / view
   `({
     view (req) {
-      return new Buffer('hello world')
+      return Buffer.from('hello world')
     }
   }), [])
 
@@ -1009,7 +1009,7 @@ test('returning buffer works: w/ content-type', assert => Promise.try(() => {
     GET / view
   `({
     view (req) {
-      return reply.header(new Buffer('hello world'), 'content-type', 'text/hat')
+      return reply.header(Buffer.from('hello world'), 'content-type', 'text/hat')
     }
   }), [])
 
@@ -1174,4 +1174,3 @@ test('throwing error works: internal service', assert => Promise.try(() => {
 
 test('returning rejection works', assert => Promise.try(() => {
 }))
-

@@ -174,4 +174,3 @@ test.request = function (opts) {
   opts.method = opts.method || 'GET'
   return Promise.promisify(request)(opts)
 }
-

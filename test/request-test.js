@@ -58,7 +58,7 @@ test('request.id: generate new id when request-id not present', assert => {
 
   return test.request().then(resp => {
     assert.equal(resp.statusCode, 200)
-    const buf = new Buffer(resp.body, 'base64')
+    const buf = Buffer.from(resp.body, 'base64')
     assert.equal(buf.length, 16)
   })
 })
@@ -191,7 +191,7 @@ test('request.body: fail on previous raw access', assert => {
     GET / index
   `({
     index (req, context) {
-      req.raw
+      (() => {})(req.raw)
       return req.body.then(() => {
         return 'foo'
       })
@@ -443,4 +443,3 @@ test.request = function (opts) {
   opts.method = opts.method || 'GET'
   return Promise.promisify(request)(opts)
 }
-
