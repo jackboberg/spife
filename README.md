@@ -1,5 +1,7 @@
 # :fork_and_knife: Knork :fork_and_knife:
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/npm/knork.svg?token=0594e62a6db02b36ab9a5dafe3982cc253ca070119b560a3e798ab0950643d2b&ts=1493750747725)](https://greenkeeper.io/)
+
 A jshttp-based microframework designed to [help align "doing the right thing"
 and "doing the easy thing"][topic-ethos]. Collects and curates the following
 packages:
