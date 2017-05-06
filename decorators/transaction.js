@@ -1,18 +1,20 @@
 'use strict'
 
+const decorate = require('@npm/decorate')
 const db = require('../db/session')
 
 module.exports = {
-  noTransaction,
-  atomic: db.atomic,
-  transaction: db.transaction
-}
-
-function noTransaction (op) {
-  inner.noTransaction = true
-  return inner
-
-  function inner () {
-    return op.apply(this, arguments)
+  noTransaction (op) {
+    const result = decorate(op, function (...args) {
+      return op.call(this, arguments)
+    })
+    result.noTransaction = true
+    return result
+  },
+  atomic (op) {
+    return decorate(op, db.atomic)
+  },
+  transaction (op) {
+    return decorate(op, db.transaction)
   }
 }
