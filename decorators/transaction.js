@@ -11,10 +11,6 @@ module.exports = {
     result.noTransaction = true
     return result
   },
-  atomic (op) {
-    return decorate(op, db.atomic)
-  },
-  transaction (op) {
-    return decorate(op, db.transaction)
-  }
+  atomic: db.atomic,
+  transaction: db.transaction
 }
