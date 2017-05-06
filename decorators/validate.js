@@ -5,12 +5,13 @@ module.exports = {
   query: validateQuery
 }
 
+const decorate = require('@npm/decorate')
 const Promise = require('bluebird')
 const reply = require('../reply')
 const joi = require('../joi')
 
 function validateBody (schema, view) {
-  return inner
+  return decorate(view, inner)
 
   function inner (req, context) {
     const args = Array.from(arguments)
@@ -26,7 +27,7 @@ function validateBody (schema, view) {
 }
 
 function validateQuery (schema, view) {
-  return inner
+  return decorate(view, inner)
 
   function inner (req, context) {
     const args = Array.from(arguments)
