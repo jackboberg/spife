@@ -51,7 +51,7 @@ fs.readFile(process.argv[2], 'utf8', (err, data) => {
   rows.unshift(headers2)
   rows.unshift(headers)
 
-  return console.log(table.default(rows, {
+  return console.log(table.table(rows, {
     drawHorizontalLine (index) {
       return index === 2
     }
