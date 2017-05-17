@@ -41,6 +41,8 @@ function createLoggingMiddleware (opts) {
           method: req.method,
           latency: req.latency
         })
+
+        return res
       }).catch(err => {
         const status = reply.status(err) || 500
         logger.info({
