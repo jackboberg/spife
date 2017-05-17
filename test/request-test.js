@@ -410,14 +410,45 @@ test('request.accept: return accepts object', assert => {
   })
 })
 
+test('request.router: allows overriding routes mid-request', assert => {
+  test.setController(routes`
+    GET / index
+  `({
+    index (req, context) {
+      return 'hello world'
+    }
+  }))
+
+  test.setMiddleware(req => {
+    req.router = routes`
+      GET / foo
+    `({
+      foo (req, context) {
+        return 'no way'
+      }
+    })
+  })
+
+  return test.request({
+    json: true
+  }).then(resp => {
+    assert.equal(resp.body, 'no way')
+  })
+})
+
 function test (name, runner, opts) {
   runner = runner || (() => {})
   tap.test(name, function named (assert) {
     test.controller = {}
+    test.middleware = () => {}
     const server = http.createServer().listen(60880)
     const kserver = knork('anything', server, routes`
       * / target
-    `(test.controller), [], opts || {isExternal: true})
+    `(test.controller), [{
+      processRequest (req) {
+        return test.middleware(req)
+      }
+    }], opts || {isExternal: true})
 
     return kserver.then(() => {
       return runner(assert)
@@ -431,6 +462,10 @@ function test (name, runner, opts) {
       })
     })
   })
+}
+
+test.setMiddleware = function (processRequest) {
+  test.middleware = processRequest
 }
 
 test.setController = function (routes) {

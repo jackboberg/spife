@@ -150,8 +150,9 @@ function runProcessRequest (knork, request) {
 
 function runProcessView (knork, request) {
   var match = null
+  const router = request.router
   try {
-    match = knork.urls.match(request.method, request.urlObject.pathname)
+    match = router.match(request.method, request.urlObject.pathname)
   } catch (err) {
     throw new reply.NotImplementedError(
       `"${request.method} ${request.urlObject.pathname}" is not implemented.`
@@ -159,7 +160,7 @@ function runProcessView (knork, request) {
   }
   if (!match) {
     if (DEBUG && request.urlObject.pathname === '/') {
-      let routes = knork.urls.targets.map(function (target) {
+      let routes = router.targets.map(function (target) {
         return target.method + ' ' + target.route[0]
       })
       return reply.status(JSON.stringify(routes, null, '\t'), 404)
