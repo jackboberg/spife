@@ -40,17 +40,11 @@ The server returned by `knork()`.
 
     * [Server#closed → Promise&lt;>](#serverclosed--promise)
 
-    * [Middleware#install(Server) → Promise&lt;>](#middlewareinstallserver--promise)
+    * [Middleware#processServer(Server, next) → Promise&lt;>](#middlewareinstallserver-next--promise)
 
-    * [Middleware#onServerClose(Server) → Promise&lt;>](#middlewareonservercloseserver--promise)
+    * [Middleware#processRequest(request, next) → MaybeResponse](#middlewareprocessrequestrequest-next--mayberesponse)
 
-    * [Middleware#processRequest(request, context) → MaybeResponse](#middlewareprocessrequestrequest-context--mayberesponse)
-
-    * [Middleware#processView(request, match, context) → MaybeResponse](#middlewareprocessviewrequest-match-context--mayberesponse)
-
-    * [Middleware#processResponse(request, response) → MaybeResponse](#middlewareprocessresponserequest-response--mayberesponse)
-
-    * [Middleware#processError(request, err) → MaybeResponse](#middlewareprocesserrorrequest-err--mayberesponse)
+    * [Middleware#processView(request, match, context, next) → MaybeResponse](#middlewareprocessviewrequest-match-context-next--mayberesponse)
 
 ## API
 
@@ -78,14 +72,8 @@ The server returned by `knork()`.
 
 #### `Server#closed → Promise<>`
 
-#### `Middleware#install(Server) → Promise<>`
+#### `Middleware#install(Server, next) → Promise<>`
 
-#### `Middleware#onServerClose(Server) → Promise<>`
+#### `Middleware#processRequest(request, context, next) → MaybeResponse`
 
-#### `Middleware#processRequest(request, context) → MaybeResponse`
-
-#### `Middleware#processView(request, match, context) → MaybeResponse`
-
-#### `Middleware#processResponse(request, response) → MaybeResponse`
-
-#### `Middleware#processError(request, err) → MaybeResponse`
+#### `Middleware#processView(request, match, context, next) → MaybeResponse`

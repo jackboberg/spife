@@ -7,6 +7,7 @@ const Readable = require('stream').Readable
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
 const ms = require('mississippi')
+const once = require('once')
 
 /* eslint-disable node/no-deprecated-api */
 const domain = require('domain')
@@ -14,14 +15,10 @@ const domain = require('domain')
 
 const domainToRequest = require('./lib/domain-to-request')
 const makeKnorkRequest = require('./lib/request')
+const Middleware = require('./lib/middleware')
 const reply = require('./reply')
 
-const IGNORE_RESPONSES = true
-
-const DEBUG = (
-  process.env.DEBUG ||
-  !new Set(['staging', 'production']).has(process.env.NODE_ENV)
-)
+const ONREADY = Symbol('onready')
 
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
@@ -32,67 +29,80 @@ function makeKnork (name, server, urls, middleware, opts) {
     requestIDHeaders: ['request-id'],
     onclienterror: () => {}
   }, opts || {})
+
   if (isNaN(opts.maxBodySize) || opts.maxBodySize < 0) {
     throw new Error(`
   maxBodySize should be a positive integer, got ${opts.maxBodySize} instead
     `.trim())
   }
-  var resolveClosed = null
-  var rejectClosed = null
-  const closed = new Promise((resolve, reject) => {
-    resolveClosed = resolve
-    rejectClosed = reject
-  })
-  const knork = new Server(name, server, urls, middleware || [], closed, opts)
-  server.once('close', () => {
-    // we dereference the install promise here so that we ensure that it
-    // has completed before we start shutting the middleware down.
-    install.then(() => {
-      _iterateMiddleware(knork.reverseMiddleware, (mw, resolve, reject) => {
-        if (!mw.onServerClose) {
-          return resolve()
-        }
-        Promise.resolve(mw.onServerClose(knork)).then(resolve, reject)
-      }, resolve => resolve(), IGNORE_RESPONSES).then(
-        resolveClosed,
-        rejectClosed
-      )
-    })
+
+  middleware = (middleware || []).map(xs => Middleware.from(xs))
+
+  const knork = new Server(
+    name,
+    server,
+    urls,
+    middleware || [],
+    opts
+  )
+
+  const onclosed = new Promise((resolve, reject) => {
+    server.once('close', resolve)
+    server.once('error', reject)
   })
 
-  const install = _iterateMiddleware(knork.middleware, (mw, resolve, reject) => {
-    if (!mw.install) {
-      return resolve()
-    }
-    Promise.resolve(mw.install(knork)).then(resolve, reject)
-  }, (resolve, reject) => resolve(), IGNORE_RESPONSES).return(knork)
+  const onready = new Promise((resolve, reject) => {
+    server.once(ONREADY, resolve)
+  })
 
-  return install
+  knork.closed = onion(
+    middleware,
+    (mw, ...args) => mw.processServer(...args),
+    () => {
+      server.emit(ONREADY, knork)
+      return onclosed
+    },
+    knork
+  )
+
+  return onready
 }
 
 class Server {
-  constructor (name, server, urls, middleware, closed, opts) {
+  constructor (name, server, urls, middleware, opts) {
     this.name = name
     this.urls = urls
+    this._middleware = null
     this.middleware = middleware
-    this.reverseMiddleware = middleware.slice().reverse()
     this.server = server
     this.opts = opts
-    this.closed = closed
+    this.closed = null
     server.removeAllListeners('request')
     server
       .on('request', (req, res) => this.onrequest(req, res))
       .on('clientError', (err, sock) => opts.onclienterror(err, sock))
 
-    // standard has bad opinions about ternaries. there, I said it.
-    /* eslint-disable operator-linebreak */
     this.metrics = (
-      opts.metrics && typeof opts.metrics === 'object' ? opts.metrics :
-      typeof opts.metrics === 'string' ? createMetrics(this.name, opts.metrics) :
-      process.env.METRICS ? createMetrics(this.name, process.env.METRICS) :
-      createFakeMetrics()
+      opts.metrics && typeof opts.metrics === 'object'
+      ? opts.metrics
+      : (
+        typeof opts.metrics === 'string'
+        ? createMetrics(this.name, opts.metrics)
+        : (
+          process.env.METRICS
+          ? createMetrics(this.name, process.env.METRICS)
+          : createFakeMetrics()
+        )
+      )
     )
-    /* eslint-enable operator-linebreak */
+  }
+
+  get middleware () {
+    return this._middleware
+  }
+
+  set middleware (mw) {
+    this._middleware = (mw || []).map(xs => Middleware.from(xs))
   }
 
   onrequest (req, res) {
@@ -102,20 +112,52 @@ class Server {
     subdomain.add(res)
     const getResult = subdomain.run(() => {
       domainToRequest.request = kreq
-      return runProcessRequest(this, kreq).then(userResponse => {
-        if (userResponse) {
-          return userResponse
-        }
-        return runProcessView(this, kreq)
-      }).then(userResponse => {
-        userResponse = userResponse
-          ? reply(userResponse)
-          : reply(userResponse || '', 204)
+      return onion(
+        this.middleware,
+        (mw, ...args) => mw.processRequest(...args),
+        () => {
+          let match = null
+          try {
+            match = kreq.router.match(kreq.method, kreq.urlObject.pathname)
+          } catch (err) {
+            throw new reply.NotImplementedError(
+              `"${kreq.method} ${kreq.urlObject.pathname}" is not implemented.`
+            )
+          }
 
-        return runProcessResponse(this, kreq, userResponse)
-      }).catch(err => {
-        return runProcessError(this, kreq, err)
-      }).then(
+          if (!match) {
+            throw new reply.NotFoundError()
+          }
+
+          const context = new Map(function * () {
+            const entries = [...match].reverse()
+            const name = []
+            for (const xs of entries) {
+              yield * xs.context
+              name.push(xs.name)
+            }
+            kreq.viewName = name.join('.')
+          }())
+
+          return onion(
+            this.middleware,
+            (mw, ...args) => mw.processView(...args),
+            () => {
+              return match.controller[match.name](kreq, context)
+            },
+            kreq,
+            match,
+            context
+          ).then(response => {
+            return (
+              response
+              ? reply(response)
+              : reply(response || '', 204)
+            )
+          })
+        },
+        kreq
+      ).then(
         resp => handleResponse(this, kreq, resp),
         err => handleLifecycleError(this, kreq, err)
       ).then(response => {
@@ -138,111 +180,25 @@ class Server {
   }
 }
 
-function runProcessRequest (knork, request) {
-  return _iterateMiddleware(knork.middleware, (mw, resolve, reject) => {
-    if (!mw.processRequest) {
-      return resolve()
-    }
-    Promise.try(() => mw.processRequest(request))
-      .then(resolve, reject)
-  }, resolve => resolve())
-}
+function onion (mw, each, inner, ...args) {
+  let idx = 0
+  const argIdx = args.push(null) - 1
 
-function runProcessView (knork, request) {
-  var match = null
-  const router = request.router
-  try {
-    match = router.match(request.method, request.urlObject.pathname)
-  } catch (err) {
-    throw new reply.NotImplementedError(
-      `"${request.method} ${request.urlObject.pathname}" is not implemented.`
-    )
-  }
-  if (!match) {
-    if (DEBUG && request.urlObject.pathname === '/') {
-      let routes = router.targets.map(function (target) {
-        return target.method + ' ' + target.route[0]
-      })
-      return reply.status(JSON.stringify(routes, null, '\t'), 404)
-    }
-    throw new reply.NotFoundError()
-  }
-  match.execute = function () {
-    return match.controller[match.name](request, context)
-  }
-  const context = new Map(function * () {
-    const entries = Array.from(match).reverse()
-    const name = []
-    for (var xs of entries) {
-      yield * xs.context
-      name.push(xs.name)
-    }
-    request.viewName = name.join('.')
-  }())
-
-  return _iterateMiddleware(knork.middleware, (mw, resolve, reject) => {
-    if (!mw.processView) {
-      return resolve()
-    }
-    Promise.try(() => mw.processView(request, match, context))
-      .then(resolve, reject)
-  }, (resolve, reject) => {
-    try {
-      return resolve(match.execute())
-    } catch (err) {
-      return reject(err)
-    }
+  return new Promise((resolve, reject) => {
+    iter().then(resolve, reject)
   })
-}
 
-function runProcessResponse (knork, request, userResponse) {
-  return _iterateMiddleware(knork.reverseMiddleware, (mw, resolve, reject) => {
-    if (!mw.processResponse) {
-      return resolve()
+  function iter () {
+    const middleware = mw[idx]
+    if (!middleware) {
+      return Promise.try(() => inner(...args))
     }
-    Promise.try(() => mw.processResponse(request, userResponse))
-      .then(resolve, reject)
-  }, resolve => resolve(userResponse))
-}
 
-function runProcessError (knork, request, err) {
-  return _iterateMiddleware(knork.reverseMiddleware, (mw, resolve, reject) => {
-    if (!mw.processError) {
-      return resolve()
-    }
-    Promise.try(() => mw.processError(request, err))
-      .then(resolve, reject)
-  }, (resolve, reject) => reject(err))
-}
-
-function _iterateMiddleware (middleware, callMW, noResponse, ignoreResponse) {
-  var resolve = null
-  var reject = null
-  var idx = 0
-
-  /* eslint-disable promise/param-names */
-  const promise = new Promise((_resolve, _reject) => {
-    resolve = _resolve
-    reject = _reject
-  })
-  /* eslint-enable promise/param-names */
-
-  Promise.try(iter)
-
-  return promise
-
-  function iter (response) {
-    if (response && !ignoreResponse) {
-      if (typeof response === 'string') {
-        response = reply.raw(response)
-      }
-      return resolve(response)
-    }
-    if (idx >= middleware.length) {
-      return noResponse(resolve, reject)
-    }
-    const mw = middleware[idx++]
-    callMW(mw, iter, reject)
+    idx += 1
+    args[argIdx] = once(() => {
+      return Promise.try(() => iter())
+    })
+    return Promise.try(() => each(middleware, ...args))
   }
 }
 
@@ -369,5 +325,5 @@ function createMetrics (name, str) {
 }
 
 function createFakeMetrics () {
-  return new (class { metric () {} })()
+  return {metric () { }}
 }

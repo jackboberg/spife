@@ -9,16 +9,18 @@ const reply = require('../reply')
 
 function makeMonitorMiddleware () {
   return {
-    install (knork) {
+    processServer (knork, next) {
       this.name = knork.name
+      return next()
     },
-    processRequest (req) {
+    processRequest (req, next) {
       if (req.urlObject.pathname === '/_monitor/ping') {
         return pingResponse()
       }
       if (req.urlObject.pathname === '/_monitor/status') {
         return statusResponse(this.name)
       }
+      return next()
     }
   }
 }

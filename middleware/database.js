@@ -17,7 +17,7 @@ function createDatabaseMiddleware (opts) {
   var poolTimer = null
   var pool = null
   return {
-    install (knork) {
+    processServer (knork, next) {
       pool = new pg.Pool(opts.postgres)
       pool.on('error', err => {
         logger.error('pool client received error:')
@@ -40,8 +40,16 @@ function createDatabaseMiddleware (opts) {
           'value': pool.pool.waitingClientsCount()
         })
       }, dbMetricsInterval)
+
+      return next().then(() => {
+        clearInterval(poolTimer)
+        const closed = pool.end()
+        pool = null
+        return closed
+      })
     },
-    processRequest (request) {
+
+    processRequest (request, next) {
       db.install(process.domain, () => {
         return new Promise((resolve, reject) => {
           pool.connect((err, connection, release) => {
@@ -53,15 +61,13 @@ function createDatabaseMiddleware (opts) {
         opts.metrics || {},
         {maxConcurrency: opts.maxConnectionsPerRequest}
       ))
+
+      return next()
     },
-    processView (req, match) {
+
+    processView (req, match, context, next) {
       db.session.viewName = req.viewName
-    },
-    onServerClose () {
-      clearInterval(poolTimer)
-      const closed = pool.end()
-      pool = null
-      return closed
+      return next()
     }
   }
 }

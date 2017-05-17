@@ -419,7 +419,7 @@ test('request.router: allows overriding routes mid-request', assert => {
     }
   }))
 
-  test.setMiddleware(req => {
+  test.setMiddleware((req, next) => {
     req.router = routes`
       GET / foo
     `({
@@ -427,6 +427,7 @@ test('request.router: allows overriding routes mid-request', assert => {
         return 'no way'
       }
     })
+    return next()
   })
 
   return test.request({
@@ -440,13 +441,13 @@ function test (name, runner, opts) {
   runner = runner || (() => {})
   tap.test(name, function named (assert) {
     test.controller = {}
-    test.middleware = () => {}
+    test.middleware = (req, next) => next()
     const server = http.createServer().listen(60880)
     const kserver = knork('anything', server, routes`
       * / target
     `(test.controller), [{
-      processRequest (req) {
-        return test.middleware(req)
+      processRequest (req, next) {
+        return test.middleware(req, next)
       }
     }], opts || {isExternal: true})
 
