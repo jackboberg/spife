@@ -9,6 +9,13 @@ Knork splits request concerns into two broad categories:
 it determines _the order of events when a client request comes in._ The
 lifecycle is divided into three phases, listed below.
 
+Between every middleware, resolved values and rejected errors will be decorated
+with default status information and checked for validity. It is not valid to:
+
+- Resolve to a false-y value from middleware. Views, however, can return
+  false-y values, which will be coerced to `204 No Content` responses.
+- Reject a non-error value anywhere.
+
 ## `processRequest(req, next)`
 
 Each middleware will be called with a [knork request][ref-request] and
@@ -25,9 +32,6 @@ middleware (or `processView` cycle.)
 In the `processView` stage, each middleware will again be called in order, this
 time with a [`reverse.Match`][ref-reverse-match] object, `context`
 [`Map`][ref-reverse-context], and a `next` function.
-
-If the result of this phase is a false-y value, that will be taken as a
-`204 No Content` response.
 
 ## Flush (handled by Knork)
 

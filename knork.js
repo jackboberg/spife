@@ -2,8 +2,6 @@
 
 module.exports = makeKnork
 
-const Transform = require('stream').Transform
-const Readable = require('stream').Readable
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
 const ms = require('mississippi')
@@ -58,6 +56,7 @@ function makeKnork (name, server, urls, middleware, opts) {
   knork.closed = onion(
     middleware,
     (mw, ...args) => mw.processServer(...args),
+    () => {},
     () => {
       server.emit(ONREADY, knork)
       return onclosed
@@ -110,12 +109,18 @@ class Server {
     const kreq = makeKnorkRequest(req, this)
     subdomain.add(req)
     subdomain.add(res)
+
+    const check = {
+      resolve: checkMiddlewareResolution,
+      reject: checkMiddlewareRejection
+    }
     const getResult = subdomain.run(() => {
       domainToRequest.request = kreq
       return onion(
         this.middleware,
         (mw, ...args) => mw.processRequest(...args),
-        () => {
+        check,
+        kreq => {
           let match = null
           try {
             match = kreq.router.match(kreq.method, kreq.urlObject.pathname)
@@ -142,19 +147,22 @@ class Server {
           return onion(
             this.middleware,
             (mw, ...args) => mw.processView(...args),
-            () => {
-              return match.controller[match.name](kreq, context)
+            check,
+            (kreq, match, context) => {
+              return Promise.try(
+                () => match.controller[match.name](kreq, context)
+              ).then(response => {
+                return (
+                  response
+                  ? reply(response)
+                  : reply(response || '', 204)
+                )
+              })
             },
             kreq,
             match,
             context
-          ).then(response => {
-            return (
-              response
-              ? reply(response)
-              : reply(response || '', 204)
-            )
-          })
+          )
         },
         kreq
       ).then(
@@ -180,7 +188,7 @@ class Server {
   }
 }
 
-function onion (mw, each, inner, ...args) {
+function onion (mw, each, after, inner, ...args) {
   let idx = 0
   const argIdx = args.push(null) - 1
 
@@ -191,15 +199,49 @@ function onion (mw, each, inner, ...args) {
   function iter () {
     const middleware = mw[idx]
     if (!middleware) {
-      return Promise.try(() => inner(...args))
+      return Promise.try(() => inner(...args)).then(
+        after.resolve,
+        after.reject
+      )
     }
 
     idx += 1
     args[argIdx] = once(() => {
       return Promise.try(() => iter())
     })
-    return Promise.try(() => each(middleware, ...args))
+    return Promise.try(() => each(middleware, ...args)).then(
+      after.resolve,
+      after.reject
+    )
   }
+}
+
+function checkMiddlewareResolution (response) {
+  if (!response) {
+    throw new TypeError(
+      `Expected middleware to resolve to a truthy value, got "${response}" instead`
+    )
+  }
+  // always cast into a response of some sort
+  return reply(
+    response,
+    reply.status(response) || 200,
+    reply.headers(response) || {}
+  )
+}
+
+function checkMiddlewareRejection (err) {
+  if (!err || !(err instanceof Error)) {
+    throw new TypeError(
+      `Expected error to be instanceof Error, got "${err}" instead`
+    )
+  }
+
+  throw reply(
+    err,
+    reply.status(err) || 500,
+    reply.headers(err) || {}
+  )
 }
 
 function handleLifecycleError (knork, req, err) {
@@ -215,93 +257,15 @@ function handleLifecycleError (knork, req, err) {
   return handleResponse(knork, req, out)
 }
 
-function _objectModeToNLJSON (data) {
-  const headers = reply.headers(data) || {}
-  const status = reply.status(data)
-  const output = data.pipe(new Transform({
-    objectMode: true,
-    transform (chunk, _, ready) {
-      if (this.closed) {
-        return ready()
-      }
-      try {
-        chunk = JSON.stringify(chunk)
-      } catch (err) {
-        this.closed = true
-        this.push(JSON.stringify({error: err.message}) + '\n')
-        this.push(null)
-        return ready()
-      }
-      ready(null, chunk + '\n')
-    }
-  }))
-
-  if (!('content-type' in headers)) {
-    headers['content-type'] = 'application/x-ndjson; charset=utf-8'
-  }
-
-  return reply(output, status, headers)
-}
-
 function handleResponse (knork, req, data) {
-  const resp = (
-    data &&
-    data.pipe &&
-    data._readableState &&
-    data._readableState.objectMode
-  ) ? _objectModeToNLJSON(data)
-    : reply(data)
-
-  const headers = reply.headers(resp) || {}
-  const status = reply.status(resp)
-
-  if (resp.pipe) {
-    return {
-      status,
-      headers,
-      stream: resp
-    }
-  }
-
-  if (!knork.opts.isExternal) {
-    headers['request-id'] = req.id
-  }
-
-  if (!Buffer.isBuffer(data)) {
-    headers['content-type'] = (
-      headers['content-type'] ||
-      'application/json; charset=utf-8'
-    )
-  } else {
-    headers['content-type'] = (
-      headers['content-type'] ||
-      'application/octet-stream'
-    )
-  }
-
   try {
-    const asOctetStream = (
-      Buffer.isBuffer(resp)
-      ? data
-      : Buffer.from(
-          process.env.DEBUG
-          ? JSON.stringify(resp, null, 2)
-          : JSON.stringify(resp), 'utf8'
-        )
-    )
-
-    headers['content-length'] = asOctetStream.length
-    const stream = new Readable({
-      read (n) {
-        this.push(this.original)
-        this.push(null)
-      }
-    })
-    stream.original = asOctetStream
-
+    const stream = reply.toStream(data)
+    if (!knork.opts.isExternal) {
+      reply.header(stream, 'request-id', req.id)
+    }
     return {
-      status,
-      headers,
+      status: reply.status(stream),
+      headers: reply.headers(stream),
       stream
     }
   } catch (err) {

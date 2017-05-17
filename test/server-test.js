@@ -691,6 +691,168 @@ test('returning empty string omits content-type', assert => Promise.try(() => {
   return kserver.get('closed')
 }))
 
+test('middleware cannot return falsey value', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+    return undefined
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 500)
+      assert.equal(JSON.parse(data).message, 'Expected middleware to resolve to a truthy value, got "undefined" instead')
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('middleware always coerces to response between runs', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  let saw = null
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+    return next().then(result => {
+      saw = result
+      return result
+    })
+  }, (req, next) => {
+    return 'hello world'
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 200)
+      assert.equal(data, 'hello world')
+      assert.equal(reply.status(saw), 200)
+      assert.ok(saw.pipe)
+      assert.same(reply.headers(saw), {
+        'content-type': 'text/plain; charset=utf-8'
+      })
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('middleware cannot throw non-Error exceptions', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+      /* eslint-disable no-throw-literal */
+    throw 'foo'
+      /* eslint-enable no-throw-literal */
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 500)
+      assert.equal(JSON.parse(data).message, 'Expected error to be instanceof Error, got "foo" instead')
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('views cannot throw non-Error exceptions', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      /* eslint-disable no-throw-literal */
+      throw 'foo'
+      /* eslint-enable no-throw-literal */
+    }
+  }), [])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 500)
+      assert.equal(JSON.parse(data).message, 'Expected error to be instanceof Error, got "foo" instead')
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('middleware always adds status to thrown headers', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  let saw = null
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+    return next().catch(result => {
+      saw = result
+      return 'ok'
+    })
+  }, (req, next) => {
+    throw new Error('foo')
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      assert.equal(reply.status(saw), 500)
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
 test('returning nothing works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const kserver = knork('anything', server, routing`
@@ -834,40 +996,6 @@ test('throwing error works: external service', assert => Promise.try(() => {
       assert.equal(
         Buffer.concat(acc).toString(),
         '{"message":"It fails!"}'
-      )
-      assert.equal(
-        res.headers['content-type'],
-        'application/json; charset=utf-8'
-      )
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('throwing error works: external service DEBUG=1', assert => Promise.try(() => {
-  process.env.DEBUG = '1'
-  const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      throw new Error('It fails!')
-    }
-  }), [])
-
-  http.get({method: 'GET', path: '/', port: 60880}, res => {
-    process.env.DEBUG = ''
-    const acc = []
-    res.on('data', data => {
-      acc.push(data)
-    })
-    res.once('end', () => {
-      assert.equal(res.statusCode, 500)
-      assert.equal(
-        Buffer.concat(acc).toString(),
-        '{\n  "message": "It fails!"\n}'
       )
       assert.equal(
         res.headers['content-type'],
