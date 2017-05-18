@@ -7,97 +7,37 @@ Knork splits request concerns into two broad categories:
 
 **Middleware** is supplied to Knork as a list. The order is important, in that
 it determines _the order of events when a client request comes in._ The
-lifecycle is divided into 7 phases, listed below. 
+lifecycle is divided into three phases, listed below.
 
-> :warning: **re: "skip"** 
->
-> Where the instructions say "skip", that means that remaining middleware in
-> the step should not execute and execution will proceed directly to the noted
-> phase.
+Between every middleware, resolved values and rejected errors will be decorated
+with default status information and checked for validity. It is not valid to:
 
-## :one: `Request` middleware
+- Resolve to a false-y value from middleware. Views, however, can return
+  false-y values, which will be coerced to `204 No Content` responses.
+- Reject a non-error value anywhere.
 
-Executed from the first middleware to the last. Any middleware that has a
-`processRequest` method will execute. Middleware lacking a `processRequest`
-will be skipped. `processRequest` will be called with a [knork
-request][ref-request] as the first parameter.
+## `processRequest(req, next)`
 
-* If any `processRequest` returns a truthy promise from that middleware, it
-  will be treated as the response, and we'll skip to **[the response middleware phase (:five:)](#five-response-middleware)**.
-* If any `processRequest` throws an error or returns a rejected promise, it
-  will be treated as an error and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware)**.
-* Otherwise, continue to **[view resolution (:two:)](#two-view-resolution)**.
+Each middleware will be called with a [knork request][ref-request] and
+a `next` function, which will call the next middleware in the list.
 
-## :two: `View` resolution
+If middleware opts not to call `next`, its return value will be used
+as the response and no further middleware will be called.
 
-Resolve the view using the [`urls` passed to the the knork server][ref-server].
-The matched view will be attached to the `match` object that will be passed
-to middleware as `match.execute() → Promise<Response>`.
+`next` will return a `Promise` for the value returned by the next
+middleware (or `processView` cycle.)
 
-* If the given route does not match a url known to knork, a 404 error will
-  be thrown and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware).**
-* If the route exists but does not have an assocatied view, a 501 error will
-  be thrown and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware).**
-* Otherwise, continue to **[the view middleware phase (:three:)](#three-view-middleware)**.
+## `processView(req, match, context, next)`
 
-## :three: `View` middleware
+In the `processView` stage, each middleware will again be called in order, this
+time with a [`reverse.Match`][ref-reverse-match] object, `context`
+[`Map`][ref-reverse-context], and a `next` function.
 
-Executed from the first middleware to the last. Any middleware that has a
-`processView` method will execute. Middleware lacking a `processView` will be
-skipped. `processView` will be called with a [knork-request][ref-request], a
-[`reverse.Match`][ref-reverse-match], and a [context map][ref-reverse-context].
+## Flush (handled by Knork)
 
-* If any `processView` returns a truthy value, it will be treated as the
-  response, and we'll skip to **[the response middleware phase (:five:)](#five-response-middleware)**.
-* If any `processView` throws an error or returns a rejected promise, it
-  will be treated as an error and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware)**.
-* Otherwise, proceed to **[view execution (:four:)](#four-view-execution)**.
-
-## :four: `View` execution
-
-The view will be executed using `match.execute()`, passing the [knork
-request][ref-request] and the [context map][ref-reverse-context] from the route
-match.
-
-* If the view throws an error or returns a rejected promise, it will be
-  treated as an error and we'll skip to **[the error middleware phase (:six:)](#six-error-middleware)**.
-* Otherwise, **any** value or promise for a value returned by the view will
-  be treated as the current response. Continue to **[the response middleware phase (:five:)](#five-response-middleware)**.
-
-## :five: `Response` middleware
-
-Executed in **reverse order**, from the last middleware to the first. Any
-middleware that has a `processResponse` will execute. Middleware lacking
-a `processResponse` will be skipped.
-
-* If any `processResponse` returns a truthy value, it will be treated as
-  the response, and we'll skip to **[the flush phase (:seven:)](#seven-flush)**.
-* If any `processResponse` throws an error or returns a rejected promise,
-  it will be treated as an error and we'll skip to
-  **[the error middleware phase (:six:)](#six-error-middleware)**.
-* Otherwise, continue to **[the flush phase (:seven:)](#seven-flush)** with the
-  current response.
-
-## :six: `Error` middleware
-
-If no error has occurred, continue to **[the flush phase (:seven:)](#seven-flush)**.
-
-Executed in **reverse order**, from the last middleware to the first. Any
-middleware that has a `processError` will execute. Middleware lacking
-a `processError` will be skipped.
-
-* If any `processError` returns a truthy value, it will be treated as the
-  response and we'll skip to **[the flush phase (:seven:)](#seven-flush)**.
-* If any `processError` throws an error or returns a rejected promise, it
-  will be treated as the final error and we'll skip to
-  **[the flush phase (:seven:)](#seven-flush)**.
-* Otherwise, proceed to **[the flush phase (:seven:)](#seven-flush)** with the
-  current error.
-
-## :seven: Flush
-
-Resolve all response and error promises. Coerce errors into responses, and
-responses into `{status, headers, stream}`.
+Once the `processRequest` and `processView` phases have resolved into a value
+or error, Knork will coerce errors into responses, and responses into `{status,
+headers, stream}`.
 
 * If the response has `.pipe`, it will be used as `stream` directly.
 * If the response is a string, it will be turned into a `text/plain`

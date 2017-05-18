@@ -149,7 +149,6 @@ function test (name, runner) {
     return kserver.then(srv => {
       test.setMiddleware = mw => {
         srv.middleware = mw
-        srv.reverseMiddleware = mw.slice().reverse()
       }
       return runner(assert)
     }).then(() => {

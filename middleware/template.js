@@ -6,19 +6,19 @@ const Promise = require('bluebird')
 
 const reply = require('../reply')
 
-function createTemplateMiddleware (loaders, context) {
-  return {
-    context: context || [],
-    loaders: loaders || [],
-    processResponse (req, resp) {
+function createTemplateMiddleware (loaders = [], context = []) {
+  return middleware
+
+  function middleware (req, next) {
+    return next().then(resp => {
       if (!(resp instanceof reply.template.Response)) {
-        return
+        return resp
       }
       const start = Date.now()
 
       return Promise.join(
-        resp.lookup(this.loaders, req),
-        Promise.all(this.context.map(xs => xs(req)))
+        resp.lookup(loaders, req),
+        Promise.all(context.map(xs => xs(req)))
       ).spread((pair, contexts) => {
         process.emit('metric', {
           name: 'template.lookup',
@@ -30,6 +30,6 @@ function createTemplateMiddleware (loaders, context) {
           contexts
         )
       })
-    }
+    })
   }
 }

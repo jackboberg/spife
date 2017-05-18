@@ -106,24 +106,29 @@ function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
 
       // 3.
       const assignDomainMW = {
-        processRequest (req) {
+        processRequest (req, next) {
           return getSession.then(() => {
             session.assign(process.domain)
             db.session.queries = []
             db.session.startTime = Date.now()
+            return next()
           })
         }
       }
       const trackRouteQueryCountMW = {
-        processView (req, match) {
+        processView (req, match, context, next) {
           db.session.routeName = req.viewName
+          return next()
         },
-        processResponse (req, resp) {
-          aggregateInfo(
-            db.session.routeName,
-            db.session.queries,
-            Date.now() - db.session.startTime
-          )
+        processRequest (req, next) {
+          return next().then(resp => {
+            aggregateInfo(
+              db.session.routeName,
+              db.session.queries,
+              Date.now() - db.session.startTime
+            )
+            return resp
+          })
         }
       }
       orm.setConnection(db.getConnection)

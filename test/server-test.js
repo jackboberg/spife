@@ -68,15 +68,20 @@ test('http server listening triggers mw installs', assert => Promise.try(() => {
   const ee = new EE()
   const list = []
   const mw = [
-    {install (knork) { list.push({knork, name: '1'}) }},
-    {install (knork) {
+    {processServer (knork, next) {
+      list.push({knork, name: '1'})
+      return next()
+    }},
+    {processServer (knork, next) {
       return Promise.delay(10).then(() => {
         list.push({knork, name: '2'})
+        return next()
       })
     }},
     {},
-    {install (knork) {
+    {processServer (knork, next) {
       list.push({knork, name: '3'})
+      return next()
     }}
   ]
   const onServer = knork('anything', ee, null, mw).then(server => {
@@ -92,15 +97,19 @@ test('closing http server uninstalls mw', assert => Promise.try(() => {
   const ee = new EE()
   const list = []
   const mw = [
-    {onServerClose (knork) { list.push('1') }},
-    {onServerClose (knork) {
-      return Promise.delay(10).then(() => {
-        list.push('2')
+    {processServer (knork, next) { return next().then(() => list.push('1')) }},
+    {processServer (knork, next) {
+      return next().then(() => {
+        return Promise.delay(10).then(() => {
+          list.push('2')
+        })
       })
     }},
     {},
-    {onServerClose () {
-      list.push('3')
+    {processServer (knork, next) {
+      return next().then(() => {
+        list.push('3')
+      })
     }}
   ]
   const onServer = knork('anything', ee, null, mw)
@@ -118,28 +127,32 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
   const ee = new EE()
   const list = []
   const mw = [{
-    install () {
+    processServer (server, next) {
       list.push('1')
-    },
-    onServerClose () {
-      list.push('1')
+      return next().then(() => {
+        list.push('1')
+      })
     }
   }, {
-    install () {
+    processServer (server, next) {
       ee.emit('close') // <---------- close as part of startup!
       return Promise.delay(10).then(() => {
         list.push('2')
-      })
-    },
-    onServerClose () {
-      return Promise.delay(10).then(() => {
-        list.push('2')
+        return next()
+      }).then(() => {
+        return Promise.delay(10).then(() => {
+          list.push('2')
+        })
       })
     }
   }, {
   }, {
-    install () { list.push('3') },
-    onServerClose () { list.push('3') }
+    processServer (server, next) {
+      list.push('3')
+      return next().then(() => {
+        list.push('3')
+      })
+    }
   }]
   const onServer = knork('anything', ee, null, mw)
   ee.emit('listening')
@@ -300,8 +313,9 @@ test('returning nothing from request mw runs view', assert => Promise.try(() => 
   const server = http.createServer().listen(60880)
   const list = []
   const mw = [{
-    processRequest (req) {
+    processRequest (req, next) {
       list.push('1')
+      return next()
     }
   }]
   const kserver = knork('anything', server, routing`
@@ -346,112 +360,6 @@ test('returning value from request mw returns request', assert => Promise.try(()
   http.get({method: 'GET', port: 60880}, res => {
     res.on('data', data => {
       assert.equal(data + '', 'haha')
-      assert.equal(list.length, 1)
-      assert.deepEqual(list, ['1'])
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('response mw sees response from request mw', assert => Promise.try(() => {
-  const server = http.createServer().listen(60880)
-  const list = []
-  const mw = [{
-    processRequest (req) {
-      list.push('1')
-      return {message: 'hello'}
-    },
-    processResponse (req, resp) {
-      list.push(resp.message)
-    }
-  }]
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      list.push('2')
-      return 'ok'
-    }
-  }), mw)
-
-  http.get({method: 'GET', port: 60880}, res => {
-    res.on('data', data => {
-      assert.equal(data + '', '{"message":"hello"}')
-      assert.equal(list.length, 2)
-      assert.deepEqual(list, ['1', 'hello'])
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('response mw sees response from view mw', assert => Promise.try(() => {
-  const server = http.createServer().listen(60880)
-  const list = []
-  const mw = [{
-    processRequest (req) {
-      list.push('1')
-    },
-    processView (req, match, context) {
-      list.push('2')
-      return {message: 'hello'}
-    },
-    processResponse (req, resp) {
-      list.push(resp.message)
-    }
-  }]
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      list.push('3')
-      return 'ok'
-    }
-  }), mw)
-
-  http.get({method: 'GET', port: 60880}, res => {
-    res.on('data', data => {
-      assert.equal(data + '', '{"message":"hello"}')
-      assert.equal(list.length, 3)
-      assert.deepEqual(list, ['1', '2', 'hello'])
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('response mw does not see response from response mw', assert => Promise.try(() => {
-  const server = http.createServer().listen(60880)
-  const list = []
-  const mw = [{
-    processRequest (req) {
-      list.push('1')
-      return {message: 'hello'}
-    },
-    processResponse (req, resp) {
-      list.push('3')
-    }
-  }, {
-    processResponse (req, resp) {
-      return 'banana'
-    }
-  }]
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      list.push('2')
-      return 'ok'
-    }
-  }), mw)
-
-  http.get({method: 'GET', port: 60880}, res => {
-    res.on('data', data => {
-      assert.equal(data + '', 'banana')
       assert.equal(list.length, 1)
       assert.deepEqual(list, ['1'])
       server.close()
@@ -565,167 +473,6 @@ test('not found works', assert => Promise.try(() => {
       assert.equal(res.statusCode, 404)
       assert.equal(data + '', '{"message":"Not Found"}')
       assert.equal(list.length, 0)
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('error mw: no response', assert => Promise.try(() => {
-  const server = http.createServer().listen(60880)
-  const list = []
-  const mw = [{
-    processError (req) {
-      list.push('1')
-    }
-  }, {
-    processError (req, err) {
-      list.push('2')
-      reply.status(err, 418)
-    }
-  }]
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      throw new Error('oh no!')
-    }
-  }), mw)
-
-  http.get({method: 'GET', path: '/', port: 60880}, res => {
-    const acc = []
-    res.on('data', data => {
-      acc.push(data)
-    })
-    res.once('end', () => {
-      assert.equal(res.statusCode, 418)
-      assert.equal(
-        Buffer.concat(acc).toString(),
-        '{"message":"oh no!"}'
-      )
-      assert.deepEqual(list, ['2', '1'])
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('error mw: response', assert => Promise.try(() => {
-  const server = http.createServer().listen(60880)
-  const mw = [{
-    processError (req, err) {
-      return 'we should not be called since the next one returns'
-    }
-  }, {
-    processError (req, err) {
-      return 'whaaaaat. we are fine here.'
-    }
-  }]
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      return Promise.delay(10).then(() => {
-        throw new Error('oh no!')
-      })
-    }
-  }), mw)
-
-  http.get({method: 'GET', path: '/', port: 60880}, res => {
-    const acc = []
-    res.on('data', data => {
-      acc.push(data)
-    })
-    res.once('end', () => {
-      assert.equal(res.statusCode, 200)
-      assert.equal(
-        res.headers['content-type'],
-        'text/plain; charset=utf-8'
-      )
-      assert.equal(
-        Buffer.concat(acc).toString(),
-        'whaaaaat. we are fine here.'
-      )
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('error mw: throw', assert => Promise.try(() => {
-  const server = http.createServer().listen(60880)
-  const mw = [{
-    processError (req, err) {
-      return 'we should not be called since the next one throws'
-    }
-  }, {
-    processError (req, err) {
-      throw new Error('SURPRISE')
-    }
-  }]
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      return Promise.delay(10).then(() => {
-        throw new Error('oh no!')
-      })
-    }
-  }), mw)
-
-  http.get({method: 'GET', path: '/', port: 60880}, res => {
-    const acc = []
-    res.on('data', data => {
-      acc.push(data)
-    })
-    res.once('end', () => {
-      assert.equal(res.statusCode, 500)
-      assert.equal(
-        Buffer.concat(acc).toString(),
-        '{"message":"SURPRISE"}'
-      )
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('error mw: rejection', assert => Promise.try(() => {
-  const server = http.createServer().listen(60880)
-  const mw = [{
-    processError (req, err) {
-      return 'we should not be called since the next one throws'
-    }
-  }, {
-    processError (req, err) {
-      return Promise.delay(10).then(() => {
-        throw new Error('SURPRISE')
-      })
-    }
-  }]
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      throw new Error('oh no!')
-    }
-  }), mw)
-
-  http.get({method: 'GET', path: '/', port: 60880}, res => {
-    const acc = []
-    res.on('data', data => {
-      acc.push(data)
-    })
-    res.once('end', () => {
-      assert.equal(res.statusCode, 500)
-      assert.equal(
-        Buffer.concat(acc).toString(),
-        '{"message":"SURPRISE"}'
-      )
       server.close()
     })
   })
@@ -944,6 +691,168 @@ test('returning empty string omits content-type', assert => Promise.try(() => {
   return kserver.get('closed')
 }))
 
+test('middleware cannot return falsey value', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+    return undefined
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 500)
+      assert.equal(JSON.parse(data).message, 'Expected middleware to resolve to a truthy value, got "undefined" instead')
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('middleware always coerces to response between runs', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  let saw = null
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+    return next().then(result => {
+      saw = result
+      return result
+    })
+  }, (req, next) => {
+    return 'hello world'
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 200)
+      assert.equal(data, 'hello world')
+      assert.equal(reply.status(saw), 200)
+      assert.ok(saw.pipe)
+      assert.same(reply.headers(saw), {
+        'content-type': 'text/plain; charset=utf-8'
+      })
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('middleware cannot throw non-Error exceptions', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+      /* eslint-disable no-throw-literal */
+    throw 'foo'
+      /* eslint-enable no-throw-literal */
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 500)
+      assert.equal(JSON.parse(data).message, 'Expected error to be instanceof Error, got "foo" instead')
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('views cannot throw non-Error exceptions', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      /* eslint-disable no-throw-literal */
+      throw 'foo'
+      /* eslint-enable no-throw-literal */
+    }
+  }), [])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      const data = Buffer.concat(acc).toString()
+      assert.equal(res.statusCode, 500)
+      assert.equal(JSON.parse(data).message, 'Expected error to be instanceof Error, got "foo" instead')
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
+test('middleware always adds status to thrown headers', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  let saw = null
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return ''
+    }
+  }), [(req, next) => {
+    return next().catch(result => {
+      saw = result
+      return 'ok'
+    })
+  }, (req, next) => {
+    throw new Error('foo')
+  }])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+
+    res.on('end', () => {
+      assert.equal(reply.status(saw), 500)
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
 test('returning nothing works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const kserver = knork('anything', server, routing`
@@ -1087,40 +996,6 @@ test('throwing error works: external service', assert => Promise.try(() => {
       assert.equal(
         Buffer.concat(acc).toString(),
         '{"message":"It fails!"}'
-      )
-      assert.equal(
-        res.headers['content-type'],
-        'application/json; charset=utf-8'
-      )
-      server.close()
-    })
-  })
-
-  return kserver.get('closed')
-}))
-
-test('throwing error works: external service DEBUG=1', assert => Promise.try(() => {
-  process.env.DEBUG = '1'
-  const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
-    GET / view
-  `({
-    view (req) {
-      throw new Error('It fails!')
-    }
-  }), [])
-
-  http.get({method: 'GET', path: '/', port: 60880}, res => {
-    process.env.DEBUG = ''
-    const acc = []
-    res.on('data', data => {
-      acc.push(data)
-    })
-    res.once('end', () => {
-      assert.equal(res.statusCode, 500)
-      assert.equal(
-        Buffer.concat(acc).toString(),
-        '{\n  "message": "It fails!"\n}'
       )
       assert.equal(
         res.headers['content-type'],

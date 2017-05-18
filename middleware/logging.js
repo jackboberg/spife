@@ -16,7 +16,7 @@ function createLoggingMiddleware (opts) {
   }, opts || {})
 
   return {
-    install () {
+    processServer (server, next) {
       if (opts.stream === null) {
         const pretty = bistre()
         opts.stream = (
@@ -26,36 +26,40 @@ function createLoggingMiddleware (opts) {
         ) ? (pretty.pipe(process.stdout), pretty) : process.stdout
       }
       bole.output(opts)
-    },
-    processRequest (req) {
-      req._logRaw()
-    },
-    processResponse (req, res) {
-      logger.info({
-        url: req.url,
-        statusCode: reply.status(res) || 200,
-        headers: reply.headers(res),
-        method: req.method,
-        latency: req.latency
+      return next().then(() => {
+        bole.reset()
       })
     },
-    processError (req, err) {
-      const status = reply.status(err) || 500
-      logger.info({
-        url: req.url,
-        statusCode: status,
-        error: err.message,
-        headers: reply.headers(err),
-        method: req.method,
-        latency: req.latency
-      })
 
-      if (status >= 500) {
-        logger.error(err)
-      }
-    },
-    onServerClose () {
-      bole.reset()
+    processRequest (req, next) {
+      req._logRaw()
+      return next().then(res => {
+        logger.info({
+          url: req.url,
+          statusCode: reply.status(res) || 200,
+          headers: reply.headers(res),
+          method: req.method,
+          latency: req.latency
+        })
+
+        return res
+      }).catch(err => {
+        const status = reply.status(err) || 500
+        logger.info({
+          url: req.url,
+          statusCode: status,
+          error: err.message,
+          headers: reply.headers(err),
+          method: req.method,
+          latency: req.latency
+        })
+
+        if (status >= 500) {
+          logger.error(err)
+        }
+
+        throw err
+      })
     }
   }
 }

@@ -42,6 +42,7 @@ Contains methods for creating and manipulating HTTP responses.
     * [reply.status(resp) → Number | undefined](#replystatusresp--number--undefined)
     * [reply.status(resp, code) → Response&lt;resp>](#replystatusresp-code--responseresp)
     * [reply.template(name, context) → TemplateResponse](#replytemplatename-context--templateresponse)
+    * [reply.toStream(response) → Response&lt;resp>](#replytostreamresponse--responseresp)
 
 ## API
 
@@ -395,6 +396,37 @@ string to use to lookup the template, and a `context` object to use to render
 the template.
 
 * **See also**: The [templates guide][templates-guide].
+
+#### `reply.toStream(response) → Response<resp>`
+
+Coerces an existing response to a stream. This will be called automatically by
+Knork as a final step on any response before it is flushed. It is guaranteed
+to return a `pipe`-able stream instance.
+
+- If `response` is a string, it will be coerced into a `Readable` string and given
+  a `content-type` of `text/plain`.
+- If `response` has `pipe` and is object mode, a "newline delimited JSON" stream
+  will be returned. A content-type of `application/x-ndjson` will be applied if
+  no other content type is present.
+- If `response` has `pipe` and is not object mode, it will be passed through.
+- If `response` is a buffer, it will be given a content type of `application/octet-stream`
+  if it doesn't already have a `content-type` header. It will also be given an
+  appropriate `content-length` header.
+- If `response` is any other type of object, it will be `JSON.stringify`'d and given a
+  content type of `application/json`. It will also be given an appropriate
+  `content-length` header.
+
+If the response doesn't already have a status code set, it will be given a
+status of `200 OK`. Any headers & status codes set on the incoming `response`
+parameter will be retained.
+
+```javascript
+'use strict'
+const reply = require('@npm/knork/reply')
+
+reply.toStream('hello world') // Stream with pipe!
+reply.toString({some: 'json'}) // Stream with pipe!
+```
 
 [shorthand-raw]: #replyrawresp--responseresp
 

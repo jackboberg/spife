@@ -17,22 +17,34 @@ function createCSRFMiddleware (opts) {
   const CSRF_TOKEN_SIZE = Number(opts.size) || 43
 
   return {
-    processRequest (req) {
+    processRequest (req, next) {
       const token = req.cookie(CSRF_TOKEN_COOKIE)
       req.csrf = (
         token ||
         cryptiles.randomString(CSRF_TOKEN_SIZE)
       )
       req.resetCSRF = !token
+
+      return next().then(resp => {
+        if (req.resetCSRF) {
+          return reply.cookie(resp, CSRF_TOKEN_COOKIE, req.csrf, {
+            secure: true,
+            httpOnly: true,
+            sameSite: 'strict',
+            path: '/'
+          })
+        }
+        return resp
+      })
     },
 
-    processView (req, match) {
+    processView (req, match, context, next) {
       if (match.controller[match.name].csrfExempt) {
-        return
+        return next()
       }
 
       if (SAFE_METHODS.has(req.method.toUpperCase())) {
-        return
+        return next()
       }
 
       const getValue = (
@@ -45,29 +57,17 @@ function createCSRFMiddleware (opts) {
         if (!value || value !== req.csrf) {
           throw new reply.ForbiddenError()
         }
-        const execute = match.execute
-        match.execute = () => {
-          return Promise.resolve(execute(match)).then(xs => {
-            // allow for resetting CSRF token on login
-            if (match.controller[match.name].resetCSRF) {
-              req.csrf = cryptiles.randomString(opts.CSRF_TOKEN_SIZE)
-              req.resetCSRF = true
-            }
-            return xs
-          })
-        }
-      })
-    },
 
-    processResponse (req, resp) {
-      if (req.resetCSRF) {
-        reply.cookie(resp, CSRF_TOKEN_COOKIE, req.csrf, {
-          secure: true,
-          httpOnly: true,
-          sameSite: 'strict',
-          path: '/'
+        return next().then(xs => {
+          // allow for resetting CSRF token on login
+          if (match.controller[match.name].resetCSRF) {
+            req.csrf = cryptiles.randomString(opts.CSRF_TOKEN_SIZE)
+            req.resetCSRF = true
+          }
+
+          return xs
         })
-      }
+      })
     }
   }
 }

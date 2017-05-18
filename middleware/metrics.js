@@ -9,21 +9,25 @@ const reply = require('../reply')
 function createMiddleware () {
   var closeProcMetrics = null
   return {
-    install (knork) {
+    processServer (knork, next) {
       const procMetricsInterval = (
         Number(process.env.PROCESS_METRICS_INTERVAL) ||
         1000 * 30
       )
       closeProcMetrics = procMetrics(knork.metrics, procMetricsInterval)
+      return next().then(() => {
+        closeProcMetrics()
+      })
     },
-    processResponse (req, res) {
-      recordMetric(req, res, 200)
-    },
-    processError (req, err) {
-      recordMetric(req, err, 500)
-    },
-    onServerClose () {
-      closeProcMetrics()
+
+    processRequest (req, next) {
+      return next().then(resp => {
+        recordMetric(req, resp, 200)
+        return resp
+      }).catch(err => {
+        recordMetric(req, err, 500)
+        throw err
+      })
     }
   }
 }
