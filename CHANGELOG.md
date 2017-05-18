@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="6.0.0"></a>
+# [6.0.0](https://github.com/npm/knork/compare/v5.0.5...v6.0.0) (2017-05-18)
+
+
+### Bug Fixes
+
+* logging middleware should return res ([6987292](https://github.com/npm/knork/commit/6987292))
+
+
+### Features
+
+* coerce middleware resps between execution ([bcf473a](https://github.com/npm/knork/commit/bcf473a))
+* rework middleware ([ae79b07](https://github.com/npm/knork/commit/ae79b07))
+
+
+### BREAKING CHANGES
+
+* Middleware cannot return a false-y value, or throw non-Error
+values.
+* Completely rework how middleware functions in Knork.
+
+
+
 <a name="5.0.0"></a>
 # [5.0.0](https://github.com/npm/knork/compare/v4.0.2...v5.0.0) (2017-04-28)
 
