@@ -15,16 +15,17 @@ function createMiddleware () {
       }
       return response
     }).catch(err => {
-      err.requestID = req.id
       if (!reply.status(err)) {
         if (isExternal && process.env.NODE_ENV === 'production') {
           throw new reply.InternalServerError(
             `An Internal Server Error occurred.`
           )
         }
-        return reply.status(err, 500)
       }
-      return err
+
+      err.context = err.context || {}
+      err.context.requestID = req.id
+      throw err
     })
   }
 

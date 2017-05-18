@@ -14,6 +14,6 @@ function createTransactionMiddleware () {
 
     return db.transaction(() => {
       return next()
-    })
+    })()
   }
 }
