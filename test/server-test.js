@@ -1008,6 +1008,38 @@ test('throwing error works: external service', assert => Promise.try(() => {
   return kserver.get('closed')
 }))
 
+test('returning object with pipe does not treat it as a stream', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+      return {pipe: 'c\'est ne pas un pipe'}
+    }
+  }), [])
+
+  http.get({method: 'GET', path: '/', port: 60880}, res => {
+    const acc = []
+    res.on('data', data => {
+      acc.push(data)
+    })
+    res.once('end', () => {
+      assert.equal(res.statusCode, 200)
+      assert.equal(
+        Buffer.concat(acc).toString(),
+        '{"pipe":"c\'est ne pas un pipe"}'
+      )
+      assert.equal(
+        res.headers['content-type'],
+        'application/json; charset=utf-8'
+      )
+      server.close()
+    })
+  })
+
+  return kserver.get('closed')
+}))
+
 test('throwing error works: internal service', assert => Promise.try(() => {
   process.env.DEBUG = '1'
   const server = http.createServer().listen(60880)
