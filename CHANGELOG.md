@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="6.0.2"></a>
+## [6.0.2](https://github.com/npm/knork/compare/v6.0.1...v6.0.2) (2017-05-19)
+
+
+### Bug Fixes
+
+* do not error out if a json response comes back with a ".pipe" member ([5a2c739](https://github.com/npm/knork/commit/5a2c739))
+
+
+
 <a name="6.0.0"></a>
 # [6.0.0](https://github.com/npm/knork/compare/v5.0.5...v6.0.0) (2017-05-18)
 

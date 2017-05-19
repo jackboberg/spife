@@ -1,6 +1,6 @@
 {
   "name": "@npm/knork",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "description": ":curry: :knife_fork_plate: a jshttp based µframework :knife_fork_plate: :spaghetti:",
   "main": "knork.js",
   "scripts": {
@@ -43,7 +43,9 @@
     "bluebird": "^3.5.0",
     "bole": "^3.0.2",
     "cookie": "^0.3.1",
+    "dotenv": "^4.0.0",
     "format-link-header": "^2.0.0",
+    "glob": "^7.1.1",
     "mississippi": "^1.2.0",
     "numbat-emitter": "^4.0.0",
     "numbat-process": "^2.1.0",
@@ -56,6 +58,7 @@
     "reverse": "^3.2.1",
     "statuses": "^1.3.1",
     "table": "^4.0.1",
-    "uuid": "^3.0.1"
+    "uuid": "^3.0.1",
+    "yargs": "^8.0.1"
   }
 }
