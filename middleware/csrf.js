@@ -15,6 +15,7 @@ function createCSRFMiddleware (opts) {
   const CSRF_TOKEN_COOKIE = opts.cookieName || 'csrftoken'
   const CSRF_TOKEN_KEY = opts.payloadName || 'csrftoken'
   const CSRF_TOKEN_SIZE = Number(opts.size) || 43
+  const CSRF_SECUREONLY = 'secureCookie' in opts ? opts.secureCookie : true
 
   return {
     processRequest (req, next) {
@@ -28,7 +29,7 @@ function createCSRFMiddleware (opts) {
       return next().then(resp => {
         if (req.resetCSRF) {
           return reply.cookie(resp, CSRF_TOKEN_COOKIE, req.csrf, {
-            secure: true,
+            secure: CSRF_SECUREONLY,
             httpOnly: true,
             sameSite: 'strict',
             path: '/'
@@ -61,7 +62,7 @@ function createCSRFMiddleware (opts) {
         return next().then(xs => {
           // allow for resetting CSRF token on login
           if (match.controller[match.name].resetCSRF) {
-            req.csrf = cryptiles.randomString(opts.CSRF_TOKEN_SIZE)
+            req.csrf = cryptiles.randomString(CSRF_TOKEN_SIZE)
             req.resetCSRF = true
           }
 
