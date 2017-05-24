@@ -10,7 +10,7 @@ function createCSPMiddleware (settings, options) {
       const defaults = {
         'connect-src': `'self'`,
         'default-src': `'none'`,
-        'image-src': `'self'`,
+        'img-src': `'self'`,
         'script-src': `'self'`,
         'style-src': `'self'`
       }
