@@ -2,7 +2,6 @@
 
 const Promise = require('bluebird')
 const request = require('request')
-const cookie = require('cookie')
 const http = require('http')
 const tap = require('tap')
 
@@ -13,13 +12,17 @@ const knork = require('..')
 test('csp: sets header', assert => {
   return test.request().then(resp => {
     assert.ok(resp.headers['content-security-policy'].match(/connect-src 'self' https/))
-  })},
+  })
+},
   {
-    'connect-src': [
-      'self',
-      'https://typeahead.npmjs.com/',
-    ]
-})
+    settings: {
+      'connect-src': [
+        'self',
+        'https://typeahead.npmjs.com/'
+      ]
+    }
+  }
+)
 
 test('csp: surrounds keywords with \'', assert => {
   return test.request().then(resp => {
@@ -32,38 +35,46 @@ test('csp: surrounds keywords with \'', assert => {
     assert.ok(!csp.match(/ unsafe-inline /))
     assert.ok(csp.match(/'unsafe-eval'/))
     assert.ok(!csp.match(/ unsafe-eval/))
-  })},
+  })
+},
   {
-    'connect-src': [
-      'self',
-      'https://typeahead.npmjs.com/',
-      'https://partners.npmjs.com/',
-      'https://checkout.stripe.com/api/outer/manhattan',
-      'https://api.github.com',
-      'https://ac.cnstrc.com',
-      'https://*.log.optimizely.com'
-    ],
-    'default-src': '*',
-    'frame-ancestors': 'none',
-    'img-src': ['*', 'data:'],
-    'script-src': ['*', 'unsafe-eval', 'unsafe-inline', 'safari-extension:'],
-    'style-src': ['*', 'unsafe-inline'],
-    'report-uri': '/-/csplog'
-})
+    settings: {
+      'connect-src': [
+        'self',
+        'https://typeahead.npmjs.com/',
+        'https://partners.npmjs.com/',
+        'https://checkout.stripe.com/api/outer/manhattan',
+        'https://api.github.com',
+        'https://ac.cnstrc.com',
+        'https://*.log.optimizely.com'
+      ],
+      'default-src': '*',
+      'frame-ancestors': 'none',
+      'img-src': ['*', 'data:'],
+      'script-src': ['*', 'unsafe-eval', 'unsafe-inline', 'safari-extension:'],
+      'style-src': ['*', 'unsafe-inline'],
+      'report-uri': '/-/csplog'
+    }
+  }
+)
 
 test('csp: sets report only header', assert => {
   return test.request().then(resp => {
     assert.ok(resp.headers['content-security-policy-report-only'].match(/connect-src 'self' https/))
-  })},
+  })
+},
   {
-    'connect-src': [
-      'self',
-      'https://typeahead.npmjs.com/',
-    ],
+    settings: {
+      'connect-src': [
+        'self',
+        'https://typeahead.npmjs.com/'
+      ]
+    },
     options: {
       reportOnly: true
     }
-})
+  }
+)
 
 test.request = function (opts) {
   opts = opts || {}
@@ -84,9 +95,9 @@ function test (name, runner, middlewareSettings) {
         return req.method
       }
     }),
-    [
-      CspMiddleware(middlewareSettings)
-    ])
+      [
+        CspMiddleware(middlewareSettings.settings, middlewareSettings.options)
+      ])
 
     return kserver.then(() => {
       return runner(assert)
@@ -101,4 +112,3 @@ function test (name, runner, middlewareSettings) {
     })
   })
 }
-

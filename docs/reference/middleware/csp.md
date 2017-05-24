@@ -1,6 +1,6 @@
 # CSP Middleware
 
-The CSP Middleware sets your `Content-Security-Policy` header to your liking based on
+The CSP Middleware sets your [Content-Security-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) header to your liking based on
 the settings you pass it.
 
 It has default values of:
@@ -49,6 +49,6 @@ knork('example-server', http.createServer().listen(8124), routes`
     'script-src': ['*', 'unsafe-eval', 'unsafe-inline', 'safari-extension:'],
     'style-src': ['*', 'unsafe-inline'],
     'report-uri': '/-/csplog'
-  })
+  }, options)
 ])
 ```

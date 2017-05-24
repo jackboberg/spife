@@ -1,16 +1,12 @@
 'use strict'
 
-module.exports = createCspMiddleware
-
-const Promise = require('bluebird')
+module.exports = createCSPMiddleware
 
 const reply = require('../reply')
 
-
-function createCspMiddleware (settings) {
+function createCSPMiddleware (settings, options) {
   return (req, next) => {
     return next().then(resp => {
-
       const defaults = {
         'connect-src': `'self'`,
         'default-src': `'none'`,
@@ -34,11 +30,11 @@ function createCspMiddleware (settings) {
             return keywords.find(word => word === source)
               ? `'${source}'`
               : source
-            })
+          })
         return `${directive} ${sourceList.join(' ')}`
       }).join(';')
 
-      const header = settings && settings.options && settings.options.reportOnly
+      const header = options && options.reportOnly
         ? 'Content-Security-Policy-Report-Only'
         : 'Content-Security-Policy'
 
