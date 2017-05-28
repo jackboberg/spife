@@ -1,7 +1,7 @@
 # Validation Decorators
 
 ```javascript
-const validate = require('knork/decorators/validation')
+const validate = require('knork/decorators/validate')
 ```
 
 Contains [view][def-view] decorators that handle request input validation.
@@ -33,7 +33,7 @@ with a validation error. Rejections will be automatically given a status of
 ```javascript
 'use strict'
 
-const validate = require('@npm/knork/decorators/validation')
+const validate = require('@npm/knork/decorators/validate')
 const routes = require('@npm/knork/routing')
 const reply = require('@npm/knork/reply')
 const joi = require('@npm/knork/joi')
@@ -61,7 +61,7 @@ async function update (req, context) {
 It is possible to examine the passed schema using `require('@npm/knork/utils/decorate')`:
 
 ```
-const validate = require('@npm/knork/decorators/validation')
+const validate = require('@npm/knork/decorators/validate')
 const {decorations} = require('@npm/knork/utils/decorate')
 
 const update = validate.body(joi.object({
@@ -99,7 +99,7 @@ with a validation error. Rejections will be automatically given a status of
 ```javascript
 'use strict'
 
-const validate = require('@npm/knork/decorators/validation')
+const validate = require('@npm/knork/decorators/validate')
 const routes = require('@npm/knork/routing')
 const reply = require('@npm/knork/reply')
 const joi = require('@npm/knork/joi')
@@ -127,7 +127,7 @@ async function list (req, context) {
 It is possible to examine the passed schema using `require('@npm/knork/utils/decorate')`:
 
 ```
-const validate = require('@npm/knork/decorators/validation')
+const validate = require('@npm/knork/decorators/validate')
 const {decorations} = require('@npm/knork/utils/decorate')
 
 const list = validate.query(joi.object({
