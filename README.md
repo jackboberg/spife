@@ -1,5 +1,6 @@
 # :fork_and_knife: Knork :fork_and_knife:
 
+[![Build Status](https://travis-ci.com/npm/knork.svg?token=hHeDp9pQmz9kvsgRNVHy&branch=master)](https://travis-ci.com/npm/knork)
 [![Greenkeeper badge](https://badges.greenkeeper.io/npm/knork.svg?token=0594e62a6db02b36ab9a5dafe3982cc253ca070119b560a3e798ab0950643d2b&ts=1493750747725)](https://greenkeeper.io/)
 
 A jshttp-based microframework designed to [help align "doing the right thing"
