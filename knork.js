@@ -16,6 +16,7 @@ const makeKnorkRequest = require('./lib/request')
 const Middleware = require('./lib/middleware')
 const reply = require('./reply')
 
+const UNINSTALL = Symbol('uninstall')
 const ONREADY = Symbol('onready')
 
 function makeKnork (name, server, urls, middleware, opts) {
@@ -45,6 +46,11 @@ function makeKnork (name, server, urls, middleware, opts) {
   )
 
   const onclosed = new Promise((resolve, reject) => {
+    server.once(UNINSTALL, () => {
+      server.removeListener('close', resolve)
+      server.removeListener('error', reject)
+      resolve()
+    })
     server.once('close', resolve)
     server.once('error', reject)
   })
@@ -68,18 +74,20 @@ function makeKnork (name, server, urls, middleware, opts) {
 }
 
 class Server {
-  constructor (name, server, urls, middleware, opts) {
+  constructor (name, server, router, middleware, opts) {
     this.name = name
-    this.urls = urls
+    this.router = router
     this._middleware = null
     this.middleware = middleware
     this.server = server
     this.opts = opts
     this.closed = null
+    this.onrequest = this.onrequest.bind(this)
+    this.onclienterror = opts.onclienterror.bind(this)
     server.removeAllListeners('request')
     server
-      .on('request', (req, res) => this.onrequest(req, res))
-      .on('clientError', (err, sock) => opts.onclienterror(err, sock))
+      .on('request', this.onrequest)
+      .on('clientError', this.onclienterror)
 
     this.metrics = (
       opts.metrics && typeof opts.metrics === 'object'
@@ -94,6 +102,21 @@ class Server {
         )
       )
     )
+  }
+
+  get urls () {
+    return this.router
+  }
+
+  set urls (v) {
+    this.router = v
+  }
+
+  uninstall () {
+    this.server.removeListener('request', this.onrequest)
+    this.server.removeListener('clientError', this.onclienterror)
+    this.server.emit(UNINSTALL)
+    return this.closed
   }
 
   get middleware () {

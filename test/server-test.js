@@ -1079,5 +1079,28 @@ test('throwing error works: internal service', assert => Promise.try(() => {
   return kserver.get('closed')
 }))
 
-test('returning rejection works', assert => Promise.try(() => {
+test('uninstalling works as expected', assert => Promise.try(() => {
+  const server = http.createServer().listen(60880)
+  let fired = false
+  const kserver = knork('anything', server, routing`
+    GET / view
+  `({
+    view (req) {
+    }
+  }), [{
+    processServer (server, next) {
+      return next().then(() => {
+        fired = true
+      })
+    }
+  }], {isExternal: false})
+
+  return kserver.then(knork => {
+    return knork.uninstall()
+  }).then(() => {
+    assert.equal(fired, true)
+    assert.same(server.listeners('request'), [])
+    server.close()
+    return knork('anything', server, {}).closed
+  })
 }))

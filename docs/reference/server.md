@@ -30,7 +30,7 @@ The server returned by `knork()`.
 
   * [Methods](#methods)
 
-    * [knork(name, http, urls\[, middleware=\[\]\]\[opts={}\]) → Promise&lt;Server>](#knorkname-http-urls-middlewareopts--promiseserver)
+    * [knork(name, http, router\[, middleware=\[\]\]\[opts={}\]) → Promise&lt;Server>](#knorkname-http-router-middlewareopts--promiseserver)
 
       * [options.isExternal](#optionsisexternal)
       * [options.maxBodySize](#optionsmaxbodysize)
@@ -58,7 +58,7 @@ The server returned by `knork()`.
 
 ### Methods
 
-#### `knork(name, http, urls[, middleware=[]][opts={}]) → Promise<Server>`
+#### `knork(name, http, router[, middleware=[]][opts={}]) → Promise<Server>`
 
 ##### `options.isExternal`
 
@@ -69,6 +69,11 @@ The server returned by `knork()`.
 ##### `options.requestIDHeaders`
 
 ##### `options.onclienterror`
+
+#### `Server#uninstall → Promise<>`
+
+Uninstall the Knork router and middleware from the server. Returns a promise that resolves
+once the `processServer` middleware has completed.
 
 #### `Server#closed → Promise<>`
 
