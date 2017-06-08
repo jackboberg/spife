@@ -12,7 +12,8 @@
     "release": "standard-version"
   },
   "bin": {
-    "knork-report-query-metrics": "./bin/show-query-metrics.js"
+    "knork-report-query-metrics": "./bin/show-query-metrics.js",
+    "knork": "./bin/manage.js"
   },
   "repository": {
     "type": "git",
