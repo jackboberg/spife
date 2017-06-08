@@ -14,15 +14,15 @@ module.exports = {
       // template loaders go here
     ], [
       // template context processors go here
-    ]]
+    ]],
     '@npm/knork/middleware/common',
     '@npm/knork/middleware/logging',
     '@npm/knork/middleware/metrics',
     '@npm/knork/middleware/monitor',
-    ['@npm/knork/middleware/csrf', {secureCookie: !isDev}],
+    ['@npm/knork/middleware/csrf', {secureCookie: !isDev}]
   ],
   NAME: '$$NAME$$',
   NODE_ENV: process.env.NODE_ENV,
   PORT: 8124,
-  ROUTER: './routes/index.js',
+  ROUTER: './routes/index.js'
 }
