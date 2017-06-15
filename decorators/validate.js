@@ -19,7 +19,7 @@ function validateBody (schema, view) {
     return req.body.then(body => {
       const result = joi.validate(body, schema)
       if (result.error) {
-        req.validatedBody = Promise.reject(new reply.BadRequestError(result.error))
+        req.validatedBody = Promise.reject(reply.status(result.error, 400))
         req.validatedBody.catch(() => {}) // this will be handled later, by the view.
       } else {
         req.validatedBody = Promise.resolve(result.value)
@@ -37,7 +37,7 @@ function validateQuery (schema, view) {
     const args = Array.from(arguments)
     const result = joi.validate(req.query, schema)
     if (result.error) {
-      req.validatedQuery = Promise.reject(new reply.BadRequestError(result.error))
+      req.validatedBody = Promise.reject(reply.status(result.error, 400))
       req.validatedQuery.catch(() => {}) // handled later, by the view.
     } else {
       req.validatedQuery = result.value
