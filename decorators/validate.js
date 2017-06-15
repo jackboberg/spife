@@ -37,7 +37,7 @@ function validateQuery (schema, view) {
     const args = Array.from(arguments)
     const result = joi.validate(req.query, schema)
     if (result.error) {
-      req.validatedBody = Promise.reject(reply.status(result.error, 400))
+      req.validatedQuery = Promise.reject(reply.status(result.error, 400))
       req.validatedQuery.catch(() => {}) // handled later, by the view.
     } else {
       req.validatedQuery = result.value
