@@ -14,12 +14,13 @@ class MissingTemplateError extends Error {
 }
 
 module.exports = class Loader {
-  constructor ({basedir, dirs, load, extension = ''} = {}) {
+  constructor ({basedir, dirs, load, extension = '', litmus=Boolean} = {}) {
     this.cache = new Map()
     this.basedir = basedir
     this.dirs = dirs
     this.load = load
     this.extension = extension
+    this.litmus = litmus
   }
 
   get (name, request) {
@@ -62,6 +63,10 @@ module.exports = class Loader {
           const fullPath = dirArrays[idx][innerIdx]
           const fragment = fullPath.slice(dirLen + 1)
           if (seen.has(fragment)) {
+            continue
+          }
+
+          if (!litmus(fullPath, fragment)) {
             continue
           }
 
