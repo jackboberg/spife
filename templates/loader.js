@@ -66,7 +66,7 @@ module.exports = class Loader {
             continue
           }
 
-          if (!litmus(fullPath, fragment)) {
+          if (!this.litmus(fullPath, fragment)) {
             continue
           }
 
