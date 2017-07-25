@@ -14,7 +14,7 @@ class MissingTemplateError extends Error {
 }
 
 module.exports = class Loader {
-  constructor ({basedir, dirs, load, extension = '', litmus=Boolean} = {}) {
+  constructor ({basedir, dirs, load, extension = '', litmus = Boolean} = {}) {
     this.cache = new Map()
     this.basedir = basedir
     this.dirs = dirs
