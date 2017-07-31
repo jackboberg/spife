@@ -49,13 +49,13 @@ function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
 
       const server = http.createServer().listen(port)
       const testDomain = domain.create()
-
       const batonMap = new WeakMap()
+      const pool = new pg.Pool({database: dbName})
 
       // 1.
       db.install(testDomain, () => {
         return new Promise((resolve, reject) => {
-          pg.connect({database: dbName}, function (err, connection, release) {
+          pool.connect(function (err, connection, release) {
             return err ? reject(err) : resolve({
               connection,
               release
@@ -149,7 +149,7 @@ function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
         return getServer.get('closed').then(rollbackTransaction)
       }).finally(() => {
         // 6.
-        pg.end()
+        pool.end()
       })
     }))
   }
