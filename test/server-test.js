@@ -20,28 +20,6 @@ Emitter.prototype.maxretries = 0
 process.env.DEBUG = ''
 process.env.METRICS = ''
 
-test('bad maxBodySize throws error on NaN', assert => {
-  try {
-    knork('anything', {}, null, [], {maxBodySize: 'string'})
-  } catch (err) {
-    assert.ok(/maxBodySize/.test(err.message))
-    return assert.end()
-  }
-  assert.fail('should have thrown')
-  assert.end()
-})
-
-test('bad maxBodySize throws error on <0', assert => {
-  try {
-    knork('anything', {}, null, [], {maxBodySize: -1})
-  } catch (err) {
-    assert.ok(/maxBodySize/.test(err.message))
-    return assert.end()
-  }
-  assert.fail('should have thrown')
-  assert.end()
-})
-
 test('server promise resolves once http server listening', assert => Promise.try(() => {
   const ee = new EE()
   var resolve = null

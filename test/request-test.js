@@ -7,8 +7,51 @@ const http = require('http')
 const tap = require('tap')
 const url = require('url')
 
+const bodyLimit = require('../middleware/body-limit')
+const bodyJson = require('../middleware/body-json')
+
 const routes = require('../routing')
 const knork = require('..')
+
+test('request.body: fail when body not parseable', assert => {
+  test.setController(routes`
+    POST / index
+  `({
+    index (req, context) {
+      return req.body.then(body => {
+        return 'foo'
+      })
+    }
+  }))
+
+  return test.request({
+    method: 'POST',
+    body: '{bad: cake'
+  }).then(resp => {
+    assert.equal(resp.statusCode, 400)
+  })
+})
+
+test('request.body: default fallback parser is json', assert => {
+  test.setController(routes`
+    POST / index
+  `({
+    index (req, context) {
+      return req.body.then(body => {
+        return 'foo'
+      })
+    }
+  }))
+
+  return test.request({
+    method: 'POST',
+    body: '{"bad": "cake"}',
+    json: false
+  }).then(resp => {
+    assert.equal(resp.body, 'foo')
+    assert.equal(resp.statusCode, 200)
+  })
+})
 
 test('request.id: use request-id (isExternal = false)', assert => {
   test.setController(routes`
@@ -231,25 +274,6 @@ test('request.body: fail when body too large', assert => {
   })
 }, {maxBodySize: 10})
 
-test('request.body: fail when body not parseable', assert => {
-  test.setController(routes`
-    POST / index
-  `({
-    index (req, context) {
-      return req.body.then(body => {
-        return 'foo'
-      })
-    }
-  }))
-
-  return test.request({
-    method: 'POST',
-    body: '{bad: cake'
-  }).then(resp => {
-    assert.equal(resp.statusCode, 400)
-  })
-})
-
 test('request.body: resolve to null on empty body', assert => {
   test.setController(routes`
     POST / index
@@ -445,11 +469,13 @@ function test (name, runner, opts) {
     const server = http.createServer().listen(60880)
     const kserver = knork('anything', server, routes`
       * / target
-    `(test.controller), [{
-      processRequest (req, next) {
+    `(test.controller), [
+      bodyLimit({max: (opts || {}).maxBodySize || 2048}),
+      bodyJson(),
+      function processRequest (req, next) {
         return test.middleware(req, next)
       }
-    }], opts || {isExternal: true})
+    ], opts || {isExternal: true})
 
     return kserver.then(() => {
       return runner(assert)

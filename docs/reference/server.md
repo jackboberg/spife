@@ -33,8 +33,6 @@ The server returned by `knork()`.
     * [knork(name, http, router\[, middleware=\[\]\]\[opts={}\]) → Promise&lt;Server>](#knorkname-http-router-middlewareopts--promiseserver)
 
       * [options.isExternal](#optionsisexternal)
-      * [options.maxBodySize](#optionsmaxbodysize)
-      * [options.enableFormParsing](#optionsenableformparsing)
       * [options.requestIDHeaders](#optionsrequestidheaders)
       * [options.onclienterror](#optionsonclienterror)
 
@@ -61,10 +59,6 @@ The server returned by `knork()`.
 #### `knork(name, http, router[, middleware=[]][opts={}]) → Promise<Server>`
 
 ##### `options.isExternal`
-
-##### `options.enableFormParsing`
-
-##### `options.maxBodySize`
 
 ##### `options.requestIDHeaders`
 

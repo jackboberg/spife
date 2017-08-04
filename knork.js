@@ -5,7 +5,6 @@ module.exports = makeKnork
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
 const ms = require('mississippi')
-const once = require('once')
 
 /* eslint-disable node/no-deprecated-api */
 const domain = require('domain')
@@ -22,19 +21,11 @@ const ONREADY = Symbol('onready')
 
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
-    maxBodySize: 1 << 20, // default to 1mb
     metrics: null,
     isExternal: true,
-    enableFormParsing: false,
     requestIDHeaders: ['request-id'],
     onclienterror: () => {}
   }, opts || {})
-
-  if (isNaN(opts.maxBodySize) || opts.maxBodySize < 0) {
-    throw new Error(`
-  maxBodySize should be a positive integer, got ${opts.maxBodySize} instead
-    `.trim())
-  }
 
   middleware = (middleware || []).map(xs => Middleware.from(xs))
 
