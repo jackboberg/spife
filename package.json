@@ -54,7 +54,7 @@
     "ormnomnom": "^3.0.1",
     "parse-link-header": "^0.4.1",
     "percentile": "^1.2.0",
-    "pg": "^6.1.5",
+    "pg": "^7.1.0",
     "range-parser": "^1.2.0",
     "replify": "^1.2.0",
     "reverse": "^3.2.1",
