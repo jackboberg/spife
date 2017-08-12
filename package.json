@@ -47,6 +47,7 @@
     "dotenv": "^4.0.0",
     "format-link-header": "^2.0.0",
     "glob": "^7.1.1",
+    "minipass": "^2.2.1",
     "mississippi": "^1.2.0",
     "numbat-emitter": "^4.0.0",
     "numbat-process": "^2.1.0",

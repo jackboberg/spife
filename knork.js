@@ -5,7 +5,6 @@ module.exports = makeKnork
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
 const ms = require('mississippi')
-const once = require('once')
 
 /* eslint-disable node/no-deprecated-api */
 const domain = require('domain')
@@ -14,6 +13,7 @@ const domain = require('domain')
 const domainToRequest = require('./lib/domain-to-request')
 const makeKnorkRequest = require('./lib/request')
 const Middleware = require('./lib/middleware')
+const onion = require('./lib/onion')
 const reply = require('./reply')
 
 const UNINSTALL = Symbol('uninstall')
@@ -21,19 +21,11 @@ const ONREADY = Symbol('onready')
 
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
-    maxBodySize: 1 << 20, // default to 1mb
     metrics: null,
     isExternal: true,
-    enableFormParsing: false,
     requestIDHeaders: ['request-id'],
     onclienterror: () => {}
   }, opts || {})
-
-  if (isNaN(opts.maxBodySize) || opts.maxBodySize < 0) {
-    throw new Error(`
-  maxBodySize should be a positive integer, got ${opts.maxBodySize} instead
-    `.trim())
-  }
 
   middleware = (middleware || []).map(xs => Middleware.from(xs))
 
@@ -208,34 +200,6 @@ class Server {
     }).catch(err => {
       handleStreamError(this, err)
     })
-  }
-}
-
-function onion (mw, each, after, inner, ...args) {
-  let idx = 0
-  const argIdx = args.push(null) - 1
-
-  return new Promise((resolve, reject) => {
-    iter().then(resolve, reject)
-  })
-
-  function iter () {
-    const middleware = mw[idx]
-    if (!middleware) {
-      return Promise.try(() => inner(...args)).then(
-        after.resolve,
-        after.reject
-      )
-    }
-
-    idx += 1
-    args[argIdx] = once(() => {
-      return Promise.try(() => iter())
-    })
-    return Promise.try(() => each(middleware, ...args)).then(
-      after.resolve,
-      after.reject
-    )
   }
 }
 

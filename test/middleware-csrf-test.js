@@ -6,7 +6,9 @@ const cookie = require('cookie')
 const http = require('http')
 const tap = require('tap')
 
+const bodyURLEncoded = require('../middleware/body-urlencoded')
 const CSRFMiddleware = require('../middleware/csrf')
+const bodyJson = require('../middleware/body-json')
 const routes = require('../routing')
 const knork = require('..')
 
@@ -143,7 +145,7 @@ function test (name, runner) {
       target (req, context) {
         return req.method
       }
-    }), [CSRFMiddleware({
+    }), [bodyURLEncoded(), bodyJson(), CSRFMiddleware({
       headerName: 'csrf-header',
       cookieName: 'crumb',
       payloadName: 'crumb',
