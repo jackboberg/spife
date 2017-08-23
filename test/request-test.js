@@ -461,7 +461,26 @@ test('request.router: allows overriding routes mid-request', assert => {
   })
 })
 
-function test (name, runner, opts) {
+test('request.defaultBody: default body parser does not cause an exception', assert => {
+  test.setController(routes`
+    POST / index
+  `({
+    index (req, context) {
+      return req.body
+    }
+  }))
+
+  return test.request({
+    method: 'POST',
+    body: 'hello world!',
+    json: true
+  }).then(resp => {
+    assert.equal(resp.body.message, 'Unsupported Media Type')
+    assert.equal(resp.statusCode, 415)
+  })
+}, {defaultBody: true})
+
+function test (name, runner, opts = {}) {
   runner = runner || (() => {})
   tap.test(name, function named (assert) {
     test.controller = {}
@@ -470,8 +489,8 @@ function test (name, runner, opts) {
     const kserver = knork('anything', server, routes`
       * / target
     `(test.controller), [
-      bodyLimit({max: (opts || {}).maxBodySize || 2048}),
-      bodyJson(),
+      bodyLimit({max: opts.maxBodySize || 2048}),
+      opts.defaultBody ? (req, next) => { return next() } : bodyJson(),
       function processRequest (req, next) {
         return test.middleware(req, next)
       }
