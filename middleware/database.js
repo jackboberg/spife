@@ -13,11 +13,11 @@ const logger = require('../logging')('database')
 function createDatabaseMiddleware (opts) {
   opts = opts || {}
   opts.postgres = opts.postgres || {}
-  orm.setConnection(db.getConnection)
   var poolTimer = null
   var pool = null
   return {
     processServer (knork, next) {
+      orm.setConnection(db.getConnection)
       pool = new pg.Pool(opts.postgres)
       pool.on('error', err => {
         logger.error('pool client received error:')
