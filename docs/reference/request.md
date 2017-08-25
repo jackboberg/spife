@@ -43,6 +43,9 @@ request.
     * [request.query → Object&lt;String : String>](#requestquery--objectstring--string)
     * [request.raw → http.IncomingMessage](#requestraw--httpincomingmessage)
     * [request.rawHeaders → Array&lt;Array&lt;String, String>>](#requestrawheaders--arrayarraystring-string)
+    * [request.remoteAddress → String](#requestremoteaddress-string)
+    * [request.remoteFamily → String](#requestremotefamily-string)
+    * [request.remotePort → Number](#requestremoteport-number)
     * [request.url → String](#requesturl--string)
     * [request.urlObject → URL](#requesturlobject--url)
     * [request.viewName → String](#requestviewname--string)
@@ -176,6 +179,19 @@ Get the original request. Disables automatic body parsing support.
 #### `request.rawHeaders → Array<Array<String, String>>`
 
 Get the [raw headers, per `IncomingMessage`][def-http-raw-headers].
+
+#### `request.remoteAddress → String`
+
+The string representation of the remote IP address. For example,
+'74.125.127.100' or '2001:4860:a005::68'.
+
+#### `request.remoteFamily → String`
+
+The string representation of the remote IP family. `'IPv4'` or `'IPv6'`.
+
+#### `request.remotePort → Number`
+
+The numeric representation of the remote port. For example, `80` or `21`.
 
 #### `request.url → String`
 
