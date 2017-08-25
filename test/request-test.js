@@ -456,7 +456,6 @@ test('request.remote*: has remoteFamily, remoteAddress, and remotePort', assert 
   })
 })
 
-
 test('request.router: allows overriding routes mid-request', assert => {
   test.setController(routes`
     GET / index
