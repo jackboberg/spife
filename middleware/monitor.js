@@ -26,7 +26,7 @@ function makeMonitorMiddleware () {
 }
 
 function pingResponse () {
-  return reply.raw('pong')
+  return reply.raw(process.env.PING_RESPONSE || 'pong')
 }
 
 function statusResponse (name) {
