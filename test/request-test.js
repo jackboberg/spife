@@ -434,6 +434,28 @@ test('request.accept: return accepts object', assert => {
   })
 })
 
+test('request.remote*: has remoteFamily, remoteAddress, and remotePort', assert => {
+  test.setController(routes`
+    GET / index
+  `({
+    index (req, context) {
+      return {
+        remoteAddress: req.remoteAddress,
+        remoteFamily: req.remoteFamily,
+        remotePort: req.remotePort
+      }
+    }
+  }))
+
+  return test.request({
+    json: true
+  }).then(resp => {
+    assert.ok(resp.body.remoteAddress.length)
+    assert.equal(resp.body.remoteFamily.slice(0, 3), 'IPv')
+    assert.equal(typeof resp.body.remotePort, 'number')
+  })
+})
+
 test('request.router: allows overriding routes mid-request', assert => {
   test.setController(routes`
     GET / index
