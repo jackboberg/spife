@@ -6,7 +6,7 @@ const db = require('../db/session')
 module.exports = {
   noTransaction (op) {
     const result = decorate(op, function (...args) {
-      return op.call(this, arguments)
+      return op.call(this, ...args)
     })
     result.noTransaction = true
     return result
