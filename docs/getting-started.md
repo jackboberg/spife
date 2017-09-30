@@ -173,7 +173,7 @@ and the contents of the thing we're shipping. We'll add the following to
 ```javascript
 'use strict'
 
-module.exports = Destination
+module.exports = Package
 
 const Promise = require('bluebird')
 const orm = require('knork/orm')
