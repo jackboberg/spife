@@ -6,7 +6,11 @@ const Promise = require('bluebird')
 
 const reply = require('../reply')
 
-function createTemplateMiddleware (loaders = [], context = []) {
+function createTemplateMiddleware (
+  loaders = [],
+  context = [],
+  flushContexts = xs => xs
+) {
   return middleware
 
   function middleware (req, next) {
@@ -27,7 +31,8 @@ function createTemplateMiddleware (loaders = [], context = []) {
         })
         return resp.render(
           pair,
-          contexts
+          contexts,
+          flushContexts
         )
       })
     })
