@@ -6,6 +6,7 @@ const http = require('http')
 const tap = require('tap')
 
 const createTemplateMiddleware = require('../middleware/template')
+const serializer = require('../templates/serializer')
 const routes = require('../routing')
 const reply = require('../reply')
 const knork = require('..')
@@ -135,6 +136,96 @@ test('reply.template loader falls back through loaders', assert => {
     headers: {accept: 'text/html'}
   }).then(resp => {
     assert.deepEqual(resp.body.toString(), 'hi.')
+  })
+})
+
+test('reply.template returns context on json', assert => {
+  class ABC {
+    constructor (a, b) {
+      this.a = a
+      this.b = b
+    }
+  }
+
+  serializer.define(ABC.prototype, abc => {
+    return {x: abc.a, y: abc.b}
+  })
+
+  test.setController(routes`
+    GET / index
+  `({
+    index (req, context) {
+      return reply.template('greeting', {
+        foo: new ABC({hello: 'world'}, new ABC(1, null)),
+        array: [1, 3, 4],
+        array2: [1, 12, new ABC(NaN, new Date())]
+      })
+    }
+  }))
+  let sawContext = null
+  test.setMiddleware([
+    createTemplateMiddleware([{
+      get (key, req) {
+        return context => {
+          sawContext = context
+          return 'hi'
+        }
+      }
+    }])
+  ])
+
+  return test.request({
+    url: '/',
+    json: true
+  }).then(resp => {
+    console.log(sawContext)
+    console.log(resp.body)
+  })
+})
+
+test('reply.template explodes on circular serialization', assert => {
+  class ABC {
+    constructor (a, b) {
+      this.a = a
+      this.b = b
+    }
+  }
+
+  serializer.define(ABC.prototype, abc => {
+    return {x: abc.a, y: abc.b}
+  })
+
+  test.setController(routes`
+    GET / index
+  `({
+    index (req, context) {
+      const abc = new ABC({
+        foo: new ABC({hello: 'world'}, new ABC(1, null)),
+        array: [1, 3, 4],
+        array2: [1, 12, new ABC(NaN, new Date())]
+      }, null)
+      abc.a.foo.b = abc
+      return reply.template('greeting', abc)
+    }
+  }))
+  let sawContext = null
+  test.setMiddleware([
+    createTemplateMiddleware([{
+      get (key, req) {
+        return context => {
+          sawContext = context
+          return 'hi'
+        }
+      }
+    }])
+  ])
+
+  return test.request({
+    url: '/',
+    json: true
+  }).then(resp => {
+    console.log(sawContext)
+    console.log(resp.body)
   })
 })
 

@@ -4,6 +4,7 @@ module.exports = createTemplateMiddleware
 
 const Promise = require('bluebird')
 
+const {serialize} = require('../lib/serialize')
 const reply = require('../reply')
 
 class TemplateResolution {
@@ -62,7 +63,7 @@ function createTemplateMiddleware (loaders = [], context = []) {
     return Promise.all(context.map(fn => {
       return Promise.try(() => fn(req))
     })).then(contexts => {
-      return Object.assign({}, resp, ...contexts)
+      return serialize(Object.assign({}, resp, ...contexts))
     })
   }
 
