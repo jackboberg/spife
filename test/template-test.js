@@ -151,6 +151,7 @@ test('reply.template returns context on json', assert => {
     return {x: abc.a, y: abc.b}
   })
 
+  const date = new Date()
   test.setController(routes`
     GET / index
   `({
@@ -158,7 +159,7 @@ test('reply.template returns context on json', assert => {
       return reply.template('greeting', {
         foo: new ABC({hello: 'world'}, new ABC(1, null)),
         array: [1, 3, 4],
-        array2: [1, 12, new ABC(NaN, new Date())]
+        array2: [1, 12, new ABC(NaN, date)]
       })
     }
   }))
@@ -178,12 +179,15 @@ test('reply.template returns context on json', assert => {
     url: '/',
     json: true
   }).then(resp => {
-    console.log(sawContext)
-    console.log(resp.body)
+    assert.same(sawContext, {
+      foo: {x: { hello: 'world' }, y: { x: 1, y: null }},
+      array: [ 1, 3, 4 ],
+      array2: [ 1, 12, { x: NaN, y: date } ]
+    })
   })
 })
 
-test('reply.template explodes on circular serialization', assert => {
+test('reply.template explodes on circular serialization (from object)', assert => {
   class ABC {
     constructor (a, b) {
       this.a = a
@@ -208,12 +212,10 @@ test('reply.template explodes on circular serialization', assert => {
       return reply.template('greeting', abc)
     }
   }))
-  let sawContext = null
   test.setMiddleware([
     createTemplateMiddleware([{
       get (key, req) {
         return context => {
-          sawContext = context
           return 'hi'
         }
       }
@@ -224,8 +226,51 @@ test('reply.template explodes on circular serialization', assert => {
     url: '/',
     json: true
   }).then(resp => {
-    console.log(sawContext)
-    console.log(resp.body)
+    assert.equal(resp.body.message, 'Cannot serialize circular dependency')
+  })
+})
+
+test('reply.template explodes on circular serialization (from array)', assert => {
+  class ABC {
+    constructor (a, b) {
+      this.a = a
+      this.b = b
+    }
+  }
+
+  serializer.define(ABC.prototype, abc => {
+    return {x: abc.a, y: abc.b}
+  })
+
+  test.setController(routes`
+    GET / index
+  `({
+    index (req, context) {
+      const array = []
+      const abc = new ABC({
+        foo: new ABC({hello: 'world'}, new ABC(1, {})),
+        array: [1, 3, 4],
+        array2: ['hello okay', 12, array]
+      }, null)
+      array.push(abc)
+      return reply.template('greeting', {foo: array})
+    }
+  }))
+  test.setMiddleware([
+    createTemplateMiddleware([{
+      get (key, req) {
+        return context => {
+          return 'hi'
+        }
+      }
+    }])
+  ])
+
+  return test.request({
+    url: '/',
+    json: true
+  }).then(resp => {
+    assert.equal(resp.body.message, 'Cannot serialize circular dependency')
   })
 })
 
