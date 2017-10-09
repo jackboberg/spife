@@ -1,0 +1,28 @@
+{
+  "name": "with-nunjucks",
+  "version": "1.0.0",
+  "description": "an example knork app using nunjucks",
+  "main": "index.js",
+  "bin": {
+    "with-nunjucks": "manage.js"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "prestart": "npm install",
+    "start": "bin/manage.js runserver",
+    "test": "echo \"hi, no tests here\""
+  },
+  "keywords": [
+    "knork",
+    "nunjucks"
+  ],
+  "author": "Chris Dickinson <chris@neversaw.us> (http://neversaw.us/)",
+  "license": "MIT",
+  "dependencies": {
+    "@npm/knork": "^8.2.4",
+    "nunjucks": "^3.0.1"
+  }
+}
