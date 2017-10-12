@@ -15,13 +15,15 @@ discrete functions.
 
 ## What does a decorator look like?
 
-It will look like this:
+Decorators are a function that accept a function and return a function:
 
 ```javascript
+const decorate = require('@npm/decorate') // this is an optional-but-handy step!
+
 module.exports = decorator
 
 function decorator (viewFn) {
-  return innerFn
+  return decorate(viewFn, innerFn)
 
   function innerFn (...args) {
     return viewFn(...args)
@@ -33,13 +35,15 @@ If your decorator takes arguments other than the view function, it's best
 to accept those in a function that _returns_ a decorator.
 
 ```javascript
+const decorate = require('@npm/decorate')
+
 module.exports = takesArgs
 
 function takesArgs ({my, config, args}) {
   return decorator
 
   function decorator (viewFn) {
-    return innerFn
+    return decorate(viewFn, innerFn)
 
     function innerFn (...args) {
       return viewFn(...args)
@@ -53,10 +57,10 @@ to the form you see above!
 
 > **Note**:
 >
-> You should also use
-> [`@npm/decorate`](https://www.npmjs.com/package/@npm/decorate) to return your
-> `innerFn`. This will do handy things like forwarding properties from the
-> `viewFn` onto the `innerFn` and making the decorator introspectable.
+> You should use [`@npm/decorate`](https://www.npmjs.com/package/@npm/decorate)
+> to return your `innerFn`. This will do handy things like forwarding
+> properties from the `viewFn` onto the `innerFn` and making the decorator
+> introspectable.
 
 ## Why use a decorator?
 
@@ -83,7 +87,7 @@ decorators.
 
 ## Recipes
 
-### My site has a default behavior I'd like one or two views to opt-out of
+### My site has a default behavior I'd like one or two views to opt-out of!
 
 This is a great use-case for decorators. Assume every view on your site orders
 pizza before executing, but a couple of views do not require pizza to be ordered.
@@ -116,7 +120,7 @@ function createPizzaOrderingMiddleware ({toppings, size}) {
 }
 ```
 
-### I have three views on my site that need the same extra template context
+### I have three views on my site that need the same extra template context!
 
 This is a great opportunity to use a decorator!
 
@@ -162,6 +166,64 @@ function fetchExtraContext (viewFn) {
     ])
 
     return Object.assign(response, extraContext)
+  }
+}
+```
+
+### I'd like to test my decorators! I'd like to test my views!
+
+Separating the concerns of your view functions using decorators allows
+you to decrease the overlap between tests of different functions.
+
+`@npm/decorate` enables testing decorators and the views they decorate
+separately. This allows you to test the behavior of your decorators separately
+from your views (& vice versa!) This can be handy if you wish to reduce the
+overlap between tests of different views.
+
+```javascript
+const {decorations, undecorate} = require('@npm/decorate')
+const {test} = require('tap')
+
+const myDecorator = require('./path/to/my/decorator.js')
+const views = require('./path/to/my/views.js')
+
+test('test behaviors of my view', async assert => {
+  const innerView = undecorate(views.myExample)
+
+  // call the inner view without calling its decorations
+  innerView()
+})
+
+test('test my decorator', async assert => {
+  const decorated = myDecorator(() => 'fake inner function')
+
+  // test behaviors of "decorated"
+})
+
+test('get the decorations of my view', async assert => {
+  // "decorations" returns an iterator listing all decorations of
+  // the view.
+  const fns = [...decorations(views.myView)]
+
+  // and now we can test that my view has whatever tested behavior
+  // that the decorator confers!
+  assert.ok(fns.some(fn => fn.wellKnownProperty))
+})
+```
+
+The magic here is that our decorator adds some extra info the
+inner function for our test to examine:
+
+```javascript
+const decorate = require('@npm/decorate')
+module.exports = myDecorator
+
+function myDecorator (viewFn) {
+  inner.wellKnownProperty = true
+  return decorate(viewFn, inner)
+
+  function inner (...args) {
+    return viewFn(...args)
   }
 }
 ```
