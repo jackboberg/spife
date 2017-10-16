@@ -128,7 +128,7 @@ You could write this as a decorator that starts fetching the extra context
 at the same time as your view function:
 
 ```javascript
-module.exports = myDecorator
+module.exports = fetchExtraContext
 
 function fetchExtraContext (viewFn) {
   return innerFn
@@ -148,7 +148,7 @@ It'd be handy if `extraContext` didn't crash the view if it failed to load.
 It'd be handier yet if we didn't wait too long to load `extraContext`:
 
 ```javascript
-module.exports = myDecorator
+module.exports = fetchExtraContext
 
 const delay = require('util').promisify(setTimeout)
 
