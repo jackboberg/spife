@@ -215,9 +215,7 @@ test('reply.template explodes on circular serialization (from object)', assert =
   test.setMiddleware([
     createTemplateMiddleware([{
       get (key, req) {
-        return context => {
-          return 'hi'
-        }
+        return context => context
       }
     }])
   ])
@@ -226,7 +224,7 @@ test('reply.template explodes on circular serialization (from object)', assert =
     url: '/',
     json: true
   }).then(resp => {
-    assert.equal(resp.body.message, 'Cannot serialize circular dependency')
+    assert.equal(resp.body.error.message, 'Cannot serialize circular dependency')
   })
 })
 
@@ -259,9 +257,7 @@ test('reply.template explodes on circular serialization (from array)', assert =>
   test.setMiddleware([
     createTemplateMiddleware([{
       get (key, req) {
-        return context => {
-          return 'hi'
-        }
+        return context => context
       }
     }])
   ])
@@ -270,7 +266,7 @@ test('reply.template explodes on circular serialization (from array)', assert =>
     url: '/',
     json: true
   }).then(resp => {
-    assert.equal(resp.body.message, 'Cannot serialize circular dependency')
+    assert.equal(resp.body.error.message, 'Cannot serialize circular dependency')
   })
 })
 

@@ -2,6 +2,7 @@
 
 module.exports = createTemplateMiddleware
 
+const logger = require('../logging')('template-middleware')
 const Promise = require('bluebird')
 
 const {serialize} = require('../lib/serialize')
@@ -17,11 +18,25 @@ class TemplateResolution {
 
 class TemplateNotFound extends Error {
   constructor (name) {
-    super(`Could not find template matching "${name}."`)
+    super(`Could not find template matching "${name}".`)
   }
 }
 
-function createTemplateMiddleware (loaders = [], context = []) {
+class TemplateLoadError extends Error {
+  constructor (err) {
+    super(`Error loading template. Original message: ${err.message}`)
+    this.original = err
+  }
+}
+
+class TemplateContextError extends Error {
+  constructor (err) {
+    super(`Error loading context for template. Original message: ${err.message}`)
+    this.original = err
+  }
+}
+
+function createTemplateMiddleware (loaders = [], context = [], errorTemplateName = 'errors/template') {
   return {
     processRequest (req, next) {
       return next().then(resp => {
@@ -34,9 +49,12 @@ function createTemplateMiddleware (loaders = [], context = []) {
         const status = reply.status(resp)
         headers['content-type'] = 'text/html'
         const start = Date.now()
-        return Promise.join(
-          lookup(template, req),
-          toContext(req, resp)
+
+        const getTemplate = lookup(template, req)
+        const getContext = toContext(req, resp)
+        const getRendered = Promise.join(
+          getTemplate,
+          getContext
         ).then(([resolution, context]) => {
           process.emit('metric', {
             name: 'template.lookup',
@@ -44,8 +62,33 @@ function createTemplateMiddleware (loaders = [], context = []) {
             template: resp.name
           })
           return render(resolution, context)
-        }).then(str => {
+        })
+
+        const getResponse = getRendered.then(str => {
           return reply(str, status, headers)
+        })
+
+        return getResponse.catch(error => {
+          return Promise.join(
+            lookup(errorTemplateName),
+            getContext.catch(TemplateContextError, () => null)
+          ).then(([resolution, context]) => {
+            return render(resolution, {
+              context,
+              error: {
+                message: (error.original || error).message,
+                stack: (error.original || error).stack,
+                resolution: error.resolution
+              }
+            })
+          }).then(str => {
+            return reply(str, 500, {
+              'cache-control': 'no-cache',
+              'content-type': 'text/html'
+            })
+          }).catch(err => {
+            throw (error.original || error)
+          })
         })
       })
     },
@@ -64,6 +107,8 @@ function createTemplateMiddleware (loaders = [], context = []) {
       return Promise.try(() => fn(req))
     })).then(contexts => {
       return serialize(Object.assign({}, resp, ...contexts))
+    }).catch(err => {
+      throw new TemplateContextError(err)
     })
   }
 
@@ -81,7 +126,9 @@ function createTemplateMiddleware (loaders = [], context = []) {
           }
         })
       })
-    }, Promise.resolve()).then(resolution => {
+    }, Promise.resolve()).catch(err => {
+      throw new TemplateLoadError(err)
+    }).then(resolution => {
       if (!resolution) {
         throw new TemplateNotFound(template)
       }
