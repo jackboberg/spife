@@ -2,7 +2,7 @@
 
 module.exports = createLoggingMiddleware
 
-const bistre = require('bistre')
+const createPrinter = require('@npm/knork-dev-logger')
 
 const bole = require('../logging')
 const reply = require('../reply')
@@ -18,7 +18,7 @@ function createLoggingMiddleware (opts) {
   return {
     processServer (server, next) {
       if (opts.stream === null) {
-        const pretty = bistre()
+        const pretty = createPrinter()
         opts.stream = (
           process.stdout.isTTY &&
           process.env.ENVIRONMENT !== 'production' &&
