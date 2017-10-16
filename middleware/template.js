@@ -69,6 +69,8 @@ function createTemplateMiddleware (loaders = [], context = [], errorTemplateName
         })
 
         return getResponse.catch(error => {
+          logger.error('caught error when trying to render response:')
+          logger.error(error.original || error)
           return Promise.join(
             lookup(errorTemplateName),
             getContext.catch(TemplateContextError, () => null)
@@ -87,6 +89,8 @@ function createTemplateMiddleware (loaders = [], context = [], errorTemplateName
               'content-type': 'text/html'
             })
           }).catch(err => {
+            logger.error('caught error when trying to render error template:')
+            logger.error(err)
             throw (error.original || error)
           })
         })
