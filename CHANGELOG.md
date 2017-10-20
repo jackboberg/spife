@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="8.4.1"></a>
+## [8.4.1](https://github.com/npm/knork/compare/v8.4.0...v8.4.1) (2017-10-20)
+
+
+### Bug Fixes
+
+* yargs exits now if parse is run with no second argument ([#44](https://github.com/npm/knork/issues/44)) ([3bb0c5f](https://github.com/npm/knork/commit/3bb0c5f))
+
+
+
 <a name="8.0.0"></a>
 # [8.0.0](https://github.com/npm/knork/compare/v3.0.3...v8.0.0) (2017-08-23)
 
