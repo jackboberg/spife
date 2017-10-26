@@ -1,30 +1,27 @@
 'use strict'
 
-module.exports = {
-  body: validateBody,
-  query: validateQuery
-}
-
 const decorate = require('@npm/decorate')
 const Promise = require('bluebird')
 const reply = require('../reply')
 const joi = require('../joi')
 
-function validateBody (schema, view) {
-  bodyValidator.schema = schema
-  return decorate(view, bodyValidator)
+const validateBody = (schema, errorFn) => (viewFn) => {
+  return decorate(viewFn, innerFn)
 
-  function bodyValidator (req, context) {
-    const args = Array.from(arguments)
-    return req.body.then(body => {
+  function innerFn (req, context) {
+    if (typeof req.validatedBody !== 'undefined') {
+      return viewFn(req, context)
+    }
+
+    return req.body.then((body) => {
       const result = joi.validate(body, schema)
       if (result.error) {
-        req.validatedBody = Promise.reject(reply.status(result.error, 400))
-        req.validatedBody.catch(() => {}) // this will be handled later, by the view.
+        context.set('error', result.error)
+        return errorFn(req, context)
       } else {
-        req.validatedBody = Promise.resolve(result.value)
+        req.validatedBody = result.value
+        return viewFn(req, context)
       }
-      return view.apply(this, args)
     })
   }
 }
@@ -44,4 +41,9 @@ function validateQuery (schema, view) {
     }
     return view.apply(this, args)
   }
+}
+
+module.exports = {
+  body: validateBody,
+  query: validateQuery
 }
