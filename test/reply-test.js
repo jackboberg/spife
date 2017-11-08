@@ -182,6 +182,80 @@ test('reply.link: retrieve link by rel', assert => {
   })
 })
 
+test('reply.cacheControl: cannot set public and private at once', assert => {
+  assert.throws(() => {
+    reply.cacheControl({}, {
+      private: true,
+      public: true
+    })
+  })
+  return Promise.resolve()
+})
+
+const CACHE_CONTROL_TOGGLES = [
+  'mustRevalidate',
+  'noCache',
+  'noStore',
+  'noTransform',
+  'public',
+  'private',
+  'proxyRevalidate',
+  'immutable'
+]
+test('reply.cacheControl: toggles format as expected', assert => {
+  CACHE_CONTROL_TOGGLES.map(toggle => {
+    assert.same(reply.cacheControl(reply.cacheControl({}, {
+      [toggle]: true
+    })), {[toggle]: true})
+  })
+  const all = CACHE_CONTROL_TOGGLES.reduce((acc, xs) => {
+    if (xs === 'public') return acc
+    return Object.assign(acc, {[xs]: true})
+  }, {})
+
+  assert.same(reply.cacheControl(reply.cacheControl({}, all)), all)
+
+  const result = reply.cacheControl(
+    reply.cacheControl(reply.cacheControl({}, all), {public: true})
+  )
+  delete all.private
+  all.public = true
+  assert.same(result, all)
+
+  return Promise.resolve()
+})
+
+const CACHE_CONTROL_VALUES = [
+  'maxAge',
+  'sharedMaxAge',
+  'staleWhileRevalidate',
+  'staleIfError'
+]
+test('reply.cacheControl: non-toggles format as expected', assert => {
+  CACHE_CONTROL_VALUES.map((toggle, idx) => {
+    assert.same(reply.cacheControl(reply.cacheControl({}, {
+      [toggle]: idx
+    })), {[toggle]: idx})
+  })
+  const all = CACHE_CONTROL_VALUES.reduce((acc, xs, idx) => {
+    return Object.assign(acc, {[xs]: idx})
+  }, {})
+
+  assert.same(reply.cacheControl(reply.cacheControl({}, all)), all)
+
+  return Promise.resolve()
+})
+
+test('reply.vary: returns vary headers as expected', assert => {
+  assert.same(reply.vary({}), [])
+  assert.same(reply.vary(reply.vary({}, 'something')), ['something'])
+  assert.same(reply.vary(reply.vary({}, ['something'])), ['something'])
+  assert.same(reply.vary(reply.vary({}, ['something', 'nothing'])), ['something', 'nothing'])
+  assert.same(reply.vary(reply.vary({}, ['something', 'nothing', 'something'])), ['something', 'nothing'])
+
+  return Promise.resolve()
+})
+
 function test (name, runner) {
   tap.test(name, function named (assert) {
     test.controller = {}

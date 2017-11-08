@@ -146,7 +146,7 @@ class Server {
           }
 
           if (!match) {
-            throw new reply.NotFoundError()
+            throw new reply.NoMatchError()
           }
 
           const context = new Map(function * () {

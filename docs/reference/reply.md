@@ -24,10 +24,15 @@ Contains methods for creating and manipulating HTTP responses.
     * [ClientError](#clienterror)
 
       * [Concrete ClientError Subclasses](#concrete-clienterror-subclasses)
+      * [NoMatchError](#nomatcherror)
+
+    * [CacheControl](#cachecontrol)
 
   * [Methods](#methods)
 
     * [reply(resp\[, code\]\[, headers\]) → Response&lt;resp>](#replyresp-code-headers--responseresp)
+    * [reply.cacheControl(resp) → CacheControl](#replycachecontrolresponse--cachecontrol)
+    * [reply.cacheControl(resp, cacheControl) → Response&lt;resp>](#replycachecontrolresponse-cachecontrol--response-resp)
     * [reply.cookie(resp, name, value, opts) → Response&lt;resp>](#replycookieresp-name-value-opts--responseresp)
     * [reply.empty(code) → Response&lt;''>](#replyempty--response)
     * [reply.link(resp) → Object | undefined](#replylinkresp--object--undefined)
@@ -43,6 +48,8 @@ Contains methods for creating and manipulating HTTP responses.
     * [reply.status(resp, code) → Response&lt;resp>](#replystatusresp-code--responseresp)
     * [reply.template(name, context) → TemplateResponse](#replytemplatename-context--templateresponse)
     * [reply.toStream(response) → Response&lt;resp>](#replytostreamresponse--responseresp)
+    * [reply.vary(resp) → Array&lt;String>](#replyvaryresp--arraystring)
+    * [reply.vary(resp, on) → Response&lt;resp>](#replyvaryresp-on--responseresp)
 
 ## API
 
@@ -192,6 +199,32 @@ function myView (req, context) {
 | `RequestHeaderFieldsTooLargeError` | 431  |
 | `UnavailableForLegalReasonsError`  | 451  |
 
+##### `NoMatchError`
+
+`NoMatchError` is a subclass of `NotFoundError` that indicates that Knork
+did not find a match for an incoming request in its router.
+
+#### `CacheControl`
+
+```javascript
+{
+  mustRevalidate: Boolean,
+  noCache: Boolean,
+  noStore: Boolean,
+  noTransform: Boolean,
+  public: Boolean, // if true, private must be false
+  private: Boolean, // if true, public must be false
+  proxyRevalidate: Boolean,
+  maxAge: Number,
+  sharedMaxAge,
+  immutable: Boolean,
+  staleWhileRevalidate: Number,
+  staleIfError: Number
+}
+```
+
+Corresponds to the response [`Cache-Control`] values.
+
 ### Methods
 
 #### `reply(resp[, code][, headers]) → Response<resp>`
@@ -224,6 +257,17 @@ module.exports = function myView (req, context) {
 > clients could otherwise insert UTF8 values that will decompose to newlines,
 > which allows for an attack known as [response
 > splitting][def-response-splitting].
+
+#### `reply.cacheControl(resp) → CacheControl`
+
+Given a response, parse its [`Cache-Control`] header into a
+[`CacheControl`](#cachecontrol) object.
+
+#### `reply.cacheControl(resp, cacheControl) → Response&lt;resp>`
+
+Given a response and a `CacheControl` configuration, apply the new cache
+control to the response. This will *merge* the new cache control configuration
+with the old cache control configuration.
 
 #### `reply.cookie(resp, name, value, opts) → Response&lt;resp>`
 
@@ -427,6 +471,24 @@ const reply = require('@npm/knork/reply')
 reply.toStream('hello world') // Stream with pipe!
 reply.toString({some: 'json'}) // Stream with pipe!
 ```
+
+#### `reply.vary(resp) → Array&lt;String>`
+
+Return an array of request headers to vary on, per the [`Vary`] header.
+
+#### `reply.vary(resp, on) → Response&lt;resp>`
+
+Set the request headers to be varied on using the [`Vary`] header. This
+function deduplicates repeated values.
+
+```javascript
+reply.vary(myResponse, 'this-one-header')
+reply.vary(myResponse, ['cookie', 'accept-encoding'])
+```
+
+[`Vary`]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
+
+[`Cache-Control`]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control#Cache_response_directives
 
 [shorthand-raw]: #replyrawresp--responseresp
 
