@@ -5,16 +5,17 @@ const Promise = require('bluebird')
 const reply = require('../reply')
 const joi = require('../joi')
 
-const validateBody = (schema) => (viewFn) => {
+const validateBody = (validatorFn) => (viewFn) => {
   return decorate(viewFn, innerFn)
 
   function innerFn (req, context) {
-    if (typeof req.validatedBody !== 'undefined') {
-      return viewFn(req, context)
-    }
+    const validator =
+      typeof validatorFn === 'function'
+        ? createValidator(validatorFn)
+        : validatorFn
 
     req.validatedBody = req.body.then((body) => {
-      const result = joi.validate(body, schema)
+      const result = validator.validate(body)
 
       if (result.error) {
         return Promise.reject(reply.status(result.error, 400))
@@ -24,6 +25,19 @@ const validateBody = (schema) => (viewFn) => {
     })
 
     return viewFn(req, context)
+  }
+}
+
+function createValidator (validator) {
+  return {
+    validator: validator,
+    validate (value) {
+      try {
+        return {value: this.validator(value)}
+      } catch (err) {
+        return {error: err}
+      }
+    }
   }
 }
 
