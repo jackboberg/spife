@@ -1,31 +1,44 @@
 'use strict'
 
-module.exports = {
-  body: validateBody,
-  query: validateQuery
-}
-
 const decorate = require('@npm/decorate')
 const Promise = require('bluebird')
 const reply = require('../reply')
 const joi = require('../joi')
 
-function validateBody (schema, view) {
-  bodyValidator.schema = schema
-  return decorate(view, bodyValidator)
+const validateBody = (validator) => (viewFn) => {
+  return decorate(viewFn, innerFn)
 
-  function bodyValidator (req, context) {
-    const args = Array.from(arguments)
-    return req.body.then(body => {
-      const result = joi.validate(body, schema)
+  function innerFn (req, context) {
+    const schema =
+      typeof validator === 'function'
+        ? createValidator(validator)
+        : validator
+
+    req.validatedBody = req.body.then((body) => {
+      const result = schema.validate(body)
+
       if (result.error) {
-        req.validatedBody = Promise.reject(reply.status(result.error, 400))
-        req.validatedBody.catch(() => {}) // this will be handled later, by the view.
-      } else {
-        req.validatedBody = Promise.resolve(result.value)
+        throw reply.status(result.error, 400)
       }
-      return view.apply(this, args)
+
+      return result.value
     })
+    req.validatedBody.catch(() => {})
+
+    return viewFn(req, context)
+  }
+}
+
+function createValidator (validator) {
+  return {
+    validator: validator,
+    validate (value) {
+      try {
+        return {value: this.validator(value)}
+      } catch (err) {
+        return {error: err}
+      }
+    }
   }
 }
 
@@ -44,4 +57,9 @@ function validateQuery (schema, view) {
     }
     return view.apply(this, args)
   }
+}
+
+module.exports = {
+  body: validateBody,
+  query: validateQuery
 }
