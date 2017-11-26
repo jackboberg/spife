@@ -33,7 +33,7 @@
   "devDependencies": {
     "standard": "^10.0.2",
     "standard-version": "^4.0.0",
-    "tap": "^10.3.2"
+    "tap": "^11.0.0"
   },
   "dependencies": {
     "@npm/decorate": "^2.0.1",
