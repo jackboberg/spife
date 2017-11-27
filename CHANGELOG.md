@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="8.5.1"></a>
+## [8.5.1](https://github.com/npm/knork/compare/v8.5.0...v8.5.1) (2017-11-27)
+
+
+### Bug Fixes
+
+* Release safe version of [@npm](https://github.com/npm)/knork@8.x ([fd254b6](https://github.com/npm/knork/commit/fd254b6))
+
+
+
 <a name="8.4.1"></a>
 ## [8.4.1](https://github.com/npm/knork/compare/v8.4.0...v8.4.1) (2017-10-20)
 
