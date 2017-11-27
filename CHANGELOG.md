@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="9.0.0"></a>
+# [9.0.0](https://github.com/npm/knork/compare/v8.5.0...v9.0.0) (2017-11-27)
+
+
+### Bug Fixes
+
+* **dep:** set ormnomnom at version that doesn't break node 6 ([17a37ca](https://github.com/npm/knork/commit/17a37ca))
+* **versions:** test on 8 & 9 ([d1070bb](https://github.com/npm/knork/commit/d1070bb))
+* Release rewritten body validator decorator ([9c752a2](https://github.com/npm/knork/commit/9c752a2))
+
+
+### Features
+
+* Rewritten validate body decorator ([5d1c4a1](https://github.com/npm/knork/commit/5d1c4a1))
+* Rewritten validate body decorator ([085d622](https://github.com/npm/knork/commit/085d622))
+* Rewritten validate body decorator ([3859bdb](https://github.com/npm/knork/commit/3859bdb))
+* Rewritten validate body decorator ([1c486a3](https://github.com/npm/knork/commit/1c486a3))
+
+
+### BREAKING CHANGES
+
+* Changes to the validate.body decorator signature
+
+
+
 <a name="8.4.1"></a>
 ## [8.4.1](https://github.com/npm/knork/compare/v8.4.0...v8.4.1) (2017-10-20)
 
