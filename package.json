@@ -1,6 +1,6 @@
 {
   "name": "@npm/knork",
-  "version": "8.6.0",
+  "version": "8.6.1",
   "description": ":curry: :knife_fork_plate: a jshttp based µframework :knife_fork_plate: :spaghetti:",
   "main": "knork.js",
   "scripts": {
