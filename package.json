@@ -53,7 +53,7 @@
     "numbat-emitter": "^4.0.0",
     "numbat-process": "^2.1.0",
     "once": "^1.4.0",
-    "ormnomnom": "^4.0.1",
+    "ormnomnom": "^4.1.0",
     "parse-link-header": "^1.0.1",
     "percentile": "^1.2.0",
     "pg": "^6.1.5",
