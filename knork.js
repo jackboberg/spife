@@ -87,6 +87,36 @@ class Server {
     )
   }
 
+  start () {
+    const {server} = this
+    const onclosed = new Promise((resolve, reject) => {
+      server.once(UNINSTALL, () => {
+        server.removeListener('close', resolve)
+        server.removeListener('error', reject)
+        resolve()
+      })
+      server.once('close', resolve)
+      server.once('error', reject)
+    })
+
+    const onready = new Promise((resolve, reject) => {
+      server.once(ONREADY, resolve)
+    })
+
+    this.closed = onion(
+      this._middleware,
+      'processServer',
+      {},
+      () => {
+        server.emit(ONREADY, this)
+        return onclosed
+      },
+      this
+    )
+
+    return onready
+  }
+
   get urls () {
     return this.router
   }

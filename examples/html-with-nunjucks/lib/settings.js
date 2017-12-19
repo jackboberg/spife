@@ -35,10 +35,12 @@ module.exports = {
     '@npm/knork/middleware/logging',
     '@npm/knork/middleware/metrics',
     '@npm/knork/middleware/monitor',
+    '@npm/knork/middleware/hot-reload',
     ['@npm/knork/middleware/csrf', {secureCookie: !isDev}]
   ],
   NAME: 'nunjucks-example',
   NODE_ENV: process.env.NODE_ENV,
   PORT: 8124,
-  ROUTER: './routes/index.js'
+  ROUTER: './routes/index.js',
+  HOT: true
 }
