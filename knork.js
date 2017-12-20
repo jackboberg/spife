@@ -146,14 +146,16 @@ class Server {
       () => {
         this.server.emit(ONREADY, this)
         return onclosed
-      }
+      },
+      1
     )
 
     this.processBodyOnion = onion.sprout(
       processBodyMW,
       async (req, result) => {
         throw new reply.UnsupportedMediaTypeError()
-      }
+      },
+      2
     )
 
     this.processViewOnion = onion.sprout(
@@ -168,7 +170,8 @@ class Server {
           ? reply(response)
           : reply(response || '', 204)
         )
-      }
+      },
+      3
     )
 
     this.processRequestOnion = onion.sprout(
@@ -196,7 +199,8 @@ class Server {
         req.viewName = viewName.reverse().join('.')
 
         return this.processViewOnion(req, match, context)
-      }
+      },
+      1
     )
   }
 

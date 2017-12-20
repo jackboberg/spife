@@ -874,11 +874,11 @@ test('returning buffer works: no content-type', assert => Promise.try(() => {
       acc.push(data)
     })
     res.once('end', () => {
-      assert.equal(res.statusCode, 200)
       assert.equal(
         Buffer.concat(acc).toString(),
         'hello world'
       )
+      assert.equal(res.statusCode, 200)
       assert.equal(
         res.headers['content-type'],
         'application/octet-stream'
