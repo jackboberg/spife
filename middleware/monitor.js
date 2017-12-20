@@ -11,7 +11,7 @@ function makeMonitorMiddleware () {
   return {
     processServer (knork, next) {
       this.name = knork.name
-      return next()
+      return next(knork)
     },
     processRequest (req, next) {
       if (req.urlObject.pathname === '/_monitor/ping') {
@@ -20,7 +20,7 @@ function makeMonitorMiddleware () {
       if (req.urlObject.pathname === '/_monitor/status') {
         return statusResponse(this.name)
       }
-      return next()
+      return next(req)
     }
   }
 }

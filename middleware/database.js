@@ -41,7 +41,7 @@ function createDatabaseMiddleware (opts) {
         })
       }, dbMetricsInterval)
 
-      return next().then(() => {
+      return next(knork).then(() => {
         clearInterval(poolTimer)
         const closed = pool.end()
         pool = null
@@ -62,12 +62,12 @@ function createDatabaseMiddleware (opts) {
         {maxConcurrency: opts.maxConnectionsPerRequest}
       ))
 
-      return next()
+      return next(request)
     },
 
     processView (req, match, context, next) {
       db.session.viewName = req.viewName
-      return next()
+      return next(req, match, context)
     }
   }
 }

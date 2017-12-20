@@ -48,18 +48,18 @@ test('http server listening triggers mw installs', assert => Promise.try(() => {
   const mw = [
     {processServer (knork, next) {
       list.push({knork, name: '1'})
-      return next()
+      return next(knork)
     }},
     {processServer (knork, next) {
       return Promise.delay(10).then(() => {
         list.push({knork, name: '2'})
-        return next()
+        return next(knork)
       })
     }},
     {},
     {processServer (knork, next) {
       list.push({knork, name: '3'})
-      return next()
+      return next(knork)
     }}
   ]
   const onServer = knork('anything', ee, null, mw).then(server => {
@@ -75,9 +75,9 @@ test('closing http server uninstalls mw', assert => Promise.try(() => {
   const ee = new EE()
   const list = []
   const mw = [
-    {processServer (knork, next) { return next().then(() => list.push('1')) }},
+    {processServer (knork, next) { return next(knork).then(() => list.push('1')) }},
     {processServer (knork, next) {
-      return next().then(() => {
+      return next(knork).then(() => {
         return Promise.delay(10).then(() => {
           list.push('2')
         })
@@ -85,7 +85,7 @@ test('closing http server uninstalls mw', assert => Promise.try(() => {
     }},
     {},
     {processServer (knork, next) {
-      return next().then(() => {
+      return next(knork).then(() => {
         list.push('3')
       })
     }}
@@ -107,7 +107,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
   const mw = [{
     processServer (server, next) {
       list.push('1')
-      return next().then(() => {
+      return next(server).then(() => {
         list.push('1')
       })
     }
@@ -116,7 +116,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
       ee.emit('close') // <---------- close as part of startup!
       return Promise.delay(10).then(() => {
         list.push('2')
-        return next()
+        return next(server)
       }).then(() => {
         return Promise.delay(10).then(() => {
           list.push('2')
@@ -127,7 +127,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
   }, {
     processServer (server, next) {
       list.push('3')
-      return next().then(() => {
+      return next(server).then(() => {
         list.push('3')
       })
     }
@@ -259,16 +259,12 @@ test('client disconnect', assert => Promise.try(() => {
     view (req) {
       return fs.createReadStream(__filename)
         .on('close', () => {
+          clearTimeout(timeout)
           list.push('closed')
+          server.close()
         })
     }
   }), [], {})
-
-  server.on('response-error', () => {
-    clearTimeout(timeout)
-    list.push('response-error')
-    server.close()
-  })
 
   const timeout = setTimeout(() => {
     assert.fail('timed out')
@@ -283,7 +279,7 @@ test('client disconnect', assert => Promise.try(() => {
 Host: localhost:60880
 Connection: close\r\n\r\n`)
   return kserver.get('closed').then(() => {
-    assert.deepEqual(list, ['closed', 'response-error'])
+    assert.deepEqual(list, ['closed'])
   })
 }))
 
@@ -293,7 +289,7 @@ test('returning nothing from request mw runs view', assert => Promise.try(() => 
   const mw = [{
     processRequest (req, next) {
       list.push('1')
-      return next()
+      return next(req)
     }
   }]
   const kserver = knork('anything', server, routing`
@@ -677,8 +673,10 @@ test('middleware cannot return falsey value', assert => Promise.try(() => {
     view (req) {
       return ''
     }
-  }), [(req, next) => {
-    return undefined
+  }), [{
+    processRequest (req, next) {
+      return undefined
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
@@ -707,13 +705,17 @@ test('middleware always coerces to response between runs', assert => Promise.try
     view (req) {
       return ''
     }
-  }), [(req, next) => {
-    return next().then(result => {
-      saw = result
-      return result
-    })
-  }, (req, next) => {
-    return 'hello world'
+  }), [{
+    processRequest (req, next) {
+      return next(req).then(result => {
+        saw = result
+        return result
+      })
+    }
+  }, {
+    processRequest (req, next) {
+      return 'hello world'
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
@@ -746,10 +748,12 @@ test('middleware cannot throw non-Error exceptions', assert => Promise.try(() =>
     view (req) {
       return ''
     }
-  }), [(req, next) => {
+  }), [{
+    processRequest (req, next) {
       /* eslint-disable no-throw-literal */
-    throw 'foo'
+      throw 'foo'
       /* eslint-enable no-throw-literal */
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
@@ -807,13 +811,17 @@ test('middleware always adds status to thrown headers', assert => Promise.try(()
     view (req) {
       return ''
     }
-  }), [(req, next) => {
-    return next().catch(result => {
-      saw = result
-      return 'ok'
-    })
-  }, (req, next) => {
-    throw new Error('foo')
+  }), [{
+    processRequest (req, next) {
+      return next(req).catch(result => {
+        saw = result
+        return 'ok'
+      })
+    }
+  }, {
+    processRequest (req, next) {
+      throw new Error('foo')
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
@@ -874,11 +882,11 @@ test('returning buffer works: no content-type', assert => Promise.try(() => {
       acc.push(data)
     })
     res.once('end', () => {
-      assert.equal(res.statusCode, 200)
       assert.equal(
         Buffer.concat(acc).toString(),
         'hello world'
       )
+      assert.equal(res.statusCode, 200)
       assert.equal(
         res.headers['content-type'],
         'application/octet-stream'
@@ -1067,7 +1075,7 @@ test('uninstalling works as expected', assert => Promise.try(() => {
     }
   }), [{
     processServer (server, next) {
-      return next().then(() => {
+      return next(server).then(() => {
         fired = true
       })
     }

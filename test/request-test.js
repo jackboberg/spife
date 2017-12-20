@@ -2,7 +2,6 @@
 
 const Promise = require('bluebird')
 const request = require('request')
-const crypto = require('crypto')
 const http = require('http')
 const tap = require('tap')
 const url = require('url')
@@ -85,7 +84,7 @@ test('request.id: gen from request-id (isExternal = true)', assert => {
     assert.equal(resp.statusCode, 200)
     assert.equal(
       resp.body.split('-')[0],
-      crypto.createHash('sha1').update('expected').digest('base64')
+      'expected'
     )
   })
 }, {isExternal: true})
@@ -473,7 +472,7 @@ test('request.router: allows overriding routes mid-request', assert => {
         return 'no way'
       }
     })
-    return next()
+    return next(req)
   })
 
   return test.request({
@@ -506,15 +505,17 @@ function test (name, runner, opts = {}) {
   runner = runner || (() => {})
   tap.test(name, function named (assert) {
     test.controller = {}
-    test.middleware = (req, next) => next()
+    test.middleware = (req, next) => next(req)
     const server = http.createServer().listen(60880)
     const kserver = knork('anything', server, routes`
       * / target
     `(test.controller), [
       bodyLimit({max: opts.maxBodySize || 2048}),
-      opts.defaultBody ? (req, next) => { return next() } : bodyJson(),
-      function processRequest (req, next) {
-        return test.middleware(req, next)
+      opts.defaultBody ? {} : bodyJson(),
+      {
+        processRequest (req, next) {
+          return test.middleware(req, next)
+        }
       }
     ], opts || {isExternal: true})
 

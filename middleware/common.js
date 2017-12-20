@@ -9,7 +9,7 @@ function createMiddleware () {
   return {processRequest, processServer}
 
   function processRequest (req, next) {
-    return next().then(response => {
+    return next(req).then(response => {
       if (!reply.status(response)) {
         reply.status(response, 200)
       }
@@ -31,6 +31,6 @@ function createMiddleware () {
 
   function processServer (server, next) {
     isExternal = server.opts.isExternal
-    return next()
+    return next(server)
   }
 }

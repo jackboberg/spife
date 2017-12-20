@@ -18,7 +18,7 @@ function createBodyMaxSizeMW ({max = ONE_MB} = {}) {
           stream.emit('error', new reply.PayloadTooLargeError())
         }
       })
-      return next()
+      return next(req, stream)
     }
   }
 }
