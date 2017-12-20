@@ -2,6 +2,7 @@
 
 module.exports = makeKnork
 
+const chain = require('@iterables/chain')
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
 const ms = require('mississippi')
@@ -37,30 +38,11 @@ function makeKnork (name, server, urls, middleware, opts) {
     opts
   )
 
-  const onclosed = new Promise((resolve, reject) => {
-    server.once(UNINSTALL, () => {
-      server.removeListener('close', resolve)
-      server.removeListener('error', reject)
-      resolve()
-    })
-    server.once('close', resolve)
-    server.once('error', reject)
-  })
-
   const onready = new Promise((resolve, reject) => {
     server.once(ONREADY, resolve)
   })
 
-  knork.closed = onion(
-    middleware,
-    (mw, ...args) => mw.processServer(...args),
-    () => {},
-    () => {
-      server.emit(ONREADY, knork)
-      return onclosed
-    },
-    knork
-  )
+  knork.closed = knork.processServerOnion(knork)
 
   return onready
 }
@@ -69,13 +51,19 @@ class Server {
   constructor (name, server, router, middleware, opts) {
     this.name = name
     this.router = router
-    this._middleware = null
-    this.middleware = middleware
     this.server = server
+    this.emitStreamError = this.server.emit.bind(this.server, 'response-error')
+    this._middleware = null
+    this.processBodyOnion = null
+    this.processViewOnion = null
+    this.processServerOnion = null
+    this.processRequestOnion = null
+    this.middleware = middleware
     this.opts = opts
     this.closed = null
     this.onrequest = this.onrequest.bind(this)
     this.onclienterror = opts.onclienterror.bind(this)
+
     server.removeAllListeners('request')
     server
       .on('request', this.onrequest)
@@ -116,90 +104,133 @@ class Server {
   }
 
   set middleware (mw) {
-    this._middleware = (mw || []).map(xs => Middleware.from(xs))
+    this._middleware = [...mw]
+
+    const processServerMW = []
+    const processRequestMW = [middlewareMembrane]
+    const processViewMW = [middlewareMembrane]
+    const processBodyMW = []
+
+    for (const xs of this._middleware) {
+      if (typeof xs.processServer === 'function') {
+        processServerMW.push(xs.processServer.bind(xs))
+      }
+
+      if (typeof xs.processRequest === 'function') {
+        processRequestMW.push(xs.processRequest.bind(xs))
+        processRequestMW.push(middlewareMembrane)
+      }
+
+      if (typeof xs.processView === 'function') {
+        processViewMW.push(xs.processView.bind(xs))
+        processViewMW.push(middlewareMembrane)
+      }
+
+      if (typeof xs.processBody === 'function') {
+        processBodyMW.push(xs.processBody.bind(xs))
+      }
+    }
+
+    const onclosed = new Promise((resolve, reject) => {
+      this.server.once(UNINSTALL, () => {
+        this.server.removeListener('close', resolve)
+        this.server.removeListener('error', reject)
+        resolve()
+      })
+      this.server.once('close', resolve)
+      this.server.once('error', reject)
+    })
+
+    this.processServerOnion = onion.sprout(
+      processServerMW,
+      () => {
+        this.server.emit(ONREADY, this)
+        return onclosed
+      }
+    )
+
+    this.processBodyOnion = onion.sprout(
+      processBodyMW,
+      async (req, result) => {
+        throw new reply.UnsupportedMediaTypeError()
+      }
+    )
+
+    this.processViewOnion = onion.sprout(
+      processViewMW,
+      async (req, match, context) => {
+        const response = await match.controller[match.name](
+          req,
+          context
+        )
+        return (
+          response
+          ? reply(response)
+          : reply(response || '', 204)
+        )
+      }
+    )
+
+    this.processRequestOnion = onion.sprout(
+      processRequestMW,
+      async req => {
+        var match
+        try {
+          match = req.router.match(req.method, req.urlObject.pathname)
+        } catch (err) {
+          throw new reply.NotImplementedError(
+            `"${req.method} ${req.urlObject.pathname}" is not implemented.`
+          )
+        }
+
+        if (!match) {
+          throw new reply.NoMatchError()
+        }
+        const viewName = []
+        let items = [][Symbol.iterator]()
+        for (const entry of match) {
+          items = chain(entry.context, items)
+          viewName.push(entry.name)
+        }
+        const context = new Map(items)
+        req.viewName = viewName.reverse().join('.')
+
+        return this.processViewOnion(req, match, context)
+      }
+    )
   }
 
-  onrequest (req, res) {
+  async onrequest (req, res) {
     const subdomain = domain.create()
     const kreq = makeKnorkRequest(req, this)
     subdomain.add(req)
     subdomain.add(res)
+    subdomain.enter()
+    domainToRequest.request = kreq
+    const getResponse = this.processRequestOnion(kreq)
+    subdomain.exit()
 
-    const check = {
-      resolve: checkMiddlewareResolution,
-      reject: checkMiddlewareRejection
+    var response
+    try {
+      response = handleResponse(this, kreq, await getResponse)
+    } catch (err) {
+      response = handleLifecycleError(this, kreq, err)
     }
-    const getResult = subdomain.run(() => {
-      domainToRequest.request = kreq
-      return onion(
-        this.middleware,
-        (mw, ...args) => mw.processRequest(...args),
-        check,
-        kreq => {
-          let match = null
-          try {
-            match = kreq.router.match(kreq.method, kreq.urlObject.pathname)
-          } catch (err) {
-            throw new reply.NotImplementedError(
-              `"${kreq.method} ${kreq.urlObject.pathname}" is not implemented.`
-            )
-          }
+    subdomain.remove(req)
+    subdomain.remove(res)
+    subdomain.exit()
 
-          if (!match) {
-            throw new reply.NoMatchError()
-          }
+    res.writeHead(response.status || 200, response.headers)
+    ms.pipe(response.stream, res, this.emitStreamError)
+  }
+}
 
-          const context = new Map(function * () {
-            const entries = [...match].reverse()
-            const name = []
-            for (const xs of entries) {
-              yield * xs.context
-              name.push(xs.name)
-            }
-            kreq.viewName = name.join('.')
-          }())
-
-          return onion(
-            this.middleware,
-            (mw, ...args) => mw.processView(...args),
-            check,
-            (kreq, match, context) => {
-              return Promise.try(
-                () => match.controller[match.name](kreq, context)
-              ).then(response => {
-                return (
-                  response
-                  ? reply(response)
-                  : reply(response || '', 204)
-                )
-              })
-            },
-            kreq,
-            match,
-            context
-          )
-        },
-        kreq
-      ).then(
-        resp => handleResponse(this, kreq, resp),
-        err => handleLifecycleError(this, kreq, err)
-      ).then(response => {
-        res.writeHead(response.status || 200, response.headers)
-        return new Promise((resolve, reject) => {
-          ms.pipe(response.stream, res, err => {
-            err ? reject(err) : resolve()
-          })
-        })
-      })
-    })
-
-    return getResult.finally(() => {
-      subdomain.remove(req)
-      subdomain.remove(res)
-      subdomain.exit()
-    }).catch(err => {
-      handleStreamError(this, err)
-    })
+async function middlewareMembrane (...args) {
+  const next = args[args.length - 1]
+  try {
+    return checkMiddlewareResolution(await next())
+  } catch (err) {
+    throw checkMiddlewareRejection(err)
   }
 }
 
@@ -258,10 +289,6 @@ function handleResponse (knork, req, data) {
   } catch (err) {
     return handleLifecycleError(knork, req, err)
   }
-}
-
-function handleStreamError (knork, err) {
-  knork.server.emit('response-error', err)
 }
 
 function createMetrics (name, str) {
