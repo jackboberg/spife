@@ -283,7 +283,7 @@ test('client disconnect', assert => Promise.try(() => {
 Host: localhost:60880
 Connection: close\r\n\r\n`)
   return kserver.get('closed').then(() => {
-    assert.deepEqual(list, ['closed', 'response-error'])
+    assert.deepEqual(list, ['response-error', 'closed'])
   })
 }))
 
