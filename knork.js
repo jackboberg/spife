@@ -12,8 +12,8 @@ const domain = require('domain')
 /* eslint-enable node/no-deprecated-api */
 
 const domainToRequest = require('./lib/domain-to-request')
-const makeKnorkRequest = require('./lib/request')
 const Middleware = require('./lib/middleware')
+const KnorkRequest = require('./lib/request')
 const onion = require('./lib/onion')
 const reply = require('./reply')
 
@@ -189,8 +189,9 @@ class Server {
         if (!match) {
           throw new reply.NoMatchError()
         }
+
         const viewName = []
-        let items = [][Symbol.iterator]()
+        let items = []
         for (const entry of match) {
           items = chain(entry.context, items)
           viewName.push(entry.name)
@@ -206,7 +207,7 @@ class Server {
 
   async onrequest (req, res) {
     const subdomain = domain.create()
-    const kreq = makeKnorkRequest(req, this)
+    const kreq = new KnorkRequest(req, this)
     subdomain.add(req)
     subdomain.add(res)
     subdomain.enter()
