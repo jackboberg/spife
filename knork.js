@@ -194,10 +194,10 @@ class Server {
         let items = []
         for (const entry of match) {
           items = chain(entry.context, items)
-          viewName.push(entry.name)
+          viewName.unshift(entry.name)
         }
         const context = new Map(items)
-        req.viewName = viewName.reverse().join('.')
+        req.viewName = viewName.join('.')
 
         return this.processViewOnion(req, match, context)
       },
