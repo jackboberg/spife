@@ -3,7 +3,6 @@
 const decorate = require('@npm/decorate')
 const Promise = require('bluebird')
 const reply = require('../reply')
-const joi = require('../joi')
 
 const validateBody = (validator) => (viewFn) => {
   return decorate(viewFn, innerFn)
@@ -42,20 +41,24 @@ function createValidator (validator) {
   }
 }
 
-function validateQuery (schema, view) {
-  queryValidator.schema = schema
-  return decorate(view, queryValidator)
+const validateQuery = (validator) => (viewFn) => {
+  const schema =
+    typeof validator === 'function'
+      ? createValidator(validator)
+      : validator
 
-  function queryValidator (req, context) {
-    const args = Array.from(arguments)
-    const result = joi.validate(req.query, schema)
+  innerFn.schema = schema
+  return decorate(viewFn, innerFn)
+
+  function innerFn (req, context) {
+    const result = schema.validate(req.query)
     if (result.error) {
       req.validatedQuery = Promise.reject(reply.status(result.error, 400))
       req.validatedQuery.catch(() => {}) // handled later, by the view.
     } else {
       req.validatedQuery = result.value
     }
-    return view.apply(this, args)
+    return viewFn(req, context)
   }
 }
 
