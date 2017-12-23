@@ -5,6 +5,7 @@ module.exports = makeKnork
 const chain = require('@iterables/chain')
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
+const url = require('url')
 
 /* eslint-disable node/no-deprecated-api */
 const domain = require('domain')
@@ -211,7 +212,8 @@ class Server {
 
   async onrequest (req, res) {
     const subdomain = domain.create()
-    const kreq = new KnorkRequest(req, this)
+    const parsed = url.parse(req.url, true)
+    const kreq = new KnorkRequest(req, this, parsed)
     subdomain.add(req)
     subdomain.add(res)
     subdomain.enter()
