@@ -2,7 +2,6 @@
 
 const Promise = require('bluebird')
 const request = require('request')
-const crypto = require('crypto')
 const http = require('http')
 const tap = require('tap')
 const url = require('url')

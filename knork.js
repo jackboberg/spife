@@ -20,10 +20,8 @@ const reply = require('./reply')
 const UNINSTALL = Symbol('uninstall')
 const ONREADY = Symbol('onready')
 
-const TEMPLATE_SYM = Symbol.for('knork-http-template')
 const STATUS_SYM = Symbol.for('knork-http-status')
 const HEADER_SYM = Symbol.for('knork-http-header')
-const COOKIE_SYM = Symbol.for('knork-http-cookie')
 
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
@@ -170,11 +168,7 @@ class Server {
           req,
           context
         )
-        return (
-          response
-          ? response
-          : reply.empty()
-        )
+        return response || reply.empty()
       },
       3
     )
