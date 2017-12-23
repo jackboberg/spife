@@ -112,8 +112,8 @@ class Server {
     this._middleware = [...mw]
 
     const processServerMW = []
-    const processRequestMW = [middlewareMembrane]
-    const processViewMW = [middlewareMembrane]
+    const processRequestMW = [middlewareMembrane1]
+    const processViewMW = [middlewareMembrane3]
     const processBodyMW = []
 
     for (const xs of this._middleware) {
@@ -123,12 +123,12 @@ class Server {
 
       if (typeof xs.processRequest === 'function') {
         processRequestMW.push(xs.processRequest.bind(xs))
-        processRequestMW.push(middlewareMembrane)
+        processRequestMW.push(middlewareMembrane1)
       }
 
       if (typeof xs.processView === 'function') {
         processViewMW.push(xs.processView.bind(xs))
-        processViewMW.push(middlewareMembrane)
+        processViewMW.push(middlewareMembrane3)
       }
 
       if (typeof xs.processBody === 'function') {
@@ -219,6 +219,7 @@ class Server {
     subdomain.enter()
     domainToRequest.request = kreq
     const getResponse = this.processRequestOnion(kreq)
+    getResponse.catch(() => {})
     subdomain.exit()
 
     var response
@@ -229,7 +230,6 @@ class Server {
     }
     subdomain.remove(req)
     subdomain.remove(res)
-    subdomain.exit()
 
     res.writeHead(response.status || 200, response.headers)
     res.on('unpipe', destroyStreamOnClose)
@@ -244,8 +244,15 @@ function destroyStreamOnClose (stream) {
   else stream.resume()
 }
 
-async function middlewareMembrane (...args) {
-  const next = args[args.length - 1]
+async function middlewareMembrane1 (req, next) {
+  try {
+    return checkMiddlewareResolution(await next())
+  } catch (err) {
+    throw checkMiddlewareRejection(err)
+  }
+}
+
+async function middlewareMembrane3 (req, match, context, next) {
   try {
     return checkMiddlewareResolution(await next())
   } catch (err) {
