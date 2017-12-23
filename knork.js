@@ -5,7 +5,6 @@ module.exports = makeKnork
 const chain = require('@iterables/chain')
 const Emitter = require('numbat-emitter')
 const Promise = require('bluebird')
-const ms = require('mississippi')
 
 /* eslint-disable node/no-deprecated-api */
 const domain = require('domain')
@@ -226,8 +225,16 @@ class Server {
     subdomain.exit()
 
     res.writeHead(response.status || 200, response.headers)
-    ms.pipe(response.stream, res, this.emitStreamError)
+    res.on('unpipe', destroyStreamOnClose)
+    res.on('error', this.emitStreamError)
+    response.stream.pipe(res)
   }
+}
+
+function destroyStreamOnClose (stream) {
+  if (stream.destroy) stream.destroy()
+  else if (stream.close) stream.close()
+  else stream.resume()
 }
 
 async function middlewareMembrane (...args) {
