@@ -259,16 +259,12 @@ test('client disconnect', assert => Promise.try(() => {
     view (req) {
       return fs.createReadStream(__filename)
         .on('close', () => {
+          clearTimeout(timeout)
           list.push('closed')
+          server.close()
         })
     }
   }), [], {})
-
-  server.on('response-error', () => {
-    clearTimeout(timeout)
-    list.push('response-error')
-    server.close()
-  })
 
   const timeout = setTimeout(() => {
     assert.fail('timed out')
@@ -283,7 +279,7 @@ test('client disconnect', assert => Promise.try(() => {
 Host: localhost:60880
 Connection: close\r\n\r\n`)
   return kserver.get('closed').then(() => {
-    assert.deepEqual(list, ['response-error', 'closed'])
+    assert.deepEqual(list, ['closed'])
   })
 }))
 
