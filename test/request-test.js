@@ -85,7 +85,7 @@ test('request.id: gen from request-id (isExternal = true)', assert => {
     assert.equal(resp.statusCode, 200)
     assert.equal(
       resp.body.split('-')[0],
-      crypto.createHash('sha1').update('expected').digest('base64')
+      'expected'
     )
   })
 }, {isExternal: true})
