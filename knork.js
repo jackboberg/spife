@@ -19,6 +19,11 @@ const reply = require('./reply')
 const UNINSTALL = Symbol('uninstall')
 const ONREADY = Symbol('onready')
 
+const TEMPLATE_SYM = Symbol.for('knork-http-template')
+const STATUS_SYM = Symbol.for('knork-http-status')
+const HEADER_SYM = Symbol.for('knork-http-header')
+const COOKIE_SYM = Symbol.for('knork-http-cookie')
+
 function makeKnork (name, server, urls, middleware, opts) {
   opts = Object.assign({
     metrics: null,
@@ -166,8 +171,8 @@ class Server {
         )
         return (
           response
-          ? reply(response)
-          : reply(response || '', 204)
+          ? response
+          : reply.empty()
         )
       },
       3
@@ -252,12 +257,23 @@ function checkMiddlewareResolution (response) {
       `Expected middleware to resolve to a truthy value, got "${response}" instead`
     )
   }
+
   // always cast into a response of some sort
-  return reply(
-    response,
-    reply.status(response) || 200,
-    reply.headers(response) || {}
-  )
+  if (typeof response !== 'object') {
+    return reply(response)
+  }
+
+  // it's already an object, let us use privileged APIs
+  // to set the status/headers.
+  if (!response[STATUS_SYM]) {
+    response[STATUS_SYM] = 200
+  }
+
+  if (!response[HEADER_SYM]) {
+    response[HEADER_SYM] = {}
+  }
+
+  return response
 }
 
 function checkMiddlewareRejection (err) {
@@ -269,8 +285,8 @@ function checkMiddlewareRejection (err) {
 
   throw reply(
     err,
-    reply.status(err) || 500,
-    reply.headers(err) || {}
+    err[STATUS_SYM] || 500,
+    err[HEADER_SYM] || {}
   )
 }
 
@@ -281,8 +297,8 @@ function handleLifecycleError (knork, req, err) {
       knork.opts.isExternal ? {} : {stack: err.stack},
       err.context || {}
     ),
-    reply.status(err) || 500,
-    reply.headers(err)
+    err[STATUS_SYM] || 500,
+    err[HEADER_SYM] || {}
   )
   return handleResponse(knork, req, out)
 }
@@ -294,8 +310,8 @@ function handleResponse (knork, req, data) {
       reply.header(stream, 'request-id', req.id)
     }
     return {
-      status: reply.status(stream),
-      headers: reply.headers(stream),
+      status: stream[STATUS_SYM],
+      headers: stream[HEADER_SYM],
       stream
     }
   } catch (err) {
