@@ -2,3 +2,4 @@ scaffold
 .DS_Store
 node_modules
 coverage
+benchmarks
