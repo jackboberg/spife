@@ -673,8 +673,10 @@ test('middleware cannot return falsey value', assert => Promise.try(() => {
     view (req) {
       return ''
     }
-  }), [(req, next) => {
-    return undefined
+  }), [{
+    processRequest (req, next) {
+      return undefined
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
@@ -703,13 +705,17 @@ test('middleware always coerces to response between runs', assert => Promise.try
     view (req) {
       return ''
     }
-  }), [(req, next) => {
-    return next().then(result => {
-      saw = result
-      return result
-    })
-  }, (req, next) => {
-    return 'hello world'
+  }), [{
+    processRequest (req, next) {
+      return next().then(result => {
+        saw = result
+        return result
+      })
+    }
+  }, {
+    processRequest (req, next) {
+      return 'hello world'
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
@@ -742,10 +748,12 @@ test('middleware cannot throw non-Error exceptions', assert => Promise.try(() =>
     view (req) {
       return ''
     }
-  }), [(req, next) => {
+  }), [{
+    processRequest (req, next) {
       /* eslint-disable no-throw-literal */
-    throw 'foo'
+      throw 'foo'
       /* eslint-enable no-throw-literal */
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {
@@ -803,13 +811,17 @@ test('middleware always adds status to thrown headers', assert => Promise.try(()
     view (req) {
       return ''
     }
-  }), [(req, next) => {
-    return next().catch(result => {
-      saw = result
-      return 'ok'
-    })
-  }, (req, next) => {
-    throw new Error('foo')
+  }), [{
+    processRequest (req, next) {
+      return next().catch(result => {
+        saw = result
+        return 'ok'
+      })
+    }
+  }, {
+    processRequest (req, next) {
+      throw new Error('foo')
+    }
   }])
 
   http.get({method: 'GET', path: '/', port: 60880}, res => {

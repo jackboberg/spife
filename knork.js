@@ -12,7 +12,6 @@ const domain = require('domain')
 /* eslint-enable node/no-deprecated-api */
 
 const domainToRequest = require('./lib/domain-to-request')
-const Middleware = require('./lib/middleware')
 const KnorkRequest = require('./lib/request')
 const onion = require('./lib/onion')
 const reply = require('./reply')
@@ -31,7 +30,7 @@ function makeKnork (name, server, urls, middleware, opts) {
     onclienterror: () => {}
   }, opts || {})
 
-  middleware = (middleware || []).map(xs => Middleware.from(xs))
+  middleware = middleware || []
 
   const knork = new Server(
     name,

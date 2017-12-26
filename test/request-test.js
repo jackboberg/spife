@@ -511,9 +511,11 @@ function test (name, runner, opts = {}) {
       * / target
     `(test.controller), [
       bodyLimit({max: opts.maxBodySize || 2048}),
-      opts.defaultBody ? (req, next) => { return next() } : bodyJson(),
-      function processRequest (req, next) {
-        return test.middleware(req, next)
+      opts.defaultBody ? {} : bodyJson(),
+      {
+        processRequest (req, next) {
+          return test.middleware(req, next)
+        }
       }
     ], opts || {isExternal: true})
 
