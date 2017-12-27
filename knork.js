@@ -223,6 +223,7 @@ class Server {
     }
     subdomain.remove(req)
     subdomain.remove(res)
+    subdomain.exit()
 
     res.writeHead(response.status || 200, response.headers)
     res.on('unpipe', destroyStreamOnClose)
