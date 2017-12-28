@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="10.0.0"></a>
+# [10.0.0](https://github.com/npm/knork/compare/v9.1.0...v10.0.0) (2017-12-28)
+
+
+### Features
+
+* **hot-reload:** hot reload views, routes, and mw ([da70d60](https://github.com/npm/knork/commit/da70d60))
+
+
+### Performance Improvements
+
+* request changes ([775f61b](https://github.com/npm/knork/commit/775f61b))
+
+
+### BREAKING CHANGES
+
+* node 6 is unsupported
+* `req.metric` was removed.
+* Middleware can no longer be provided as a single function.
+* Update your middleware! next() now requires arguments to be
+passed to it. (e.g., in `processRequest(req, next)`, one should call
+`next(req)`).
+
+
+
 <a name="9.0.0"></a>
 # [9.0.0](https://github.com/npm/knork/compare/v8.5.0...v9.0.0) (2017-11-27)
 
