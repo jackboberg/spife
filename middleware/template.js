@@ -39,7 +39,7 @@ class TemplateContextError extends Error {
 function createTemplateMiddleware (loaders = [], context = [], errorTemplateName = 'errors/template') {
   return {
     processRequest (req, next) {
-      return next().then(resp => {
+      return next(req).then(resp => {
         const template = reply.template(resp)
         if (!template) {
           return resp

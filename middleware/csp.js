@@ -7,7 +7,7 @@ const reply = require('../reply')
 function createCSPMiddleware (settings, options) {
   return {
     processRequest (req, next) {
-      return next().then(resp => {
+      return next(req).then(resp => {
         const defaults = {
           'connect-src': `'self'`,
           'default-src': `'none'`,

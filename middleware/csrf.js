@@ -26,7 +26,7 @@ function createCSRFMiddleware (opts) {
       )
       req.resetCSRF = !token
 
-      return next().then(resp => {
+      return next(req).then(resp => {
         if (req.resetCSRF) {
           return reply.cookie(resp, CSRF_TOKEN_COOKIE, req.csrf, {
             secure: CSRF_SECUREONLY,
@@ -41,11 +41,11 @@ function createCSRFMiddleware (opts) {
 
     processView (req, match, context, next) {
       if (match.controller[match.name].csrfExempt) {
-        return next()
+        return next(req, match, context)
       }
 
       if (SAFE_METHODS.has(req.method.toUpperCase())) {
-        return next()
+        return next(req, match, context)
       }
 
       const getValue = (
@@ -59,7 +59,7 @@ function createCSRFMiddleware (opts) {
           throw new reply.ForbiddenError()
         }
 
-        return next().then(xs => {
+        return next(req, match, context).then(xs => {
           // allow for resetting CSRF token on login
           if (match.controller[match.name].resetCSRF) {
             req.csrf = cryptiles.randomString(CSRF_TOKEN_SIZE)

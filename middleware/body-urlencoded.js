@@ -16,7 +16,7 @@ function createFormParsingMW ({
   return {
     processBody (req, stream, next) {
       if (!accept(req)) {
-        return next()
+        return next(req, stream)
       }
 
       return new Promise((resolve, reject) => {

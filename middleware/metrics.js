@@ -16,13 +16,13 @@ function createMiddleware () {
         1000 * 30
       )
       closeProcMetrics = procMetrics(knork.metrics, procMetricsInterval)
-      return next().then(() => {
+      return next(knork).then(() => {
         closeProcMetrics()
       })
     },
 
     processRequest (req, next) {
-      return next().then(resp => {
+      return next(req).then(resp => {
         recordMetric(req, resp, 200)
         return resp
       }).catch(err => {
@@ -38,7 +38,7 @@ function createMiddleware () {
         size += chunk.length
       })
 
-      return next().then(result => {
+      return next(req, stream).then(result => {
         process.emit('metric', {
           name: 'body',
           fields: {

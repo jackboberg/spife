@@ -240,7 +240,7 @@ function destroyStreamOnClose (stream) {
 
 async function middlewareMembrane1 (req, next) {
   try {
-    return checkMiddlewareResolution(await next())
+    return checkMiddlewareResolution(await next(req))
   } catch (err) {
     throw checkMiddlewareRejection(err)
   }
@@ -248,7 +248,7 @@ async function middlewareMembrane1 (req, next) {
 
 async function middlewareMembrane3 (req, match, context, next) {
   try {
-    return checkMiddlewareResolution(await next())
+    return checkMiddlewareResolution(await next(req, match, context))
   } catch (err) {
     throw checkMiddlewareRejection(err)
   }

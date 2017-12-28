@@ -48,18 +48,18 @@ test('http server listening triggers mw installs', assert => Promise.try(() => {
   const mw = [
     {processServer (knork, next) {
       list.push({knork, name: '1'})
-      return next()
+      return next(knork)
     }},
     {processServer (knork, next) {
       return Promise.delay(10).then(() => {
         list.push({knork, name: '2'})
-        return next()
+        return next(knork)
       })
     }},
     {},
     {processServer (knork, next) {
       list.push({knork, name: '3'})
-      return next()
+      return next(knork)
     }}
   ]
   const onServer = knork('anything', ee, null, mw).then(server => {
@@ -75,9 +75,9 @@ test('closing http server uninstalls mw', assert => Promise.try(() => {
   const ee = new EE()
   const list = []
   const mw = [
-    {processServer (knork, next) { return next().then(() => list.push('1')) }},
+    {processServer (knork, next) { return next(knork).then(() => list.push('1')) }},
     {processServer (knork, next) {
-      return next().then(() => {
+      return next(knork).then(() => {
         return Promise.delay(10).then(() => {
           list.push('2')
         })
@@ -85,7 +85,7 @@ test('closing http server uninstalls mw', assert => Promise.try(() => {
     }},
     {},
     {processServer (knork, next) {
-      return next().then(() => {
+      return next(knork).then(() => {
         list.push('3')
       })
     }}
@@ -107,7 +107,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
   const mw = [{
     processServer (server, next) {
       list.push('1')
-      return next().then(() => {
+      return next(server).then(() => {
         list.push('1')
       })
     }
@@ -116,7 +116,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
       ee.emit('close') // <---------- close as part of startup!
       return Promise.delay(10).then(() => {
         list.push('2')
-        return next()
+        return next(server)
       }).then(() => {
         return Promise.delay(10).then(() => {
           list.push('2')
@@ -127,7 +127,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
   }, {
     processServer (server, next) {
       list.push('3')
-      return next().then(() => {
+      return next(server).then(() => {
         list.push('3')
       })
     }
@@ -289,7 +289,7 @@ test('returning nothing from request mw runs view', assert => Promise.try(() => 
   const mw = [{
     processRequest (req, next) {
       list.push('1')
-      return next()
+      return next(req)
     }
   }]
   const kserver = knork('anything', server, routing`
@@ -707,7 +707,7 @@ test('middleware always coerces to response between runs', assert => Promise.try
     }
   }), [{
     processRequest (req, next) {
-      return next().then(result => {
+      return next(req).then(result => {
         saw = result
         return result
       })
@@ -813,7 +813,7 @@ test('middleware always adds status to thrown headers', assert => Promise.try(()
     }
   }), [{
     processRequest (req, next) {
-      return next().catch(result => {
+      return next(req).catch(result => {
         saw = result
         return 'ok'
       })
@@ -1075,7 +1075,7 @@ test('uninstalling works as expected', assert => Promise.try(() => {
     }
   }), [{
     processServer (server, next) {
-      return next().then(() => {
+      return next(server).then(() => {
         fired = true
       })
     }

@@ -26,14 +26,14 @@ function createLoggingMiddleware (opts) {
         ) ? (pretty.pipe(process.stdout), pretty) : process.stdout
       }
       bole.output(opts)
-      return next().then(() => {
+      return next(server).then(() => {
         bole.reset()
       })
     },
 
     processRequest (req, next) {
       req._logRaw()
-      return next().then(res => {
+      return next(req).then(res => {
         logger.info({
           url: req.url,
           statusCode: reply.status(res) || 200,

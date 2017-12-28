@@ -472,7 +472,7 @@ test('request.router: allows overriding routes mid-request', assert => {
         return 'no way'
       }
     })
-    return next()
+    return next(req)
   })
 
   return test.request({
@@ -505,7 +505,7 @@ function test (name, runner, opts = {}) {
   runner = runner || (() => {})
   tap.test(name, function named (assert) {
     test.controller = {}
-    test.middleware = (req, next) => next()
+    test.middleware = (req, next) => next(req)
     const server = http.createServer().listen(60880)
     const kserver = knork('anything', server, routes`
       * / target
