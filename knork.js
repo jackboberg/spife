@@ -27,7 +27,8 @@ function makeKnork (name, server, urls, middleware, opts) {
     metrics: null,
     isExternal: true,
     requestIDHeaders: ['request-id'],
-    onclienterror: () => {}
+    onclienterror: () => {},
+    settings
   }, opts || {})
 
   middleware = middleware || []
