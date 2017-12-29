@@ -61,17 +61,10 @@ class Server {
     this.processViewOnion = null
     this.processServerOnion = null
     this.processRequestOnion = null
-    this.middleware = middleware
     this.opts = opts
     this.closed = null
     this.onrequest = this.onrequest.bind(this)
     this.onclienterror = opts.onclienterror.bind(this)
-
-    server.removeAllListeners('request')
-    server
-      .on('request', this.onrequest)
-      .on('clientError', this.onclienterror)
-
     this.metrics = (
       opts.metrics && typeof opts.metrics === 'object'
       ? opts.metrics
@@ -85,36 +78,14 @@ class Server {
         )
       )
     )
+    this.middleware = middleware
   }
 
   start () {
-    const {server} = this
-    const onclosed = new Promise((resolve, reject) => {
-      server.once(UNINSTALL, () => {
-        server.removeListener('close', resolve)
-        server.removeListener('error', reject)
-        resolve()
-      })
-      server.once('close', resolve)
-      server.once('error', reject)
-    })
-
-    const onready = new Promise((resolve, reject) => {
-      server.once(ONREADY, resolve)
-    })
-
-    this.closed = onion(
-      this._middleware,
-      'processServer',
-      {},
-      () => {
-        server.emit(ONREADY, this)
-        return onclosed
-      },
-      this
-    )
-
-    return onready
+    this.server.removeAllListeners('request')
+    this.server
+      .on('request', this.onrequest)
+      .on('clientError', this.onclienterror)
   }
 
   get urls () {
@@ -164,6 +135,7 @@ class Server {
       }
     }
 
+    const prevClosed = this.uninstall() || Promise.resolve()
     const onclosed = new Promise((resolve, reject) => {
       this.server.once(UNINSTALL, () => {
         this.server.removeListener('close', resolve)
@@ -232,6 +204,17 @@ class Server {
       },
       1
     )
+
+    const bufferedRequests = []
+    this.server.on('request', req => {
+      bufferedRequests.push(req)
+    })
+    return prevClosed.then(() => {
+      this.start()
+
+      // replay any requests we might have missed while restarting
+      bufferedRequests.map(req => this.server.emit('request', req))
+    })
   }
 
   async onrequest (req, res) {
