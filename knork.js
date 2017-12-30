@@ -45,8 +45,6 @@ function makeKnork (name, server, urls, middleware, opts) {
     server.once(ONREADY, resolve)
   })
 
-  knork.closed = knork.processServerOnion(knork)
-
   return onready
 }
 
@@ -58,7 +56,6 @@ class Server {
     this.emitStreamError = this.server.emit.bind(this.server, 'response-error')
     this._middleware = null
     this.processBodyOnion = null
-    this.processViewOnion = null
     this.processServerOnion = null
     this.processRequestOnion = null
     this.opts = opts
@@ -81,13 +78,6 @@ class Server {
     this.middleware = middleware
   }
 
-  start () {
-    this.server.removeAllListeners('request')
-    this.server
-      .on('request', this.onrequest)
-      .on('clientError', this.onclienterror)
-  }
-
   get urls () {
     return this.router
   }
@@ -97,8 +87,8 @@ class Server {
   }
 
   uninstall () {
-    this.server.removeListener('request', this.onrequest)
-    this.server.removeListener('clientError', this.onclienterror)
+    this.server.removeAllListeners('request')
+    this.server.removeAllListeners('clientError')
     this.server.emit(UNINSTALL)
     return this.closed
   }
@@ -163,7 +153,7 @@ class Server {
       2
     )
 
-    this.processViewOnion = onion.sprout(
+    const processViewOnion = onion.sprout(
       processViewMW,
       async (req, match, context) => {
         const response = await match.controller[match.name](
@@ -200,20 +190,16 @@ class Server {
         const context = new Map(items)
         req.viewName = viewName.join('.')
 
-        return this.processViewOnion(req, match, context)
+        return processViewOnion(req, match, context)
       },
       1
     )
 
-    const bufferedRequests = []
-    this.server.on('request', req => {
-      bufferedRequests.push(req)
-    })
     return prevClosed.then(() => {
-      this.start()
-
-      // replay any requests we might have missed while restarting
-      bufferedRequests.map(req => this.server.emit('request', req))
+      this.server
+        .on('request', this.onrequest)
+        .on('clientError', this.onclienterror)
+      this.closed = this.processServerOnion(this)
     })
   }
 
