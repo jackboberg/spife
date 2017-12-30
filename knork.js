@@ -33,6 +33,7 @@ function makeKnork (name, server, urls, middleware, opts) {
 
   middleware = middleware || []
 
+  // side-effects! (setting middleware starts the server.)
   const knork = new Server(
     name,
     server,
@@ -45,7 +46,7 @@ function makeKnork (name, server, urls, middleware, opts) {
     server.once(ONREADY, resolve)
   })
 
-  return onready
+  return onready.then(() => knork)
 }
 
 class Server {
