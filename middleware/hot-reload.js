@@ -3,59 +3,43 @@
 const chokidar = require('chokidar')
 
 const hotRequire = require('../lib/hot-require')
+const settings = require('../lib/settings')
 
-// modules to not hot reload
-const BASE_BLACKLIST = [
-  require.resolve('../lib/settings'),
-  require.resolve('../lib/instantiate'),
-  __filename
-]
-
-module.exports = function createHotReload ({ignore = []} = {}) {
-  const blacklist = [...BASE_BLACKLIST, ...ignore]
-
+module.exports = function createHotReload () {
   return {
     async processServer (server, next) {
-      const {sources, routerPath, middlewarePaths, projectDir} = hotRequire
-
+      const {sources, settingsPath, projectDir} = hotRequire
+      const watched = new Set()
       const watcher = chokidar.watch([...sources.keys()])
 
       watcher.on('change', path => {
         console.log(`changed: ${shorten(path)}`)
-        const parents = getParents(sources, path, blacklist)
-
-        for (let parent of parents) {
-          console.log(`clearing cache for: ${shorten(parent)}`)
+        for (let parent of getParents(sources, path)) {
+          console.log(`clearing cache for: ${shorten(parent)}`, parent)
           delete require.cache[parent]
         }
 
-        if (parents.has(routerPath)) recreateRouter(server, routerPath)
-
-        let middlewareUpdate = false
-        middlewarePaths.forEach((pair) => {
-          const [
-            path,
-            ,
-            args = []
-          ] = pair
-          if (parents.has(path)) {
-            console.log(`re-creating middleware: ${shorten(path)}`)
-            middlewareUpdate = true
-            let newMW = require(path)(...args)
-            pair[1] = newMW
-          }
-        })
-        if (!middlewareUpdate) return
-        server.middleware = middlewarePaths.map(([_, mw]) => mw)
+        const {ROUTER, MIDDLEWARE} = settings.load(settingsPath)
+        server.router = ROUTER
+        server.middleware = MIDDLEWARE
       })
 
       console.log(`knork hot reload active`)
 
-      process.on('knork-hot-add', path => {
-        watcher.add(path)
-      })
+      const onHotAdd = () => {
+        for (const file of sources.keys()) {
+          if (!watched.has(file)) {
+            watched.add(file)
+            watcher.add(file)
+          }
+        }
+      }
+      process.on('knork-hot-add', onHotAdd)
+      onHotAdd()
 
       await next(server)
+
+      process.removeListener('knork-hot-add', onHotAdd)
       return watcher.close()
 
       function shorten (p) {
@@ -65,24 +49,15 @@ module.exports = function createHotReload ({ignore = []} = {}) {
   }
 }
 
-function recreateRouter (server, routerPath) {
-  console.log('re-creating router')
-  const newRouter = require(routerPath)
-  server.router = newRouter
-}
-
-function getParents (sources, dependency, blacklist) {
+function * getParents (sources, dependency) {
   const parents = new Set([dependency])
   let parentQueue = [...sources.get(dependency)]
-
+  yield dependency
   while (parentQueue.length) {
     const parent = parentQueue.shift()
     if (parents.has(parent)) continue
     parents.add(parent)
+    yield parent
     parentQueue = parentQueue.concat([...(sources.get(parent) || [])])
   }
-
-  blacklist.forEach(item => parents.delete(item))
-
-  return parents
 }
