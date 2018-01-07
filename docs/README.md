@@ -83,23 +83,13 @@ about the `Object` in particular so we haven't defined it further (like
 `Object<String : Number`).
 
 [def-jargon]: https://en.wikipedia.org/wiki/Jargon
-
 [guide-getting-started]: ./getting-started.md
-
 [guide-faq]: ./faq.md
-
 [topic-index]: ./topics/README.md
-
 [ref-index]: ./reference
-
 [def-types]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures
-
 [def-functions]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function
-
 [def-property]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#Properties
-
 [def-array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
-
 [def-promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
-
 [def-map]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
