@@ -3,8 +3,7 @@
 [![Build Status](https://travis-ci.com/npm/knork.svg?token=hHeDp9pQmz9kvsgRNVHy&branch=master)](https://travis-ci.com/npm/knork)
 [![Greenkeeper badge](https://badges.greenkeeper.io/npm/knork.svg?token=0594e62a6db02b36ab9a5dafe3982cc253ca070119b560a3e798ab0950643d2b&ts=1493750747725)](https://greenkeeper.io/)
 
-A jshttp-based microframework designed to [help align "doing the right thing"
-and "doing the easy thing"][topic-ethos]. Collects and curates the following
+A jshttp-based microframework [with Opinions (TM)][topic-ethos]. Collects and curates the following
 packages:
 
 1. **Routing**, courtesy of [`reverse`][reverse],
@@ -15,48 +14,6 @@ packages:
 5. **Metrics gathering**, courtesy of [`numbat-emitter`][numbat-emitter],
 6. **Monitoring**, a la [`restify-monitor`][restify-monitor],
 7. and **Logging**, courtesy of [`bole`][bole]
-
-```javascript
-'use strict'
-
-const TransactionMiddleware = require('@npm/knork/middleware/transaction')
-const DatabaseMiddleware = require('@npm/knork/middleware/database')
-const LoggingMiddleware = require('@npm/knork/middleware/logging')
-const MetricsMiddleware = require('@npm/knork/middleware/metrics')
-const MonitorMiddleware = require('@npm/knork/middleware/monitor')
-const CommonMiddleware = require('@npm/knork/middleware/common')
-const routing = require('@npm/knork/routing')
-const bole = require('@npm/knork/logging')
-const knork = require('@npm/knork')
-
-const http = require('http')
-
-bole.output({
-  level: 'info',
-  stream: process.stdout
-})
-
-const urls = routing`
-  GET   /               hello
-`({
-  hello (req) {
-    return {message: 'hello world'}
-  }
-})
-
-const server = http.createServer().listen(8124)
-const getServer = knork('user-acl', server, urls, [
-  CommonMiddleware(),
-  LoggingMiddleware(),
-  MetricsMiddleware(),
-  MonitorMiddleware(),
-  DatabaseMiddleware(),
-  TransactionMiddleware()
-], {isExternal: false})
-
-getServer.then(knorkServer => {
-})
-```
 
 ## API
 
@@ -70,37 +27,37 @@ Full docs [are available here][docs].
 
 -------------------------------------
 
-*:package: denotes a link to an external package that has been bundled
-with Knork.*
+:package: denotes a link to an external package that has been bundled
+with Knork.
 
 * Modules
-  * [`require('knork') → createServer`][ref-server]
+  * [`require('@npm/knork') → createServer`][ref-server]
   * **[Middleware][topic-request-lifecycle]**
-    * `require('knork/middleware/transaction') → TransactionMiddleware`
-    * `require('knork/middleware/database') → DatabaseMiddleware`
-    * `require('knork/middleware/monitor') → MonitorMiddleware`
-    * `require('knork/middleware/metrics') → MetricsMiddleware`
-    * `require('knork/middleware/logging') → LoggingMiddleware`
-    * `require('knork/middleware/common') → CommonMiddleware`
+    * `require('@npm/knork/middleware/transaction') → TransactionMiddleware`
+    * `require('@npm/knork/middleware/database') → DatabaseMiddleware`
+    * `require('@npm/knork/middleware/monitor') → MonitorMiddleware`
+    * `require('@npm/knork/middleware/metrics') → MetricsMiddleware`
+    * `require('@npm/knork/middleware/logging') → LoggingMiddleware`
+    * `require('@npm/knork/middleware/common') → CommonMiddleware`
   * **HTTP**
-    * :package: [`require('knork/routing') → reverse`][reverse]
-    * [`require('knork/reply')`][ref-reply]
+    * :package: [`require('@npm/knork/routing') → reverse`][reverse]
+    * [`require('@npm/knork/reply')`][ref-reply]
     * [Incoming Requests][ref-request]
   * **Database**
-    * :package: [`require('knork/db/session') → pg-db-session`][pg-db-session]
-    * :package: [`require('knork/db/connection') → pg`][pg]
-    * :package: [`require('knork/db/orm') → ormnomnom`][ormnomnom]
+    * :package: [`require('@npm/knork/db/session') → pg-db-session`][pg-db-session]
+    * :package: [`require('@npm/knork/db/connection') → pg`][pg]
+    * :package: [`require('@npm/knork/db/orm') → ormnomnom`][ormnomnom]
   * **Sub-packages**
-    * :package: [`require('knork/logging') → bole`][bole]
-    * :package: [`require('knork/joi') → joi`][joi]
+    * :package: [`require('@npm/knork/logging') → bole`][bole]
+    * :package: [`require('@npm/knork/joi') → joi`][joi]
   * **Common Decorators**
-    * [`require('knork/decorators/transaction')`][ref-transaction]
-    * [`require('knork/decorators/validate')`][ref-validate]
+    * [`require('@npm/knork/decorators/transaction')`][ref-transaction]
+    * [`require('@npm/knork/decorators/validate')`][ref-validate]
   * **Common Views**
-    * [`require('knork/views/paginate')`][ref-view-paginate]
+    * [`require('@npm/knork/views/paginate')`][ref-view-paginate]
   * **Utilities**
-    * [`require('knork/utils/paginate')`][ref-paginate]
-    * [`require('knork/utils/rethrow')`][ref-rethrow]
+    * [`require('@npm/knork/utils/paginate')`][ref-paginate]
+    * [`require('@npm/knork/utils/rethrow')`][ref-rethrow]
 
 ## Development
 
@@ -115,7 +72,7 @@ in the repository directory. From there you can:
 
 ## License
 
-Unlicensed.
+ISC
 
 [bole]: http://github.com/rvagg/bole
 [docs]: ./docs
