@@ -5,26 +5,33 @@ const chokidar = require('chokidar')
 const hotRequire = require('../lib/hot-require')
 const settings = require('../lib/settings')
 
-module.exports = function createHotReload () {
+module.exports = createHotReload
+
+function createHotReload ({log = console.log} = {}) {
   return {
     async processServer (server, next) {
       const {sources, settingsPath, projectDir} = hotRequire
       const watched = new Set()
-      const watcher = chokidar.watch([...sources.keys()])
+      const watcher = chokidar.watch([])
 
       watcher.on('change', path => {
-        console.log(`changed: ${shorten(path)}`)
+        log(`changed: ${path.replace(projectDir, '.')}`)
         for (let parent of getParents(sources, path)) {
-          console.log(`clearing cache for: ${shorten(parent)}`, parent)
+          log(`clearing cache for: ${parent.replace(projectDir, '.')}`, parent)
           delete require.cache[parent]
         }
 
-        const {ROUTER, MIDDLEWARE} = settings.load(settingsPath)
-        server.router = ROUTER
-        server.middleware = MIDDLEWARE
+        try {
+          const {ROUTER, MIDDLEWARE} = settings.load(settingsPath)
+          server.router = ROUTER
+          server.middleware = MIDDLEWARE
+        } catch (err) {
+          log('caught error during hot reload:')
+          log(err.stack || err.message || err)
+        }
       })
 
-      console.log(`knork hot reload active`)
+      log(`knork hot reload active`)
 
       const onHotAdd = () => {
         for (const file of sources.keys()) {
@@ -41,10 +48,6 @@ module.exports = function createHotReload () {
 
       process.removeListener('knork-hot-add', onHotAdd)
       return watcher.close()
-
-      function shorten (p) {
-        return p.replace(projectDir, '.')
-      }
     }
   }
 }
