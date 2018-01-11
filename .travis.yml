@@ -5,15 +5,3 @@ node_js:
 before_install:
   - npm install -g npm@latest
   - printf "@npm:registry=https://registry.internal.npmjs.com/\n//registry.internal.npmjs.com/:_authToken=${NPM_TOKEN}\n" >> ~/.npmrc
-env:
-  - CXX=g++-4.8 CC=gcc-4.8
-notifications:
-  slack:
-    secure: BCfsni6UoJioZ6JDnjEUQ2ta4zy62rte9wJtOBJv8KQbHH7+6YNgNeOmVUihTKtBx+rkipNTKpkymQ9AekB57cNXlbGEQUjJdDuI7nhZHqbPZdo25qDc9aunezHQMMlnN8d/wAt5UAljzSHL/chhiocMY7S/0XPVEQTSiab0FRw=
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8

@@ -3,3 +3,8 @@ scaffold
 node_modules
 coverage
 benchmarks
+presentations
+examples
+.nyc_output
+docs
+test
