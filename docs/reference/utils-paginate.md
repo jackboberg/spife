@@ -1,7 +1,7 @@
 # Paginator Object
 
 ```javascript
-const Paginator = require('knork/utils/paginate')
+const Paginator = require('spife/utils/paginate')
 const paginator = new Paginator(Blog.objects.all(), 15)
 paginator.page(3).then(page => {
   page // <-- Page

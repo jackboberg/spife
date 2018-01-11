@@ -1,10 +1,10 @@
 # replify Middleware
 
 ```javascript
-const replifyMiddleware = require('@npm/knork/middleware/replify')
+const replifyMiddleware = require('@npm/spife/middleware/replify')
 const http = require('http')
 
-knork('example-server', http.createServer().listen(8124), routes`
+spife('example-server', http.createServer().listen(8124), routes`
   GET / index
 `({
   index () {

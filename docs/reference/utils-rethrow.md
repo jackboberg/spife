@@ -1,7 +1,7 @@
 # Rethrow
 
 ```javascript
-const rethrow = require('knork/utils/rethrow')
+const rethrow = require('spife/utils/rethrow')
 
 module.exports = function myView (req, context) {
   return Blog.objects.get({id: context.get('id')})

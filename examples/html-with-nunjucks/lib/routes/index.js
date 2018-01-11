@@ -1,6 +1,6 @@
 'use strict'
 
-const routes = require('@npm/knork/routing')
+const routes = require('@npm/spife/routing')
 
 module.exports = routes`
   GET / homepage

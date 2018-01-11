@@ -10,7 +10,7 @@ const bodyURLEncoded = require('../middleware/body-urlencoded')
 const CSRFMiddleware = require('../middleware/csrf')
 const bodyJson = require('../middleware/body-json')
 const routes = require('../routing')
-const knork = require('..')
+const spife = require('..')
 
 test('csrf: get url sets csrftoken', assert => {
   return test.request().then(resp => {
@@ -127,7 +127,7 @@ function test (name, runner) {
   tap.test(name, function named (assert) {
     test.controller = {}
     const server = http.createServer().listen(60880)
-    const kserver = knork('anything', server, routes`
+    const spifeServer = spife('anything', server, routes`
       * /csrf-exempt    exempt
       * /csrf-refresh   refresh
       * /rest           restful
@@ -152,14 +152,14 @@ function test (name, runner) {
       size: 30
     })], {enableFormParsing: true})
 
-    return kserver.then(() => {
+    return spifeServer.then(() => {
       return runner(assert)
     }).then(() => {
       server.close()
-      return kserver.get('closed')
+      return spifeServer.get('closed')
     }, err => {
       server.close()
-      return kserver.get('closed').then(() => {
+      return spifeServer.get('closed').then(() => {
         throw err
       })
     })

@@ -16,7 +16,7 @@ function createDatabaseMiddleware (opts) {
   var poolTimer = null
   var pool = null
   return {
-    processServer (knork, next) {
+    processServer (spife, next) {
       orm.setConnection(db.getConnection)
       pool = new pg.Pool(opts.postgres)
       pool.on('error', err => {
@@ -29,19 +29,19 @@ function createDatabaseMiddleware (opts) {
         1000
       )
 
-      opts.metrics = opts.metrics || defaultMetrics(knork.name)
+      opts.metrics = opts.metrics || defaultMetrics(spife.name)
       poolTimer = setInterval(() => {
         process.emit('metric', {
-          'name': `${knork.name}.pg-pool-available`,
+          'name': `${spife.name}.pg-pool-available`,
           'value': pool.pool.availableObjectsCount()
         })
         process.emit('metric', {
-          'name': `${knork.name}.pg-pool-waiting`,
+          'name': `${spife.name}.pg-pool-waiting`,
           'value': pool.pool.waitingClientsCount()
         })
       }, dbMetricsInterval)
 
-      return next(knork).then(() => {
+      return next(spife).then(() => {
         clearInterval(poolTimer)
         const closed = pool.end()
         pool = null

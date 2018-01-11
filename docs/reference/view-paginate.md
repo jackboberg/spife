@@ -1,7 +1,7 @@
 # Pagination View
 
 ```javascript
-const paginate = require('knork/views/paginate')
+const paginate = require('spife/views/paginate')
 ```
 
 A function that provides a basic paginated list [view][def-view].

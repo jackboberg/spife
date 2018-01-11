@@ -3,5 +3,5 @@
 module.exports = {homepage}
 
 function homepage (req, context) {
-  return 'welcome to knork!'
+  return 'welcome to spife!'
 }

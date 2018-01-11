@@ -1,7 +1,7 @@
 # generating html with nunjucks
 
-> This directory was generated with `npx @npm/knork init project html-with-nunjucks`.
-This is an example of a Knork project that generates HTML using [nunjucks](https://mozilla.github.io/nunjucks/).
+> This directory was generated with `npx @npm/spife init project html-with-nunjucks`.
+This is an example of a Spife project that generates HTML using [nunjucks](https://mozilla.github.io/nunjucks/).
 
 - To see an example of routing to a view, see [`lib/routes/index.js`](./lib/routes/index.js).
 - To see an example of specifying a template for a response, see [`lib/views/index.js`](./lib/views/index.js).

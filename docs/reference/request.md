@@ -1,11 +1,11 @@
 # Request Object
 
 ```javascript
-const routing = require('knork/routing')
-const knork = require('knork')
+const routing = require('spife/routing')
+const spife = require('spife')
 const http = require('http')
 
-knork('example', http.createServer(), routing`
+spife('example', http.createServer(), routing`
   GET /some/path      exampleView
 `({
   exampleView (request, context) {
@@ -23,7 +23,7 @@ request.
 > :information\_source: **`Request` is not an `EventEmitter`**
 >
 > Unlike the `IncomingMessage` object provided by Node servers directly,
-> requests coming in from Knork are _not_ `EventEmitter` instances!
+> requests coming in from Spife are _not_ `EventEmitter` instances!
 
 ## Table of Contents
 
@@ -61,7 +61,7 @@ Get an accept object for the request, per the [accepts package][pkg-accepts].
 ```javascript
 'use strict'
 
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = function myView (req, context) {
   switch (req.accept.type(['json', 'html'])) {
@@ -86,7 +86,7 @@ The body will not be consumed until this property is accessed.
 ```javascript
 'use strict'
 
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = function myView (req, context) {
   return req.body.then(data => {
@@ -123,9 +123,9 @@ Get [the HTTP Version, per `IncomingMessage`][def-http-version].
 
 #### `request.id → String`
 
-A per-request base64'd uuid. If the knork server [is marked as
-internal][ref-knork-options-internal], then the request ID will be populated by
-the [request ID headers][ref-knork-options-headers]. If the server is external,
+A per-request base64'd uuid. If the spife server [is marked as
+internal][ref-spife-options-internal], then the request ID will be populated by
+the [request ID headers][ref-spife-options-headers]. If the server is external,
 incoming headers will be hashed and a unique ID will be appended.
 
 The [logging middleware][ref-middleware-logging] will automatically included
@@ -243,9 +243,9 @@ module.exports = function myView (req, context) {
 
 [pkg-range-parser]: https://github.com/jshttp/range-parser#api
 
-[ref-knork-options-headers]: ./server.md#optionsrequestidheaders
+[ref-spife-options-headers]: ./server.md#optionsrequestidheaders
 
-[ref-knork-options-internal]: ./server.md#optionsisexternal
+[ref-spife-options-internal]: ./server.md#optionsisexternal
 
 [ref-middleware-logging]: ./middleware/logging.md
 

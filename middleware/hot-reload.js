@@ -31,7 +31,7 @@ function createHotReload ({log = console.log} = {}) {
         }
       })
 
-      log(`knork hot reload active`)
+      log(`spife hot reload active`)
 
       const onHotAdd = () => {
         for (const file of sources.keys()) {
@@ -41,12 +41,12 @@ function createHotReload ({log = console.log} = {}) {
           }
         }
       }
-      process.on('knork-hot-add', onHotAdd)
+      process.on('spife-hot-add', onHotAdd)
       onHotAdd()
 
       await next(server)
 
-      process.removeListener('knork-hot-add', onHotAdd)
+      process.removeListener('spife-hot-add', onHotAdd)
       return watcher.close()
     }
   }

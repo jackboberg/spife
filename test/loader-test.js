@@ -10,7 +10,7 @@ const TemplateMiddleware = require('../middleware/template')
 const Loader = require('../templates/loader')
 const routes = require('../routing')
 const reply = require('../reply')
-const knork = require('..')
+const spife = require('..')
 
 test('loader: loads templates', (assert, {createServer, request}) => {
   const loader = new Loader({
@@ -152,8 +152,8 @@ function test (what, how) {
     return Promise.try(() => how(assert, {
       createServer (urls, middleware) {
         const server = http.createServer().listen(60880)
-        const kserver = knork('anything', server, urls, middleware, {isExternal: false})
-        return kserver
+        const spifeServer = spife('anything', server, urls, middleware, {isExternal: false})
+        return spifeServer
       },
       request (opts) {
         opts = opts || {}

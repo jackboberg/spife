@@ -2,7 +2,7 @@
 
 module.exports = createLoggingMiddleware
 
-const createPrinter = require('@npm/knork-dev-logger')
+const createPrinter = require('@npm/spife-dev-logger')
 
 const bole = require('../logging')
 const reply = require('../reply')

@@ -10,7 +10,7 @@ const bodyLimit = require('../middleware/body-limit')
 const bodyJson = require('../middleware/body-json')
 
 const routes = require('../routing')
-const knork = require('..')
+const spife = require('..')
 
 test('request.body: fail when body not parseable', assert => {
   test.setController(routes`
@@ -507,7 +507,7 @@ function test (name, runner, opts = {}) {
     test.controller = {}
     test.middleware = (req, next) => next(req)
     const server = http.createServer().listen(60880)
-    const kserver = knork('anything', server, routes`
+    const spifeServer = spife('anything', server, routes`
       * / target
     `(test.controller), [
       bodyLimit({max: opts.maxBodySize || 2048}),
@@ -519,14 +519,14 @@ function test (name, runner, opts = {}) {
       }
     ], opts || {isExternal: true})
 
-    return kserver.then(() => {
+    return spifeServer.then(() => {
       return runner(assert)
     }).then(() => {
       server.close()
-      return kserver.get('closed')
+      return spifeServer.get('closed')
     }, err => {
       server.close()
-      return kserver.get('closed').then(() => {
+      return spifeServer.get('closed').then(() => {
         throw err
       })
     })

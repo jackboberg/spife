@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = makeKnork
+module.exports = makeSpife
 
 const chain = require('@iterables/chain')
 const Emitter = require('numbat-emitter')
@@ -12,17 +12,17 @@ const domain = require('domain')
 /* eslint-enable node/no-deprecated-api */
 
 const domainToRequest = require('./lib/domain-to-request')
-const KnorkRequest = require('./lib/request')
+const SpifeRequest = require('./lib/request')
 const onion = require('./lib/onion')
 const reply = require('./reply')
 
 const UNINSTALL = Symbol('uninstall')
 const ONREADY = Symbol('onready')
 
-const STATUS_SYM = Symbol.for('knork-http-status')
-const HEADER_SYM = Symbol.for('knork-http-header')
+const STATUS_SYM = Symbol.for('spife-http-status')
+const HEADER_SYM = Symbol.for('spife-http-header')
 
-function makeKnork (name, server, urls, middleware, opts) {
+function makeSpife (name, server, urls, middleware, opts) {
   opts = Object.assign({
     metrics: null,
     isExternal: true,
@@ -34,7 +34,7 @@ function makeKnork (name, server, urls, middleware, opts) {
   middleware = middleware || []
 
   // side-effects! (setting middleware starts the server.)
-  const knork = new Server(
+  const spife = new Server(
     name,
     server,
     urls,
@@ -46,7 +46,7 @@ function makeKnork (name, server, urls, middleware, opts) {
     server.once(ONREADY, resolve)
   })
 
-  return onready.then(() => knork)
+  return onready.then(() => spife)
 }
 
 class Server {
@@ -207,7 +207,7 @@ class Server {
   async onrequest (req, res) {
     const subdomain = domain.create()
     const parsed = url.parse(req.url, true)
-    const kreq = new KnorkRequest(req, this, parsed)
+    const kreq = new SpifeRequest(req, this, parsed)
     subdomain.add(req)
     subdomain.add(res)
     subdomain.enter()
@@ -294,23 +294,23 @@ function checkMiddlewareRejection (err) {
   )
 }
 
-function handleLifecycleError (knork, req, err) {
+function handleLifecycleError (spife, req, err) {
   const out = reply(
     Object.assign(
       {message: err.message},
-      knork.opts.isExternal ? {} : {stack: err.stack},
+      spife.opts.isExternal ? {} : {stack: err.stack},
       err.context || {}
     ),
     err[STATUS_SYM] || 500,
     err[HEADER_SYM] || {}
   )
-  return handleResponse(knork, req, out)
+  return handleResponse(spife, req, out)
 }
 
-function handleResponse (knork, req, data) {
+function handleResponse (spife, req, data) {
   try {
     const stream = reply.toStream(data)
-    if (!knork.opts.isExternal) {
+    if (!spife.opts.isExternal) {
       reply.header(stream, 'request-id', req.id)
     }
     return {
@@ -319,7 +319,7 @@ function handleResponse (knork, req, data) {
       stream
     }
   } catch (err) {
-    return handleLifecycleError(knork, req, err)
+    return handleLifecycleError(spife, req, err)
   }
 }
 

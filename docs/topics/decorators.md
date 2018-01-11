@@ -52,7 +52,7 @@ function takesArgs ({my, config, args}) {
 }
 ```
 
-There are other ways to accept arguments, but Knork will attempt to stick
+There are other ways to accept arguments, but Spife will attempt to stick
 to the form you see above!
 
 > **Note**:

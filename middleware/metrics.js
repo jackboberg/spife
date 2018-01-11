@@ -10,13 +10,13 @@ const reply = require('../reply')
 function createMiddleware () {
   var closeProcMetrics = null
   return {
-    processServer (knork, next) {
+    processServer (spife, next) {
       const procMetricsInterval = (
         Number(process.env.PROCESS_METRICS_INTERVAL) ||
         1000 * 30
       )
-      closeProcMetrics = procMetrics(knork.metrics, procMetricsInterval)
-      return next(knork).then(() => {
+      closeProcMetrics = procMetrics(spife.metrics, procMetricsInterval)
+      return next(spife).then(() => {
         closeProcMetrics()
       })
     },

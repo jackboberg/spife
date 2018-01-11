@@ -1,7 +1,7 @@
 # Validation Decorators
 
 ```javascript
-const validate = require('knork/decorators/validate')
+const validate = require('spife/decorators/validate')
 ```
 
 Contains [view][def-view] decorators that handle request input validation.
@@ -33,13 +33,13 @@ with a validation error. Rejections will be automatically given a status of
 ```javascript
 'use strict'
 
-const validate = require('@npm/knork/decorators/validate')
-const routes = require('@npm/knork/routing')
-const reply = require('@npm/knork/reply')
-const joi = require('@npm/knork/joi')
-const knork = require('@npm/knork')
+const validate = require('@npm/spife/decorators/validate')
+const routes = require('@npm/spife/routing')
+const reply = require('@npm/spife/reply')
+const joi = require('@npm/spife/joi')
+const spife = require('@npm/spife')
 
-knork(routes`
+spife(routes`
   POST /update update
 `({
   update: validate.body(joi.object({
@@ -58,11 +58,11 @@ async function update (req, context) {
 }
 ```
 
-It is possible to examine the passed schema using `require('@npm/knork/utils/decorate')`:
+It is possible to examine the passed schema using `require('@npm/spife/utils/decorate')`:
 
 ```
-const validate = require('@npm/knork/decorators/validate')
-const {decorations} = require('@npm/knork/utils/decorate')
+const validate = require('@npm/spife/decorators/validate')
+const {decorations} = require('@npm/spife/utils/decorate')
 
 const update = validate.body(joi.object({
   uuid: joi.string().guid()
@@ -99,13 +99,13 @@ with a validation error. Rejections will be automatically given a status of
 ```javascript
 'use strict'
 
-const validate = require('@npm/knork/decorators/validate')
-const routes = require('@npm/knork/routing')
-const reply = require('@npm/knork/reply')
-const joi = require('@npm/knork/joi')
-const knork = require('@npm/knork')
+const validate = require('@npm/spife/decorators/validate')
+const routes = require('@npm/spife/routing')
+const reply = require('@npm/spife/reply')
+const joi = require('@npm/spife/joi')
+const spife = require('@npm/spife')
 
-knork(routes`
+spife(routes`
   GET /list list
 `({
   list: validate.query(joi.object({
@@ -124,11 +124,11 @@ async function list (req, context) {
 }
 ```
 
-It is possible to examine the passed schema using `require('@npm/knork/utils/decorate')`:
+It is possible to examine the passed schema using `require('@npm/spife/utils/decorate')`:
 
 ```
-const validate = require('@npm/knork/decorators/validate')
-const {decorations} = require('@npm/knork/utils/decorate')
+const validate = require('@npm/spife/decorators/validate')
+const {decorations} = require('@npm/spife/utils/decorate')
 
 const list = validate.query(joi.object({
   page: joi.number().integer().min(0).default(0)

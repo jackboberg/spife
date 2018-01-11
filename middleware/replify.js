@@ -6,9 +6,9 @@ const replify = require('replify')
 
 function createMiddleware (settings) {
   return {
-    processServer (knork, next) {
-      replify({name: `${knork.name}-${process.pid}`}, knork.server, {settings})
-      return next(knork)
+    processServer (spife, next) {
+      replify({name: `${spife.name}-${process.pid}`}, spife.server, {settings})
+      return next(spife)
     }
   }
 }

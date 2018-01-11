@@ -9,9 +9,9 @@ const reply = require('../reply')
 
 function makeMonitorMiddleware () {
   return {
-    processServer (knork, next) {
-      this.name = knork.name
-      return next(knork)
+    processServer (spife, next) {
+      this.name = spife.name
+      return next(spife)
     },
     processRequest (req, next) {
       if (req.urlObject.pathname === '/_monitor/ping') {

@@ -1,7 +1,7 @@
 # Transaction Decorators
 
 ```javascript
-const txn = require('knork/decorators/transaction')
+const txn = require('spife/decorators/transaction')
 ```
 
 Contains decorators for specifying whether wrapped functions should run
@@ -41,7 +41,7 @@ started for the duration of that operation.
 ```javascript
 'use strict'
 
-const txn = require('knork/decorators/transaction')
+const txn = require('spife/decorators/transaction')
 
 module.exports = txn.noTransaction(req => {
   return 'no transaction started.'

@@ -1,7 +1,7 @@
 {
   "name": "with-nunjucks",
   "version": "1.0.0",
-  "description": "an example knork app using nunjucks",
+  "description": "an example spife app using nunjucks",
   "main": "index.js",
   "bin": {
     "with-nunjucks": "manage.js"
@@ -16,13 +16,13 @@
     "test": "echo \"hi, no tests here\""
   },
   "keywords": [
-    "knork",
+    "spife",
     "nunjucks"
   ],
   "author": "Chris Dickinson <chris@neversaw.us> (http://neversaw.us/)",
   "license": "MIT",
   "dependencies": {
-    "@npm/knork": "^8.2.4",
+    "@npm/spife": "^8.2.4",
     "nunjucks": "^3.0.1"
   }
 }

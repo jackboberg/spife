@@ -1,21 +1,21 @@
 # Server Object
 
 ```javascript
-const routing = require('knork/routing')
-const knork = require('knork')
+const routing = require('spife/routing')
+const spife = require('spife')
 const http = require('http')
 
-knork('example', http.createServer(), routing`
+spife('example', http.createServer(), routing`
   GET /some/path      exampleView
 `({
   exampleView (request, context) {
   }
-})).then(knorkServer => {
-  knorkServer // <--
+})).then(spifeServer => {
+  spifeServer // <--
 })
 ```
 
-The server returned by `knork()`.
+The server returned by `spife()`.
 
 ## Table of Contents
 
@@ -30,7 +30,7 @@ The server returned by `knork()`.
 
   * [Methods](#methods)
 
-    * [knork(name, http, router\[, middleware=\[\]\]\[opts={}\]) → Promise&lt;Server>](#knorkname-http-router-middlewareopts--promiseserver)
+    * [spife(name, http, router\[, middleware=\[\]\]\[opts={}\]) → Promise&lt;Server>](#spifename-http-router-middlewareopts--promiseserver)
 
       * [options.isExternal](#optionsisexternal)
       * [options.requestIDHeaders](#optionsrequestidheaders)
@@ -56,7 +56,7 @@ The server returned by `knork()`.
 
 ### Methods
 
-#### `knork(name, http, router[, middleware=[]][opts={}]) → Promise<Server>`
+#### `spife(name, http, router[, middleware=[]][opts={}]) → Promise<Server>`
 
 ##### `options.isExternal`
 
@@ -66,7 +66,7 @@ The server returned by `knork()`.
 
 #### `Server#uninstall → Promise<>`
 
-Uninstall the Knork router and middleware from the server. Returns a promise that resolves
+Uninstall the Spife router and middleware from the server. Returns a promise that resolves
 once the `processServer` middleware has completed.
 
 #### `Server#closed → Promise<>`

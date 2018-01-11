@@ -1,6 +1,6 @@
-# :fork\_and\_knife: Getting Started with Knork
+# :fork\_and\_knife: Getting Started with Spife
 
-Knork is, first and foremost, a glue package — it curates several smaller
+Spife is, first and foremost, a glue package — it curates several smaller
 packages and re-exports them as a whole in order to make it easier to build
 small, [HATEOAS][hateoas]-y, [REST][rest]ful APIs. It provides the following
 functionality:
@@ -17,8 +17,8 @@ functionality:
 It ties all of this together with a promise-based [request-response
 cycle][request-lifecycle].
 
-This document will demonstrate all of the functionality of Knork while walking
-through the assembly of a simple Knork service. Each section will include links
+This document will demonstrate all of the functionality of Spife while walking
+through the assembly of a simple Spife service. Each section will include links
 to other useful documents, and will collect other relevant links at the end of
 the section.
 
@@ -32,7 +32,7 @@ the section.
 
 ## :books: Table of Contents
 
-* [:beginner: Your First Knork](#beginner-your-first-knork)
+* [:beginner: Your First Spife](#beginner-your-first-spife)
   * [:floppy\_disk: Models](#floppydisk-models)
   * [:busstop: Routes](#busstop-routes)
   * [:mount\_fuji: Views](#mountfuji-views)
@@ -42,9 +42,9 @@ the section.
   * [:clapper: Server](#clapper-server)
     * [:art: Middleware](#art-middleware)
 
-## :beginner: Your First Knork
+## :beginner: Your First Spife
 
-Let's build a simple knork service for sending and receiving physical
+Let's build a simple spife service for sending and receiving physical
 :package:'s. We should be able to:
 
 1. List packages in-flight,
@@ -56,7 +56,7 @@ To start, run the following commands in a new directory:
 
 ```bash
 # inside of your new directory
-$ npm i --save @npm/knork
+$ npm i --save @npm/spife
 $ mkdir -p lib/{models,urls,views}
 $ touch lib/{server,models/{destination,package},urls/index,views/index}.js
 ```
@@ -80,8 +80,8 @@ of your new directory.
 
 Make sure you have Postgres installed — follow [the steps
 here][ormnomnom-install-postgres] to make sure you have it available. Once you
-have it, run `createdb knork_example`, and then run the following inside of
-`psql knork_example`:
+have it, run `createdb spife_example`, and then run the following inside of
+`psql spife_example`:
 
 ```sql
 > CREATE TABLE "destinations" (
@@ -122,8 +122,8 @@ destination.
 
 module.exports = Destination
 
-const orm = require('knork/orm')
-const joi = require('knork/joi')
+const orm = require('spife/orm')
+const joi = require('spife/joi')
 
 // This class function will be called whenever we
 // need to materialize a database row.
@@ -176,8 +176,8 @@ and the contents of the thing we're shipping. We'll add the following to
 module.exports = Package
 
 const Promise = require('bluebird')
-const orm = require('knork/orm')
-const joi = require('knork/joi')
+const orm = require('spife/orm')
+const joi = require('spife/joi')
 const uuid = require('uuid')
 
 const Destination = require('./destination')
@@ -233,21 +233,21 @@ We can totally build an API around this!
 
 ### :busstop: Routes
 
-Knork divides functionality between **views**, **routes**, and **models**.
+Spife divides functionality between **views**, **routes**, and **models**.
 **Models** handle the state of the service, **views** receive requests from
 users and rephrase them into database operations, and **routes** glue URLs to
 **views**. It's usually easiest to define your models and routes first, then
 build out the views to support them in a piecemeal fashion.
 
-Knork provides routing by way of the [reverse][routing-reverse] package, which
+Spife provides routing by way of the [reverse][routing-reverse] package, which
 emphasizes writing readable URL patterns. Open up `lib/urls/index.js` and let's
 define some URLs!
 
 ```javascript
 'use strict'
 
-const routing = require('knork/routing')
-const joi = require('knork/joi')
+const routing = require('spife/routing')
+const joi = require('spife/joi')
 
 module.exports = createRoutes
 
@@ -277,7 +277,7 @@ substitutions with by asking "give me everything that's not a '/'". It then
 passes those parameters through a querystring parser — to turn, for example,
 '%40' into '@'. Finally, it validates the substring using the validator
 attached to the parameter. If all of these steps pass for all parameters AND
-the request method matches, the route is matched. Knork will take that match
+the request method matches, the route is matched. Spife will take that match
 and call the associated view.
 
 [Table of Contents ⏎](#books-table-of-contents)
@@ -286,11 +286,11 @@ and call the associated view.
 
 ### :mount\_fuji: Views
 
-A Knork **view** is simply a function that takes a [Knork Request
-object][ref-knork-request] and a Map of context values as parameters, and
+A Spife **view** is simply a function that takes a [Spife Request
+object][ref-spife-request] and a Map of context values as parameters, and
 returns a value, a promise for a value, or a stream. The function is run as
 part of a promise chain, so exceptions will always be caught and handled by
-Knork itself — materializing as "500 Internal Server Error" responses.
+Spife itself — materializing as "500 Internal Server Error" responses.
 
 Let's open `lib/views/index.js` and write some views:
 
@@ -328,7 +328,7 @@ function listPackages (req, context) {
 }
 ```
 
-For now, all of our views simply return the string "hello world". Knork will
+For now, all of our views simply return the string "hello world". Spife will
 handle turning this into a `content-type: text/plain, 200 OK` response. Let's
 edit this so that we have more functional views, starting with `viewPackage`:
 
@@ -353,16 +353,16 @@ function viewPackage (req, context) {
 ```
 
 Et Voilà! We use the `Package` model's DAO to fetch packages matching the
-context parameter from `lib/urls/index.js`. Knork will call `JSON.stringify` on
+context parameter from `lib/urls/index.js`. Spife will call `JSON.stringify` on
 the resulting object. But what if there are no packages with that `public_id`?
-Without any further specification, errors received by Knork are given a `500`
+Without any further specification, errors received by Spife are given a `500`
 status code. We'd like to be more specific than that, so let's handle that:
 
 ```javascript
 'use strict'
 
 const Package = require('../models/package')
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = {
   viewPackage,
@@ -382,7 +382,7 @@ function viewPackage (req, context) {
 // ... snip snip ...
 ```
 
-The [`knork/reply` module][ref-knork-reply] provides access to functions that
+The [`spife/reply` module][ref-spife-reply] provides access to functions that
 can decorate a response with header and status information. Objects are
 transparently decorated with this information but are otherwise not modified.
 Primitive values, like strings, are cast up into Streams containing their
@@ -395,7 +395,7 @@ take a look at how to do that:
 'use strict'
 
 const Package = require('../models/package')
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 // ... snip snip ...
 
@@ -435,13 +435,13 @@ code, and return it as our ultimate response.
 Invariably, in every web service there are common views on data, and it's handy
 to be consistent in how those common views respond to user requests. For
 example, most APIs will eventually have to tackle a common paginated list
-format. Knork provides for this with the paginated view. Let's see how this
+format. Spife provides for this with the paginated view. Let's see how this
 applies to our "List packages" endpoint:
 
 ```javascript
 'use strict'
 
-const paginate = require('knork/views/paginate')
+const paginate = require('spife/views/paginate')
 const Package = require('../models/package')
 
 // ... snip snip ...
@@ -498,7 +498,7 @@ a schema at the top of `lib/views/index.js`:
 ```javascript
 'use strict'
 
-const joi = require('knork/joi')
+const joi = require('spife/joi')
 
 const Destination = require('../models/destination')
 const Package = require('../models/package')
@@ -525,15 +525,15 @@ module.exports = {
 // ... snip snip ...
 ```
 
-Knork makes it easy to attach Joi schemas to individual views. To do so, we
-make use of the [`knork/decorators/validate`][ref-knork-validate] module;
+Spife makes it easy to attach Joi schemas to individual views. To do so, we
+make use of the [`spife/decorators/validate`][ref-spife-validate] module;
 specifically the `body` method:
 
 ```javascript
 'use strict'
 
-const validate = require('knork/decorators/validate')
-const joi = require('knork/joi')
+const validate = require('spife/decorators/validate')
+const joi = require('spife/joi')
 
 const Destination = require('../models/destination')
 const Package = require('../models/package')
@@ -584,8 +584,8 @@ From this, we can finish our Package creation API:
 ```javascript
 // ... snip snip ...
 
-const rethrow = require('knork/utils/rethrow')
-const reply = require('knork/reply')
+const rethrow = require('spife/utils/rethrow')
+const reply = require('spife/reply')
 
 const urls = require('../urls')
 
@@ -638,7 +638,7 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
   to resolve][ormnomnom-resolution];
 * :one: That destination promise uses [`getOrCreate`][ormnomnom-getorcreate] to
   obtain the destination row;
-* :two: We create [an empty response with a location header][ref-knork-reply];
+* :two: We create [an empty response with a location header][ref-spife-reply];
 * :three: The location header uses the routes we defined in `lib/urls/index.js`
   [to create a full URL][reverse-reverse];
 * :four: We catch potential database-level errors and explicitly cast them
@@ -651,7 +651,7 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
 > created without an associated `Package` — a minor leak, but a blemish
 > nonetheless.
 >
-> Luckily, Knork runs all views wrapped inside of transactions by default. If
+> Luckily, Spife runs all views wrapped inside of transactions by default. If
 > the promise returned by a view is _rejected_, the entire transaction will be
 > rolled back.
 >
@@ -666,7 +666,7 @@ This is a pretty meaty view! Some highlights, corresponding to the notes above:
 
 #### :triangular\_ruler: :evergreen\_tree: Metrics and Logging
 
-We may wish to _measure_ some aspect of the object creation. `knork` will
+We may wish to _measure_ some aspect of the object creation. `spife` will
 automatically configure [`numbat-emitter`][numbat-emitter] based on environment
 variables for you. This means you can simply `process.emit('metric', {name:
 'some name', value: 1})` when you want to measure something!
@@ -685,7 +685,7 @@ function createPackage (req, context) {
 ```
 
 This data will be handed to [a `numbat-emitter` instance][numbat-emitter]
-specifically configured for your Knork server — easy as that!
+specifically configured for your Spife server — easy as that!
 
 [Table of Contents ⏎](#books-table-of-contents)
 
@@ -725,9 +725,9 @@ specifically configured for your Knork server — easy as that!
 
 [babel]: https://babeljs.io/
 
-[ref-knork-request]: ./reference/request.md
+[ref-spife-request]: ./reference/request.md
 
-[ref-knork-reply]: ./reference/reply.md
+[ref-spife-reply]: ./reference/reply.md
 
 [model]: #floppydisk-models
 
@@ -735,7 +735,7 @@ specifically configured for your Knork server — easy as that!
 
 [ormnomnom-install-postgres]: https://github.com/chrisdickinson/ormnomnom/blob/1de3c2fc89136745436e0cc38ed6bc919e699bbc/docs/getting-started.md#getting-postgres
 
-[ref-knork-validate]: ./reference/decorator-validate.md
+[ref-spife-validate]: ./reference/decorator-validate.md
 
 [def-decorator]: https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841#.dnzdeh2v6
 

@@ -11,7 +11,7 @@ const domain = require('domain')
 const pg = require('../db/connection')
 const db = require('../db/session')
 const orm = require('../db/orm')
-const knork = require('..')
+const spife = require('..')
 
 const routeMetrics = new Map()
 
@@ -29,7 +29,7 @@ function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
   function test (name, run) {
     baseTest(name, assert => Promise.try(() => {
       // this reads a bit like spaghetti, but to explain:
-      // 1. instead of using knork's builtin database and transaction
+      // 1. instead of using spife's builtin database and transaction
       //    middleware, we're rolling our own, because we want to
       //    ROLLBACK the database between tests.
       // 2. so we create a domain and start a transaction inside of
@@ -38,9 +38,9 @@ function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
       //   b. letting the outside world know we have it,
       //   c. and returning a promise for completion that we control
       //      from the outside.
-      // 3. we set up a knork server that has middleware that automatically
+      // 3. we set up a spife server that has middleware that automatically
       //    associates the request domain with our transaction session.
-      // 4. once we have a listening knork server *and* we've got the
+      // 4. once we have a listening spife server *and* we've got the
       //    transaction session, we run the test inside its _own_ domain
       //    so we can associate that stack with the transaction session.
       // 5. once we're done, we reject the transaction promise so that
@@ -132,7 +132,7 @@ function createTransactionalTest (baseTest, routes, middleware, dbName, port) {
         }
       }
       orm.setConnection(db.getConnection)
-      const getServer = knork('test-server', server, routes, [
+      const getServer = spife('test-server', server, routes, [
         assignDomainMW,
         trackRouteQueryCountMW
       ].concat(middleware), {isExternal: false})

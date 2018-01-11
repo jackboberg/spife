@@ -10,7 +10,7 @@ const fs = require('fs')
 
 const routing = require('../routing')
 const reply = require('../reply')
-const knork = require('..')
+const spife = require('..')
 
 const Emitter = require('numbat-emitter')
 
@@ -34,7 +34,7 @@ test('server promise resolves once http server listening', assert => Promise.try
   const timeout = setTimeout(() => {
     reject(new Error('did not resolve server on listening'))
   }, 500)
-  knork('anything', ee, null, []).then(server => {
+  spife('anything', ee, null, []).then(server => {
     clearTimeout(timeout)
     resolve()
   })
@@ -46,24 +46,24 @@ test('http server listening triggers mw installs', assert => Promise.try(() => {
   const ee = new EE()
   const list = []
   const mw = [
-    {processServer (knork, next) {
-      list.push({knork, name: '1'})
-      return next(knork)
+    {processServer (spife, next) {
+      list.push({spife, name: '1'})
+      return next(spife)
     }},
-    {processServer (knork, next) {
+    {processServer (spife, next) {
       return Promise.delay(10).then(() => {
-        list.push({knork, name: '2'})
-        return next(knork)
+        list.push({spife, name: '2'})
+        return next(spife)
       })
     }},
     {},
-    {processServer (knork, next) {
-      list.push({knork, name: '3'})
-      return next(knork)
+    {processServer (spife, next) {
+      list.push({spife, name: '3'})
+      return next(spife)
     }}
   ]
-  const onServer = knork('anything', ee, null, mw).then(server => {
-    list.forEach(xs => assert.equal(xs.knork, server))
+  const onServer = spife('anything', ee, null, mw).then(server => {
+    list.forEach(xs => assert.equal(xs.spife, server))
     assert.equal(list.length, 3)
     assert.deepEqual(list.map(xs => xs.name), ['1', '2', '3'])
   })
@@ -75,22 +75,22 @@ test('closing http server uninstalls mw', assert => Promise.try(() => {
   const ee = new EE()
   const list = []
   const mw = [
-    {processServer (knork, next) { return next(knork).then(() => list.push('1')) }},
-    {processServer (knork, next) {
-      return next(knork).then(() => {
+    {processServer (spife, next) { return next(spife).then(() => list.push('1')) }},
+    {processServer (spife, next) {
+      return next(spife).then(() => {
         return Promise.delay(10).then(() => {
           list.push('2')
         })
       })
     }},
     {},
-    {processServer (knork, next) {
-      return next(knork).then(() => {
+    {processServer (spife, next) {
+      return next(spife).then(() => {
         list.push('3')
       })
     }}
   ]
-  const onServer = knork('anything', ee, null, mw)
+  const onServer = spife('anything', ee, null, mw)
 
   onServer.then(server => {
     ee.emit('close')
@@ -132,7 +132,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
       })
     }
   }]
-  const onServer = knork('anything', ee, null, mw)
+  const onServer = spife('anything', ee, null, mw)
   ee.emit('listening')
   return onServer.get('closed').then(() => {
     assert.deepEqual(list, ['1', '2', '3', '3', '2', '1'])
@@ -142,7 +142,7 @@ test('closing mid-install mw runs install to completion', assert => Promise.try(
 test('server metrics option as object sets metrics', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const expect = {}
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -150,17 +150,17 @@ test('server metrics option as object sets metrics', assert => Promise.try(() =>
     }
   }), [], {metrics: expect})
 
-  kserver.then(knork => {
-    assert.equal(knork.metrics, expect)
+  spifeServer.then(spife => {
+    assert.equal(spife.metrics, expect)
     server.close()
   })
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('create metrics: string', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const metricsServer = net.createServer().listen(60881)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -182,14 +182,14 @@ test('create metrics: string', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('create metrics: envvar', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const metricsServer = net.createServer().listen(60881)
   process.env.METRICS = 'tcp://localhost:60881'
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -212,12 +212,12 @@ test('create metrics: envvar', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('bad client', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -247,13 +247,13 @@ test('bad client', assert => Promise.try(() => {
 Host: localhost:60880
 Connection: close\r\n\r\n`)
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('client disconnect', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const list = []
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -278,7 +278,7 @@ test('client disconnect', assert => Promise.try(() => {
   conn.end(`GET / HTTP/1.1
 Host: localhost:60880
 Connection: close\r\n\r\n`)
-  return kserver.get('closed').then(() => {
+  return spifeServer.get('closed').then(() => {
     assert.deepEqual(list, ['closed'])
   })
 }))
@@ -292,7 +292,7 @@ test('returning nothing from request mw runs view', assert => Promise.try(() => 
       return next(req)
     }
   }]
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -310,7 +310,7 @@ test('returning nothing from request mw runs view', assert => Promise.try(() => 
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning value from request mw returns request', assert => Promise.try(() => {
@@ -322,7 +322,7 @@ test('returning value from request mw returns request', assert => Promise.try(()
       return 'haha'
     }
   }]
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -340,7 +340,7 @@ test('returning value from request mw returns request', assert => Promise.try(()
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('view mw response skips view', assert => Promise.try(() => {
@@ -352,7 +352,7 @@ test('view mw response skips view', assert => Promise.try(() => {
       return {message: 'hello'}
     }
   }]
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -370,7 +370,7 @@ test('view mw response skips view', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('view mw error skips view', assert => Promise.try(() => {
@@ -381,7 +381,7 @@ test('view mw error skips view', assert => Promise.try(() => {
       throw new Error('what')
     }
   }]
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -399,7 +399,7 @@ test('view mw error skips view', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('not implemented works', assert => Promise.try(() => {
@@ -410,7 +410,7 @@ test('not implemented works', assert => Promise.try(() => {
       throw new Error('what')
     }
   }]
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({}), mw)
 
@@ -423,7 +423,7 @@ test('not implemented works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('not found works', assert => Promise.try(() => {
@@ -434,7 +434,7 @@ test('not found works', assert => Promise.try(() => {
       throw new Error('what')
     }
   }]
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -451,12 +451,12 @@ test('not found works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning stream works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -479,13 +479,13 @@ test('returning stream works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('response splitting: header key', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const mw = []
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -506,13 +506,13 @@ test('response splitting: header key', assert => Promise.try(() => {
   conn.end(`GET /?p=%E0%B4%8A HTTP/1.1
 Host: localhost:60880
 Connection: close\r\n\r\n`)
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('response splitting: header value', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const mw = []
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -533,13 +533,13 @@ test('response splitting: header value', assert => Promise.try(() => {
   conn.end(`GET /?p=%E0%B4%8A HTTP/1.1
 Host: localhost:60880
 Connection: close\r\n\r\n`)
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning object stream works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   const mw = []
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -566,7 +566,7 @@ test('returning object stream works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('failing object stream works', assert => Promise.try(() => {
@@ -574,7 +574,7 @@ test('failing object stream works', assert => Promise.try(() => {
   const mw = []
   const out = [{}, {}, {}, {}, {shouldNotSee: 1}, null]
   out[3].breaking = out[3]
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -612,12 +612,12 @@ test('failing object stream works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning string works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -634,12 +634,12 @@ test('returning string works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning empty string omits content-type', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -662,12 +662,12 @@ test('returning empty string omits content-type', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('middleware cannot return falsey value', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -693,13 +693,13 @@ test('middleware cannot return falsey value', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('middleware always coerces to response between runs', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   let saw = null
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -737,12 +737,12 @@ test('middleware always coerces to response between runs', assert => Promise.try
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('middleware cannot throw non-Error exceptions', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -770,12 +770,12 @@ test('middleware cannot throw non-Error exceptions', assert => Promise.try(() =>
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('views cannot throw non-Error exceptions', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -799,13 +799,13 @@ test('views cannot throw non-Error exceptions', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('middleware always adds status to thrown headers', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   let saw = null
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -836,12 +836,12 @@ test('middleware always adds status to thrown headers', assert => Promise.try(()
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning nothing works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -863,12 +863,12 @@ test('returning nothing works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning buffer works: no content-type', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -895,12 +895,12 @@ test('returning buffer works: no content-type', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning buffer works: w/ content-type', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -927,12 +927,12 @@ test('returning buffer works: w/ content-type', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning object works', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -959,12 +959,12 @@ test('returning object works', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('throwing error works: external service', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -991,12 +991,12 @@ test('throwing error works: external service', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('returning object with pipe does not treat it as a stream', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -1023,13 +1023,13 @@ test('returning object with pipe does not treat it as a stream', assert => Promi
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('throwing error works: internal service', assert => Promise.try(() => {
   process.env.DEBUG = '1'
   const server = http.createServer().listen(60880)
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -1062,13 +1062,13 @@ test('throwing error works: internal service', assert => Promise.try(() => {
     })
   })
 
-  return kserver.get('closed')
+  return spifeServer.get('closed')
 }))
 
 test('uninstalling works as expected', assert => Promise.try(() => {
   const server = http.createServer().listen(60880)
   let fired = false
-  const kserver = knork('anything', server, routing`
+  const spifeServer = spife('anything', server, routing`
     GET / view
   `({
     view (req) {
@@ -1081,12 +1081,12 @@ test('uninstalling works as expected', assert => Promise.try(() => {
     }
   }], {isExternal: false})
 
-  return kserver.then(knork => {
-    return knork.uninstall()
+  return spifeServer.then(spife => {
+    return spife.uninstall()
   }).then(() => {
     assert.equal(fired, true)
     assert.same(server.listeners('request'), [])
     server.close()
-    return knork('anything', server, {}).closed
+    return spife('anything', server, {}).closed
   })
 }))

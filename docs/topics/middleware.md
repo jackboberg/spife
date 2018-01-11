@@ -2,7 +2,7 @@
 
 ## What is middleware?
 
-Knork middleware is a framework of hooks into the behavior of your application.
+Spife middleware is a framework of hooks into the behavior of your application.
 Middleware allows you to control your application's startup/shutdown cycle,
 request body parsing, and the request/response cycle. For example, if your
 server isn't ready until it can establish a connection to postgres, you could
@@ -10,8 +10,8 @@ use middleware to delay until it's ready. If you wanted to add a header to
 every response from your site, you could use middleware to intercept all
 responses.
 
-Middleware components are separated by concern. Knork comes with some useful
-middleware. For example, Knork's metrics middleware handles setting up a metrics
+Middleware components are separated by concern. Spife comes with some useful
+middleware. For example, Spife's metrics middleware handles setting up a metrics
 emitter and collecting useful request metrics.
 
 ## What does middleware look like?
@@ -44,7 +44,7 @@ Middleware is installed in a list in an application's settings:
 
 ```javascript
 exports.MIDDLEWARE = [
-  '@npm/knork/logging',
+  '@npm/spife/logging',
   './middleware/my-middleware',
   ['./middleware/complex-middleware', {arguments: 'to'}, {the: 'middleware'}]
 ]
@@ -53,7 +53,7 @@ exports.MIDDLEWARE = [
 Middleware lifecycles work like an onion. Each component is a layer of the
 onion. Calling `next()` moves to the next layer and returns a promise. When the
 next layer is done, the promise will resolve (or reject, if there was an
-error!) The last middleware in the list will call Knork's default behavior for
+error!) The last middleware in the list will call Spife's default behavior for
 that particular lifecycle. **If you don't call `next()`**, subsequent
 middleware hooks for a particular lifecycle won't fire. This can be handy
 behavior: it allows you to return a response from middleware without triggering
@@ -63,7 +63,7 @@ So, given middleware `A`, `B`, and `C`:
 
 ```
               return          return          return
- in ---> A -- next() --> B -- next() --> C -- next() --> (knork itself)
+ in ---> A -- next() --> B -- next() --> C -- next() --> (spife itself)
                  ↑               ↑               ↑        |
 out <--- A <---- * <---- B <---- * <---- C <---- * -------+
                  |               |               |
@@ -75,18 +75,18 @@ You can think of `next()` as giving the rest the middleware a chance to run.
 
 ## The Lifecycles
 
-Knork provides the following lifecycles. Some lifecycles may not be fired all
+Spife provides the following lifecycles. Some lifecycles may not be fired all
 of the time!
 
 ### `processServer`
 
-`processServer` is always fired. This lifecycle runs when a knork service is
+`processServer` is always fired. This lifecycle runs when a spife service is
 starting up, and resolves when the server is closed **or** when
-`knorkServer.uninstall()` is called. In most cases this will be the entire
+`spifeServer.uninstall()` is called. In most cases this will be the entire
 lifetime of the process. This lifetime is useful for setting up process-wide
 resources.
 
-It receives two arguments, `server` (the knork server) and `next` (a function).
+It receives two arguments, `server` (the spife server) and `next` (a function).
 `next()` will resolve to `undefined`.
 
 An example `processServer` middleware that installs a redis connection:
@@ -131,7 +131,7 @@ request is routed to a view. It resolves when a response is returned. It's
 useful for adding behavior to your entire application. If you need to attach
 clients to the request, this is the place to do it!
 
-`processRequest` receives two arguments: `req` (a [knork request object]) and
+`processRequest` receives two arguments: `req` (a [spife request object]) and
 `next` (a function). `next` will resolve to a response.
 
 If you return a value directly from `processRequest`, it will be treated as the
@@ -141,7 +141,7 @@ For example, here is a simple authorization middleware:
 
 ```javascript
 const basicAuthParser = require('basic-auth-parser')
-const reply = require('@npm/knork/reply')
+const reply = require('@npm/spife/reply')
 
 const INGEN_USERS = new Map([
   ['dennis nedry', 'you didn\'t say the magic word'],
@@ -182,7 +182,7 @@ the view has been executed and the resulting promise has been resolved.
 
 `processView` receives four arguments:
 
-- `req`: the knork request object,
+- `req`: the spife request object,
 - `match`: an object representing the matched route,
 - `params`: a `Map` containing the url parameters captured as part of the match,
 - and `next`: a function.
@@ -196,7 +196,7 @@ otherwise happen universally:
 ```javascript
 module.exports = addTimingHeader
 
-const reply = require('@npm/knork/reply')
+const reply = require('@npm/spife/reply')
 
 function addTimingHeader () {
   return {
@@ -230,12 +230,12 @@ dontRushMe.dontTimeMe = true
 `processBody` fires the first time `req.body` is accessed. It is responsible
 for taking the stream of request data and turning it into a plain JS object. It
 is resolved once a body middleware returns a value. By default, without any
-middleware installed, Knork will throw an `UnsupportedMediaTypeError`.
+middleware installed, Spife will throw an `UnsupportedMediaTypeError`.
 
 
 `processBody` receives three arguments:
 
-- `req`: a Knork request object,
+- `req`: a Spife request object,
 - `stream`: a Readable stream,
 - and `next`: a function.
 
@@ -265,4 +265,4 @@ module.exports = function createXMLParserMiddleware ({
 }
 ```
 
-[knork request object]: ../ref/request.md
+[spife request object]: ../ref/request.md

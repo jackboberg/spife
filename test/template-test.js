@@ -9,7 +9,7 @@ const createTemplateMiddleware = require('../middleware/template')
 const serializer = require('../templates/serializer')
 const routes = require('../routing')
 const reply = require('../reply')
-const knork = require('..')
+const spife = require('..')
 
 test('reply.template returns context on json', assert => {
   test.setController(routes`
@@ -274,21 +274,21 @@ function test (name, runner) {
   tap.test(name, function named (assert) {
     test.controller = {}
     const server = http.createServer().listen(60880)
-    const kserver = knork('anything', server, routes`
+    const spifeServer = spife('anything', server, routes`
       * / target
     `(test.controller), [], {external: true})
 
-    return kserver.then(srv => {
+    return spifeServer.then(srv => {
       test.setMiddleware = mw => {
         srv.middleware = mw
       }
       return runner(assert)
     }).then(() => {
       server.close()
-      return kserver.get('closed')
+      return spifeServer.get('closed')
     }, err => {
       server.close()
-      return kserver.get('closed').then(() => {
+      return spifeServer.get('closed').then(() => {
         throw err
       })
     })

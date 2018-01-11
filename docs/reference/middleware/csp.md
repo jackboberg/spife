@@ -22,11 +22,11 @@ as 'self', 'none', 'unsafe-eval', or 'unsafe-inline', they will be properly esca
 Example:
 
 ```javascript
-const CspMiddleware = require('@npm/knork/middleware/csp')
-const reply = require('@npm/knork/reply')
+const CspMiddleware = require('@npm/spife/middleware/csp')
+const reply = require('@npm/spife/reply')
 const http = require('http')
 
-knork('example-server', http.createServer().listen(8124), routes`
+spife('example-server', http.createServer().listen(8124), routes`
   GET / index
 `({
   index () {

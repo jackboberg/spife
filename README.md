@@ -1,7 +1,7 @@
-# :fork_and_knife: Knork :fork_and_knife:
+# :fork_and_knife: Spife :fork_and_knife:
 
-[![Build Status](https://travis-ci.com/npm/knork.svg?token=hHeDp9pQmz9kvsgRNVHy&branch=master)](https://travis-ci.com/npm/knork)
-[![Greenkeeper badge](https://badges.greenkeeper.io/npm/knork.svg?token=0594e62a6db02b36ab9a5dafe3982cc253ca070119b560a3e798ab0950643d2b&ts=1493750747725)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.com/npm/spife.svg?token=hHeDp9pQmz9kvsgRNVHy&branch=master)](https://travis-ci.com/npm/spife)
+[![Greenkeeper badge](https://badges.greenkeeper.io/npm/spife.svg?token=0594e62a6db02b36ab9a5dafe3982cc253ca070119b560a3e798ab0950643d2b&ts=1493750747725)](https://greenkeeper.io/)
 
 A jshttp-based microframework [with Opinions (TM)][topic-ethos]. Collects and curates the following
 packages:
@@ -19,7 +19,7 @@ packages:
 
 Full docs [are available here][docs].
 
-1. If you're just getting started with Knork, you might try the
+1. If you're just getting started with Spife, you might try the
    [tutorial][getting-started]!
 2. You might have some questions. Check the [FAQ][faq].
 3. The [topic documentation][topics] lays out the high-level concepts.
@@ -28,36 +28,36 @@ Full docs [are available here][docs].
 -------------------------------------
 
 :package: denotes a link to an external package that has been bundled
-with Knork.
+with Spife.
 
 * Modules
-  * [`require('@npm/knork') → createServer`][ref-server]
+  * [`require('@npm/spife') → createServer`][ref-server]
   * **[Middleware][topic-request-lifecycle]**
-    * `require('@npm/knork/middleware/transaction') → TransactionMiddleware`
-    * `require('@npm/knork/middleware/database') → DatabaseMiddleware`
-    * `require('@npm/knork/middleware/monitor') → MonitorMiddleware`
-    * `require('@npm/knork/middleware/metrics') → MetricsMiddleware`
-    * `require('@npm/knork/middleware/logging') → LoggingMiddleware`
-    * `require('@npm/knork/middleware/common') → CommonMiddleware`
+    * `require('@npm/spife/middleware/transaction') → TransactionMiddleware`
+    * `require('@npm/spife/middleware/database') → DatabaseMiddleware`
+    * `require('@npm/spife/middleware/monitor') → MonitorMiddleware`
+    * `require('@npm/spife/middleware/metrics') → MetricsMiddleware`
+    * `require('@npm/spife/middleware/logging') → LoggingMiddleware`
+    * `require('@npm/spife/middleware/common') → CommonMiddleware`
   * **HTTP**
-    * :package: [`require('@npm/knork/routing') → reverse`][reverse]
-    * [`require('@npm/knork/reply')`][ref-reply]
+    * :package: [`require('@npm/spife/routing') → reverse`][reverse]
+    * [`require('@npm/spife/reply')`][ref-reply]
     * [Incoming Requests][ref-request]
   * **Database**
-    * :package: [`require('@npm/knork/db/session') → pg-db-session`][pg-db-session]
-    * :package: [`require('@npm/knork/db/connection') → pg`][pg]
-    * :package: [`require('@npm/knork/db/orm') → ormnomnom`][ormnomnom]
+    * :package: [`require('@npm/spife/db/session') → pg-db-session`][pg-db-session]
+    * :package: [`require('@npm/spife/db/connection') → pg`][pg]
+    * :package: [`require('@npm/spife/db/orm') → ormnomnom`][ormnomnom]
   * **Sub-packages**
-    * :package: [`require('@npm/knork/logging') → bole`][bole]
-    * :package: [`require('@npm/knork/joi') → joi`][joi]
+    * :package: [`require('@npm/spife/logging') → bole`][bole]
+    * :package: [`require('@npm/spife/joi') → joi`][joi]
   * **Common Decorators**
-    * [`require('@npm/knork/decorators/transaction')`][ref-transaction]
-    * [`require('@npm/knork/decorators/validate')`][ref-validate]
+    * [`require('@npm/spife/decorators/transaction')`][ref-transaction]
+    * [`require('@npm/spife/decorators/validate')`][ref-validate]
   * **Common Views**
-    * [`require('@npm/knork/views/paginate')`][ref-view-paginate]
+    * [`require('@npm/spife/views/paginate')`][ref-view-paginate]
   * **Utilities**
-    * [`require('@npm/knork/utils/paginate')`][ref-paginate]
-    * [`require('@npm/knork/utils/rethrow')`][ref-rethrow]
+    * [`require('@npm/spife/utils/paginate')`][ref-paginate]
+    * [`require('@npm/spife/utils/rethrow')`][ref-rethrow]
 
 ## Development
 

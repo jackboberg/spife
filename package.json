@@ -1,8 +1,8 @@
 {
-  "name": "@npm/knork",
+  "name": "@npm/spife",
   "version": "10.0.5",
   "description": ":curry: :knife_fork_plate: a jshttp based µframework :knife_fork_plate: :spaghetti:",
-  "main": "knork.js",
+  "main": "spife.js",
   "scripts": {
     "test": "tap ${TAP_FLAGS:-'--'} test/**/*-test.js",
     "lint": "standard",
@@ -12,12 +12,12 @@
     "release": "standard-version"
   },
   "bin": {
-    "knork-report-query-metrics": "./bin/show-query-metrics.js",
-    "knork": "./bin/manage.js"
+    "spife-report-query-metrics": "./bin/show-query-metrics.js",
+    "spife": "./bin/manage.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/npm/knork.git"
+    "url": "git+ssh://git@github.com/npm/spife.git"
   },
   "keywords": [
     "jshttp",
@@ -27,9 +27,9 @@
   "author": "Chris Dickinson <chris@neversaw.us> (http://neversaw.us/)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/npm/knork/issues"
+    "url": "https://github.com/npm/spife/issues"
   },
-  "homepage": "https://github.com/npm/knork#readme",
+  "homepage": "https://github.com/npm/spife#readme",
   "devDependencies": {
     "standard": "^10.0.2",
     "standard-version": "^4.0.0",

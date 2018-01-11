@@ -7,7 +7,7 @@ const tap = require('tap')
 
 const CspMiddleware = require('../middleware/csp')
 const routes = require('../routing')
-const knork = require('..')
+const spife = require('..')
 
 test('csp: sets header', assert => {
   return test.request().then(resp => {
@@ -88,7 +88,7 @@ function test (name, runner, middlewareSettings) {
   tap.test(name, function named (assert) {
     test.controller = {}
     const server = http.createServer().listen(60880)
-    const kserver = knork('anything', server, routes`
+    const spifeServer = spife('anything', server, routes`
       * /               target
     `({
       target (req, context) {
@@ -99,14 +99,14 @@ function test (name, runner, middlewareSettings) {
         CspMiddleware(middlewareSettings.settings, middlewareSettings.options)
       ])
 
-    return kserver.then(() => {
+    return spifeServer.then(() => {
       return runner(assert)
     }).then(() => {
       server.close()
-      return kserver.get('closed')
+      return spifeServer.get('closed')
     }, err => {
       server.close()
-      return kserver.get('closed').then(() => {
+      return spifeServer.get('closed').then(() => {
         throw err
       })
     })

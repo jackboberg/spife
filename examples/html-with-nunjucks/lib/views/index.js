@@ -1,6 +1,6 @@
 'use strict'
 
-const reply = require('@npm/knork/reply')
+const reply = require('@npm/spife/reply')
 
 module.exports = {homepage}
 

@@ -5,14 +5,14 @@
 ## How do I return an empty response?
 
 You can either return `undefined`, or use
-[`require('knork/reply').empty()`](./reference/reply.md#replyemptycode--response).
+[`require('spife/reply').empty()`](./reference/reply.md#replyemptycode--response).
 
 ## How do I get a raw Postgres connection?
 
 ```javascript
 'use strict'
 
-const db = require('@npm/knork/db/session')
+const db = require('@npm/spife/db/session')
 
 db.getConnection.then(pair => {
   pair.connection.query(`SELECT * FROM tables`, function () {

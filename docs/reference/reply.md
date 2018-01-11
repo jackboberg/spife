@@ -1,7 +1,7 @@
 # Reply Module
 
 ```javascript
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 ```
 
 Contains methods for creating and manipulating HTTP responses.
@@ -65,7 +65,7 @@ original value stringified via `toString`.
 For example:
 
 ```javascript
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 const obj = {}
 const rex = /asdf/
 const fn = function () {}
@@ -84,7 +84,7 @@ reply('example') instanceof require('stream').Readable
 A response type created by [`reply.template(name,
 context)`](#replytemplatename-context--templateresponse), to be lazily rendered
 by [`TemplateMiddleware`][template-middleware]. For more on working with
-templates in knork, see the [templates guide][templates-guide].
+templates in spife, see the [templates guide][templates-guide].
 
 #### `HTTPError`
 
@@ -113,7 +113,7 @@ error message that may be overridden by the user.
 ```javascript
 'use strict'
 
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 const request = require('request')
 
 module.exports = myView
@@ -154,7 +154,7 @@ error message that may be overridden by the user.
 ```javascript
 'use strict'
 
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 const request = require('request')
 
 module.exports = myView
@@ -201,7 +201,7 @@ function myView (req, context) {
 
 ##### `NoMatchError`
 
-`NoMatchError` is a subclass of `NotFoundError` that indicates that Knork
+`NoMatchError` is a subclass of `NotFoundError` that indicates that Spife
 did not find a match for an incoming request in its router.
 
 #### `CacheControl`
@@ -235,7 +235,7 @@ replace any corresponding values associated with `resp`.
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = function myView (req, context) {
   return reply(
@@ -251,7 +251,7 @@ module.exports = function myView (req, context) {
 > :rotating\_light: **Header keys and values are interpreted as
 > [ISO-8859-1][def-latin-1].**
 >
-> Because of this behavior in the underlying HTTP specification, knork does not
+> Because of this behavior in the underlying HTTP specification, spife does not
 > allow non-[ASCII][def-ascii] characters to be passed in as header keys or
 > values, throwing an error if it detects non-ASCII characters. Malicious
 > clients could otherwise insert UTF8 values that will decompose to newlines,
@@ -283,7 +283,7 @@ used.
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = function myView (req, context) {
   return deleteSomeModel().then(() => {
@@ -328,7 +328,7 @@ by the given name, other headers are left intact.
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = function myView (req, context) {
   return reply.header(
@@ -352,7 +352,7 @@ Replace all headers associated with the response with those given by `headers`.
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = function myView (req, context) {
   return reply.headers(
@@ -373,7 +373,7 @@ a response is desired. Returns a [`stream.Readable`][stream-readable] for
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 
 module.exports = function myView (req, context) {
   return reply.status(
@@ -392,7 +392,7 @@ operation, or when a resource exists elsewhere. Combine with
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 const myUrls = require('../urls/path/to/my/urls')
 
 module.exports = function myView (req, context) {
@@ -413,7 +413,7 @@ associated with the response, if any.
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 reply.status(new reply.NotFound())    // 404
 reply.status({})                     // undefined
 ```
@@ -426,7 +426,7 @@ and associate the status with that object.
 
 ```javascript
 'use strict'
-const reply = require('knork/reply')
+const reply = require('spife/reply')
 const resp = {}
 reply.status(resp, 204)              // === resp, w/ 204 status
 reply.status('', 204)                // === stream.Readable w/ 204 status
@@ -444,7 +444,7 @@ the template.
 #### `reply.toStream(response) → Response<resp>`
 
 Coerces an existing response to a stream. This will be called automatically by
-Knork as a final step on any response before it is flushed. It is guaranteed
+Spife as a final step on any response before it is flushed. It is guaranteed
 to return a `pipe`-able stream instance.
 
 - If `response` is a string, it will be coerced into a `Readable` string and given
@@ -466,7 +466,7 @@ parameter will be retained.
 
 ```javascript
 'use strict'
-const reply = require('@npm/knork/reply')
+const reply = require('@npm/spife/reply')
 
 reply.toStream('hello world') // Stream with pipe!
 reply.toString({some: 'json'}) // Stream with pipe!
