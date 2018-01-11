@@ -1,6 +1,6 @@
 # :fork_and_knife: Spife :fork_and_knife:
 
-[![Build Status](https://travis-ci.com/npm/spife.svg?token=hHeDp9pQmz9kvsgRNVHy&branch=master)](https://travis-ci.com/npm/spife)
+[![Build Status](https://travis-ci.org/npm/spife.svg?branch=master)](https://travis-ci.com/npm/spife)
 [![Greenkeeper badge](https://badges.greenkeeper.io/npm/spife.svg?token=0594e62a6db02b36ab9a5dafe3982cc253ca070119b560a3e798ab0950643d2b&ts=1493750747725)](https://greenkeeper.io/)
 
 Welcome to Spife! It cuts like a knife, but scoops like a spoon!
