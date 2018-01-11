@@ -1,6 +1,6 @@
 # Spife Documentation
 
-Welcome to Spife! It cuts like a knife, but stabs like a fork!
+Welcome to Spife! It cuts like a knife, but scoops like a spoon!
 
 ## About This Documentation
 
