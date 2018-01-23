@@ -1,6 +1,6 @@
 {
   "name": "@npm/spife",
-  "version": "10.0.7",
+  "version": "11.0.0",
   "description": ":curry: :knife_fork_plate: a jshttp based µframework :knife_fork_plate: :spaghetti:",
   "main": "spife.js",
   "scripts": {
