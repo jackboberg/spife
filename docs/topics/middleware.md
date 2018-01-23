@@ -1,6 +1,8 @@
 # Middleware
 
-## What is middleware?
+## Table of Contents
+
+### What is middleware?
 
 Spife middleware is a framework of hooks into the behavior of your application.
 Middleware allows you to control your application's startup/shutdown cycle,
@@ -14,7 +16,7 @@ Middleware components are separated by concern. Spife comes with some useful
 middleware. For example, Spife's metrics middleware handles setting up a metrics
 emitter and collecting useful request metrics.
 
-## What does middleware look like?
+### What does middleware look like?
 
 Middleware is defined as a function that returns an object with some well-known
 methods:
@@ -25,7 +27,7 @@ methods:
 module.exports = function createMiddleware () {
   return {
     processRequest (req, next) {
-      return next()
+      return next(req)
     }
   }
 }
@@ -51,10 +53,10 @@ exports.MIDDLEWARE = [
 ```
 
 Middleware lifecycles work like an onion. Each component is a layer of the
-onion. Calling `next()` moves to the next layer and returns a promise. When the
+onion. Calling `next` moves to the next layer and returns a promise. When the
 next layer is done, the promise will resolve (or reject, if there was an
 error!) The last middleware in the list will call Spife's default behavior for
-that particular lifecycle. **If you don't call `next()`**, subsequent
+that particular lifecycle. **If you don't call `next`**, subsequent
 middleware hooks for a particular lifecycle won't fire. This can be handy
 behavior: it allows you to return a response from middleware without triggering
 other machinery.
@@ -71,14 +73,14 @@ out <--- A <---- * <---- B <---- * <---- C <---- * -------+
               resolved at *   resolved at *   resolved at *
 ```
 
-You can think of `next()` as giving the rest the middleware a chance to run.
+You can think of `next` as giving the rest the middleware a chance to run.
 
-## The Lifecycles
+### The Lifecycles
 
 Spife provides the following lifecycles. Some lifecycles may not be fired all
 of the time!
 
-### `processServer`
+#### `processServer`
 
 `processServer` is always fired. This lifecycle runs when a spife service is
 starting up, and resolves when the server is closed **or** when
@@ -87,7 +89,7 @@ lifetime of the process. This lifetime is useful for setting up process-wide
 resources.
 
 It receives two arguments, `server` (the spife server) and `next` (a function).
-`next()` will resolve to `undefined`.
+`next(server)` will resolve to `undefined`.
 
 An example `processServer` middleware that installs a redis connection:
 
@@ -99,7 +101,7 @@ module.exports = function createRedisMiddleware ({url} = {}) {
   return {
     processServer (server, next) {
       redisClient = redis.connect(url)
-      return next().then(() => {
+      return next(server).then(() => {
         redisClient.end({flush: false}) // clean up when the server closes.
       })
     }
@@ -117,14 +119,14 @@ module.exports = function createRedisMiddleware ({url} = {}) {
 >   return {
 >     async processServer (server, next) {
 >       redisClient = redis.connect(url)
->       await next()
+>       await next(server)
 >       redisClient.end({flush: false}) // clean up when the server closes.
 >     }
 >   }
 > }
 > ```
 
-### `processRequest`
+#### `processRequest`
 
 `processRequest` is fired whenever a request is received, but before the
 request is routed to a view. It resolves when a response is returned. It's
@@ -164,7 +166,7 @@ module.exports = function createBasicAuth (users = INGEN_USERS) {
         )
       }
 
-      return next() // welcome to jurassic park.
+      return next(req) // welcome to jurassic park.
     }
   }
 }
@@ -174,7 +176,7 @@ module.exports = function createBasicAuth (users = INGEN_USERS) {
 // hack their way in.
 ```
 
-### `processView`
+#### `processView`
 
 `processView` is fired when a view is successfully resolved for a request. If
 a request cannot be routed to a view, this lifecycle won't fire! It resolves when
@@ -203,11 +205,11 @@ function addTimingHeader () {
     processView (req, match, params, next) {
       if (match.controller[match.name].dontTimeMe) {
         // no timing for this route
-        return next()
+        return next(req, match, params)
       }
 
       const start = Date.now()
-      return next().then(res => {
+      return next(req, match, params).then(res => {
         return reply.header(res, 'x-timing', Date.now() - start)
       })
     }
@@ -225,7 +227,7 @@ function dontRushMe (req, params) {
 dontRushMe.dontTimeMe = true
 ```
 
-### `processBody`
+#### `processBody`
 
 `processBody` fires the first time `req.body` is accessed. It is responsible
 for taking the stream of request data and turning it into a plain JS object. It
@@ -254,7 +256,7 @@ module.exports = function createXMLParserMiddleware ({
   return {
     parseBody (req, stream, next) {
       if (!contentType.match(req.headers['content-type'])) {
-        return next() // we can't handle this content type!
+        return next(req, stream) // we can't handle this content type!
       }
 
       return getStream(stream).then(str => {
@@ -265,4 +267,47 @@ module.exports = function createXMLParserMiddleware ({
 }
 ```
 
-[spife request object]: ../ref/request.md
+### Cheat Sheet
+
+There are four lifecycles:
+
+#### `processServer (server, next)`
+
+- `server` is a [`SpifeServer`].
+- `next` is a function that takes `server` and returns `undefined`.
+
+`processServer` is fired at server startup. `next` will resolve when the server
+shuts down (or hot reloads.)
+
+#### `processRequest (req, next)`
+
+- `req` is a [`SpifeRequest`].
+- `next` is a function that takes `req` and returns a response.
+
+`processRequest` is fired whenever a request is received by the server.
+
+#### `processView (req, match, context, next)`
+
+- `req` is a [`SpifeRequest`].
+- `match` is a [`Match`] object.
+- `context` is a [`Map`] containing request parameters parsed from the URL.
+- `next` is a function that takes `req`, `match`, and `context` and returns a response.
+
+`processView` is fired when a request is routed to a view, after it has passed
+through all `processRequest` middleware.
+
+#### `processBody (req, stream, next)`
+
+- `req` is a [`SpifeRequest`].
+- `stream` is a paused [`ReadableStream`].
+- `next` is a function that takes `req` and `stream`, returning an object (or promise for an object).
+
+`processBody` is fired when `req.body` is accessed by the user.
+
+---
+
+[spife request object]: ../reference/request.md
+[`SpifeRequest`]: ../reference/request.md
+[`SpifeServer`]: ../reference/server.md
+[`Match`]: https://github.com/chrisdickinson/reverse#match-object
+[`Map`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
