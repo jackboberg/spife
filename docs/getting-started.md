@@ -122,8 +122,8 @@ destination.
 
 module.exports = Destination
 
-const orm = require('spife/orm')
-const joi = require('spife/joi')
+const orm = require('@npm/spife/db/orm')
+const joi = require('@npm/spife/joi')
 
 // This class function will be called whenever we
 // need to materialize a database row.
@@ -176,8 +176,8 @@ and the contents of the thing we're shipping. We'll add the following to
 module.exports = Package
 
 const Promise = require('bluebird')
-const orm = require('spife/orm')
-const joi = require('spife/joi')
+const orm = require('@npm/spife/db/orm')
+const joi = require('@npm/spife/joi')
 const uuid = require('uuid')
 
 const Destination = require('./destination')
@@ -246,8 +246,8 @@ define some URLs!
 ```javascript
 'use strict'
 
-const routing = require('spife/routing')
-const joi = require('spife/joi')
+const routing = require('@npm/spife/routing')
+const joi = require('@npm/spife/joi')
 
 module.exports = createRoutes
 
@@ -362,7 +362,7 @@ status code. We'd like to be more specific than that, so let's handle that:
 'use strict'
 
 const Package = require('../models/package')
-const reply = require('spife/reply')
+const reply = require('@npm/spife/reply')
 
 module.exports = {
   viewPackage,
@@ -395,7 +395,7 @@ take a look at how to do that:
 'use strict'
 
 const Package = require('../models/package')
-const reply = require('spife/reply')
+const reply = require('@npm/spife/reply')
 
 // ... snip snip ...
 
@@ -441,7 +441,7 @@ applies to our "List packages" endpoint:
 ```javascript
 'use strict'
 
-const paginate = require('spife/views/paginate')
+const paginate = require('@npm/spife/views/paginate')
 const Package = require('../models/package')
 
 // ... snip snip ...
@@ -498,7 +498,7 @@ a schema at the top of `lib/views/index.js`:
 ```javascript
 'use strict'
 
-const joi = require('spife/joi')
+const joi = require('@npm/spife/joi')
 
 const Destination = require('../models/destination')
 const Package = require('../models/package')
@@ -532,8 +532,8 @@ specifically the `body` method:
 ```javascript
 'use strict'
 
-const validate = require('spife/decorators/validate')
-const joi = require('spife/joi')
+const validate = require('@npm/spife/decorators/validate')
+const joi = require('@npm/spife/joi')
 
 const Destination = require('../models/destination')
 const Package = require('../models/package')
@@ -584,8 +584,8 @@ From this, we can finish our Package creation API:
 ```javascript
 // ... snip snip ...
 
-const rethrow = require('spife/utils/rethrow')
-const reply = require('spife/reply')
+const rethrow = require('@npm/spife/utils/rethrow')
+const reply = require('@npm/spife/reply')
 
 const urls = require('../urls')
 
