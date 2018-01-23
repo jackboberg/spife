@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="11.0.0"></a>
+# [11.0.0](https://github.com/npm/spife/compare/v10.0.0...v11.0.0) (2018-01-23)
+
+### Features
+
+* [ormnomnom](https://github.com/chrisdickinson/ormnomnom) has been updated! Bug fixes and better handling for edge cases included
+
+### BREAKING CHANGES
+
+* ormnomnom upgrade included an update to [joi](https://github.com/hapijs/joi) which is used throughout spife. This update included breaking changes to how dates were handled and how joi returns errors. If you were relying on html encoding coming from joi before, do not anymore
+
 <a name="10.0.0"></a>
 # [10.0.0](https://github.com/npm/spife/compare/v9.1.0...v10.0.0) (2017-12-28)
 
