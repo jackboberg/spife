@@ -2,6 +2,19 @@
 
 ## Table of Contents
 
+- [What is middleware?](#what-is-middleware)
+- [What does middleware look like?](#what-does-middleware-look-like)
+- [The Lifecycles](#the-lifecycles)
+    - [`processServer`](#processserver)
+    - [`processRequest`](#processrequest)
+    - [`processView`](#processview)
+    - [`processBody`](#processbody)
+- [Cheat Sheet](#cheat-sheet)
+    - [`processServer (server, next)`](#processserver-server-next)
+    - [`processRequest (req, next)`](#processrequest-req-next)
+    - [`processView (req, match, context, next)`](#processview-req-match-context-next)
+    - [`processBody (req, stream, next)`](#processbody-req-stream-next)
+
 ### What is middleware?
 
 Spife middleware is a framework of hooks into the behavior of your application.
